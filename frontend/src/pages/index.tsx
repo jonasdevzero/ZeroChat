@@ -18,7 +18,9 @@ export default function Home() {
     function onSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
 
-        router.push(`/chat?name=${name}&room=${room}`);
+        localStorage.setItem("chat-data", JSON.stringify({ user: name, room: room }))
+
+        router.push(`/chat`);
     };
 
     return (

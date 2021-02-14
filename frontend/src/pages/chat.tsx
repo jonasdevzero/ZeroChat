@@ -1,5 +1,4 @@
 import Head from 'next/head';
-import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react'
 import io from 'socket.io-client';
 
@@ -15,10 +14,6 @@ import {
 let socket = io.Socket
 
 export default function Chat() {
-    const { query } = useRouter();
-
-    const [name, setName] = useState("");
-    const [room, setRoom] = useState("");
     const ENDPOINT = "localhost:3001"
 
     const [messages, setMessages] = useState([])
@@ -27,17 +22,14 @@ export default function Chat() {
     useEffect(() => {
         socket = io(ENDPOINT);
 
-        const { name, room } = query;
+        const data = JSON.parse(localStorage.getItem("chat-data"));
 
-        setName(String(name));
-        setRoom(String(room));
-
-        socket.emit("join", room, () => { });
+        socket.emit("join", { name: data.user, room: data.room }, () => { });
 
         return () => {
-            socket.off("join");
+            socket.emit("leave");
         };
-    }, [ENDPOINT, query]);
+    }, [ENDPOINT]);
 
     useEffect(() => {
         socket.on("message", (message) => {
@@ -49,9 +41,9 @@ export default function Chat() {
     function sendMessage(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
 
-        socket.emit("sendMessage", { message, room }, () => {
-            setMessage("");
-        });
+        if (message.length > 0) {
+            socket.emit("sendMessage", message, () => setMessage(""));
+        };
     };
 
     return (
