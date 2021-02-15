@@ -1,43 +1,43 @@
 import Head from 'next/head';
-import { useState } from 'react';
-import { useRouter } from 'next/router';
+import Link from 'next/link';
 
 import {
     Container,
-    Form,
-    Input,
-    Button,
+    Header,
+    Content,
+    StyledLink,
+    CallToAction,
 } from '../styles/pages/home';
 
 export default function Home() {
-    const [name, setName] = useState("");
-    const [room, setRoom] = useState("");
-
-    const router = useRouter();
-
-    function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-        e.preventDefault();
-
-        localStorage.setItem("chat-data", JSON.stringify({ user: name, room: room }))
-
-        router.push(`/chat`);
-    };
 
     return (
-        <>
+        <Container>
             <Head>
-                <title>zero.io</title>
+                <title>Zero Chat</title>
             </Head>
 
-            <Container>
-                <h1>Zero.io Chat 0.1v</h1>
+            <Header>
+                <h1>Zero</h1>
 
-                <Form onSubmit={onSubmit}>
-                    <Input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="name" />
-                    <Input type="text" value={room} onChange={e => setRoom(e.target.value)} placeholder="room" />
-                    <Button type='submit'>Sign In</Button>
-                </Form>
-            </Container>
-        </>
-    )
-}
+                <div>
+                    <Link href='/signin'>
+                        <StyledLink>SignIn</StyledLink>
+                    </Link>
+                    <Link href='/signup'>
+                        <StyledLink>SignUp</StyledLink>
+                    </Link>
+                </div>
+            </Header>
+
+            <Content>
+                <h1>Zero</h1>
+                <h2>A realtime chat made for you!</h2>
+
+                <Link href='/signin'>
+                    <CallToAction>Start now!</CallToAction>
+                </Link>
+            </Content>
+        </Container>
+    );
+};
