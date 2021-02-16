@@ -4,7 +4,8 @@ import User from "../models/User";
 import UserView from "../views/UserView";
 import { encryptPassword, generateToken, comparePasswords, authenticateToken } from "../utils/user";
 import * as Yup from "yup";
-
+import crypto from "crypto";
+import transporter from "../utils/mailer";
 
 export default {
     async index(request: Request, response: Response) {
@@ -180,18 +181,62 @@ export default {
         };
     },
 
-    async resetPassword(request: Request, response: Response) {
+    async forgotPassword(request: Request, response: Response) {
         try {
-            //...
+            const { email } = request.body;
+
+            const userRepository = getRepository(User);
+            const user = await userRepository.findOne({ email });
+
+            if (!user)
+                return response.status(400).json({ error: "User not found" });
+
+            const resetToken = crypto.randomBytes(20).toString("hex");
+            const expireToken = Date.now() + 3600000;
+
+            await userRepository.update(email, { resetToken, expireToken });
+
+            transporter.sendMail({
+                to: user.email,
+                from: "78e90a5f28-6cbf41@inbox.mailtrap.io",
+                subject: "Password Reset",
+                html: `
+                    <p>
+                        You request for password reset, click 
+                        <a href="http://localhost:3000/reset/${resetToken}">
+                            here
+                        </a>
+                    </p>`
+            });
+
+            return response.status(200).json({ message: "Check your email" });
         } catch (err) {
             console.log("error on [reset password] {user} -> ", err);
             return response.status(500).json({ error: "Internal server error" });
         };
     },
 
-    async newPassword(request: Request, response: Response) {
+    async resetPassword(request: Request, response: Response) {
         try {
-            //...
+            const { password, resetToken } = request.body;
+
+            const userRepository = getRepository(User);
+            const user = await userRepository.findOne({ resetToken });
+
+            if (!user)
+                return response.status(400).json({ error: "Invalid token" });
+
+            if (Date.now() > Number(user.expireToken))
+                return response.status(400).json({ error: "Token expired" });
+
+            const { id } = user;
+            await userRepository.update(id, {
+                password: encryptPassword(password),
+                resetToken: undefined,
+                expireToken: undefined,
+            });
+
+            return response.status(200).json({ message: "Password changed with success!" });
         } catch (err) {
             console.log("error on [new password] {user} -> ", err);
             return response.status(500).json({ error: "Internal server error" });
