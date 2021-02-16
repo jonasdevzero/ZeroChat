@@ -26,9 +26,10 @@ export class createUser1613406151448 implements MigrationInterface {
                 {
                     name: "email",
                     type: "varchar",
+                    isUnique: true,
                 },
                 {
-                    name: "email",
+                    name: "password",
                     type: "varchar",
                 },
                 {
@@ -43,6 +44,11 @@ export class createUser1613406151448 implements MigrationInterface {
                 },
                 {
                     name: "expiresToken",
+                    type: "varchar",
+                    isNullable: true,
+                },
+                {
+                    name: "socketId",
                     type: "varchar",
                     isNullable: true,
                 },
