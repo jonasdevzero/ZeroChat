@@ -2,24 +2,9 @@ import { Request, Response, NextFunction } from "express";
 import { getRepository } from "typeorm";
 import User from "../models/User";
 import UserView from "../views/UserView";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import { encryptPassword, generateToken, comparePasswords, authenticateToken } from "../utils/user";
 import * as Yup from "yup";
 
-const secret = process.env.USER_SECRET || "";
-
-function encryptPassword(password: string) {
-    const salt = bcrypt.genSaltSync(10);
-    return bcrypt.hashSync(password, salt);
-};
-
-function generateToken(params: object) {
-    return jwt.sign(params, secret);
-};
-
-function comparePasswords(password: string, secretPassword: string) {
-    return bcrypt.compareSync(password, secretPassword);
-};
 
 export default {
     async index(request: Request, response: Response) {
@@ -151,7 +136,7 @@ export default {
             if (!access_token)
                 return response.status(401).json({ error: "The access token is undefined" });
 
-            const userVerified = jwt.verify(String(access_token), secret);
+            const userVerified = authenticateToken(access_token.toString());
 
             if (user_required) {
                 request.body.user = userVerified;
