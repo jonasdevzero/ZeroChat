@@ -24,5 +24,8 @@ export default class User {
     resetToken: string;
 
     @Column()
-    expiresToken: string;
+    expireToken: Date;
+
+    @Column()
+    socketId: string;
 };

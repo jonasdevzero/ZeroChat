@@ -41,10 +41,11 @@ export class createUser1613406151448 implements MigrationInterface {
                     name: "resetToken",
                     type: "varchar",
                     isNullable: true,
+                    isUnique: true,
                 },
                 {
-                    name: "expiresToken",
-                    type: "varchar",
+                    name: "expireToken",
+                    type: "date",
                     isNullable: true,
                 },
                 {
