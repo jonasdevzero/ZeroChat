@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { getRepository } from "typeorm";
 import User from "../models/User";
 import UserView from "../views/UserView";
@@ -144,18 +144,51 @@ export default {
         };
     },
 
-    async auth(request: Request, response: Response) {
+    async auth(request: Request, response: Response, next: NextFunction) {
         try {
-            //...
+            const { access_token, user_required } = request.query;
+
+            if (!access_token)
+                return response.status(401).json({ error: "The access token is undefined" });
+
+            const userVerified = jwt.verify(String(access_token), secret);
+
+            if (user_required) {
+                request.body.user = userVerified;
+                const { id } = request.body.user;
+
+                const userRepository = getRepository(User);
+                const user = await userRepository.findOne(id);
+
+                if (!user)
+                    return response.status(500).json({ error: "Unexpected error" });
+
+                return response.status(200).json({ user: UserView.render(user) });
+            };
+
+            next()
         } catch (err) {
-            console.log("error on [auth] {user} -> ", err);
-            return response.status(500).json({ error: "Internal server error" });
+            return response.status(401).json({ error: "Access denied" });
         };
     },
 
     async login(request: Request, response: Response) {
         try {
-            //...
+            const { email, password } = request.body;
+
+            const userRepository = getRepository(User);
+            const user = await userRepository.findOne({ email });
+
+            if (!user)
+                return response.status(400).json({ error: "Email invalid" });
+
+            if (!comparePasswords(password, user.password))
+                return response.status(401).json({ error: "Invalid password" });
+
+            return response.status(200).json({
+                token: generateToken({ id: user.id }),
+                user: UserView.render(user),
+            });
         } catch (err) {
             console.log("error on [login] {user} -> ", err);
             return response.status(500).json({ error: "Internal server error" });
