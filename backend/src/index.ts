@@ -1,6 +1,8 @@
 import express from 'express';
 import { Server } from 'http';
 import socketio from 'socket.io';
+import "dotenv";
+import "./database"
 import routes from './routes';
 import cors from 'cors';
 

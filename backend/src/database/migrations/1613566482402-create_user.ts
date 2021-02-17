@@ -35,7 +35,7 @@ export class createUser1613406151448 implements MigrationInterface {
                 {
                     name: "picture",
                     type: "text",
-                    default: "https://github.com/jonasdevzero/MediaHub/blob/master/images/profilePicture.png?raw=true",
+                    isNullable: true,
                 },
                 {
                     name: "resetToken",
