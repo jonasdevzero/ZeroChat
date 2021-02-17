@@ -149,7 +149,10 @@ export default {
                 if (!user)
                     return response.status(500).json({ error: "Unexpected error" });
 
-                return response.status(200).json({ user: UserView.render(user) });
+                return response.status(200).json({
+                    token: generateToken({ id: user.id }),
+                    user: UserView.render(user)
+                });
             };
 
             next()
