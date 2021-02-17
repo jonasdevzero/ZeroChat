@@ -83,14 +83,14 @@ export default {
 
     async update(request: Request, response: Response) {
         try {
-            const id = request.params.id;
+            const id = Number(request.params.id);
             const { name, username, picture } = request.body;
 
             const userRepository = getRepository(User);
 
             const existsUsername = await userRepository.findOne({ username });
 
-            if (existsUsername)
+            if (existsUsername && id !== existsUsername?.id)
                 return response.status(400).json({ error: "Username already exists" });
 
             await userRepository.update(id, { name, username, picture });
@@ -139,7 +139,7 @@ export default {
 
             const userVerified = authenticateToken(access_token.toString());
 
-            if (user_required) {
+            if (Boolean(user_required)) {
                 request.body.user = userVerified;
                 const { id } = request.body.user;
 

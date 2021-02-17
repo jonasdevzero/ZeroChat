@@ -55,6 +55,7 @@ io.on('connection', (socket: socketio.Socket) => {
 });
 
 app.use(cors());
+app.use(express.json());
 app.use(routes);
 
 server.listen(PORT, () => console.log("Server running -> " + PORT));
