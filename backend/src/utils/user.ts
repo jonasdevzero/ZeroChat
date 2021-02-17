@@ -9,7 +9,9 @@ export function encryptPassword(password: string) {
 };
 
 export function generateToken(params: object) {
-    return jwt.sign(params, secret);
+    return jwt.sign(params, secret, {
+        expiresIn: "86400",
+    });
 };
 
 export function comparePasswords(password: string, secretPassword: string) {
