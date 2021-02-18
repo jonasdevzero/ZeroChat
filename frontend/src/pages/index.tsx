@@ -34,7 +34,7 @@ export default function Home() {
                 <h1>Zero</h1>
                 <h2>A realtime chat made for you!</h2>
 
-                <Link href='/signin'>
+                <Link href='/signup'>
                     <CallToAction>Start now!</CallToAction>
                 </Link>
             </Content>
