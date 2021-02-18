@@ -41,7 +41,14 @@ export default {
 
     async create(request: Request, response: Response) {
         try {
-            const { name, username, email, password } = request.body;
+            const { name, username, email, password, confirmPassword } = request.body;
+
+            if (confirmPassword !== password)
+                return response.status(400).json({
+                    message: "Passwords  are diffrent",
+                    fields: ["password"],
+                });
+
             const data = { name, username, email, password };
 
             const userRepository = getRepository(User);
@@ -49,8 +56,16 @@ export default {
             const existsUser = await userRepository.findOne({ email });
             const existsUsername = await userRepository.findOne({ username });
 
-            if (existsUser || existsUsername)
-                return response.status(409).json({ error: "User or username already exists" });
+            if (existsUser)
+                return response.status(400).json({
+                    message: "Email already registred",
+                    fields: ["email"]
+                });
+            if (existsUsername)
+                return response.status(400).json({
+                    message: "Username is already in use",
+                    fields: ["username"]
+                });
 
             const schema = Yup.object().shape({
                 name: Yup.string().required(),
@@ -77,7 +92,7 @@ export default {
             });
         } catch (err) {
             console.log("error on [create] {user} -> ", err);
-            return response.status(500).json({ error: "Internal server error" });
+            return response.status(500).json({ message: "Internal server error" });
         };
     },
 
@@ -169,10 +184,16 @@ export default {
             const user = await userRepository.findOne({ email });
 
             if (!user)
-                return response.status(400).json({ error: "Email invalid" });
+                return response.status(400).json({
+                    message: "Invalid email",
+                    fields: ["email"],
+                });
 
             if (!comparePasswords(password, user.password))
-                return response.status(401).json({ error: "Invalid password" });
+                return response.status(401).json({
+                    message: "Invalid password",
+                    fields: ["password"],
+                });
 
             return response.status(200).json({
                 token: generateToken({ id: user.id }),
@@ -180,7 +201,7 @@ export default {
             });
         } catch (err) {
             console.log("error on [login] {user} -> ", err);
-            return response.status(500).json({ error: "Internal server error" });
+            return response.status(500).json({ message: "Internal server error" });
         };
     },
 
