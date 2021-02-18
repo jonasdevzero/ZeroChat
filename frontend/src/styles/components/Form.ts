@@ -4,21 +4,48 @@ export const Form = styled.form`
     display: flex;
     flex-direction: column;
 
-    width: 45rem;
-    padding: 5.5rem 4rem 4rem 4rem;
+    width: 40rem;
+    padding: 4rem 3.5rem 3rem 3.5rem;
     margin-top: 5rem;
     margin-bottom: 2rem;
 
-    background-color: #e1e1e1;
+    background-color: ${({ theme }) => theme.form.backgroundColor};
     border-radius: .5rem;
+`;
+
+export const TitleContainer = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+
+    margin-bottom: 2rem;
+    border-bottom: solid .2rem ${({ theme }) => theme.contrastColors.Color1};
+`;
+
+export const ArrowBackButton = styled.button`
+    border: none;
+    outline: none;
+    background-color: transparent;
+
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    width: max-content;
+
+    .MuiSvgIcon-root {
+        cursor: pointer;
+        color: ${({ theme }) => theme.contrastColors.Color3};
+        font-size: 3rem !important;
+    };
 `;
 
 export const Title = styled.h1`
     align-self: center;
-    font-size: 4rem;
+    font-size: 3.5rem;
     font-weight: 700;
-    margin-bottom: 2.5rem;
-    color: #191818;
+    margin-bottom: 3rem;
+    color: ${({ theme }) => theme.contrastColors.Color3};
 `;
 
 export const Wrapper = styled.div`
@@ -50,7 +77,6 @@ export const Label = styled.label`
 
     pointer-events: none;
     overflow: hidden;
-    overflow-y: inherit;
 
     &::after {
         content: "";
@@ -61,7 +87,7 @@ export const Label = styled.label`
         width: 100%;
         height: 100%;
 
-        border-bottom: solid .2rem #191818;
+        border-bottom: solid .2rem #d9d9d9;
         transform: translateX(-100%);
         transition: all .3s ease;
     };
@@ -70,7 +96,7 @@ export const Label = styled.label`
 export const Span = styled.span`
     font-size: 1.4rem;
     font-weight: 500;
-    color: #101010;
+    color: ${({ theme }) => theme.form.span.color};
 
     position: absolute;
     left: .4rem;
@@ -88,14 +114,15 @@ export const Input = styled.input`
 
     font-size: 1.6rem;
     font-weight: 500;
-    color: #000;
+    background-color: ${({ theme }) => theme.form.input.backgroundColor};
+    color: ${({ theme }) => theme.contrastColors.Color3};
     padding: 2rem .4rem 1rem .4rem;
     box-sizing: border-box;
 
     &:focus + ${Label}  ${Span}, &:valid + ${Label}  ${Span} {
         transform: translateY(-120%);
         font-size: 1.3rem;
-        color: #505050;
+        color: ${({ theme }) => theme.form.span.onFocus};
     };
 
     &:focus + ${Label}::after, &:valid + ${Label}::after {
@@ -110,38 +137,51 @@ export const Submit = styled.button`
     border: none;
     outline: none;
 
-    background-color: #191818;
-    color: #fff;
+    background-color: ${({ theme }) => theme.contrastColors.Color3};
+    color:  ${({ theme }) => theme.backgroundColor};
+    font-weight: 500;
+    transition: background-color .3s ease;
 
     cursor: pointer;
+
+    &:hover {
+        background-color: ${({ theme }) => theme.color};
+    };
 `;
 
 export const Error = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 5rem;
+
     width: 100%;
-    background-color: #FF5150;
-    color: #fff;
+    height: 5rem;
+
+    background-color: ${({ theme }) => theme.form.errorColor};
     border-radius: .2rem;
 
     strong {
-        font-size: 1.8rem;
+        color: #fff;
+        font-size: 1.6rem;
         font-weight: 700;
     };
 `;
 
 export const Info = styled.p`
     font-size: 1.3rem;
+    font-weight: 500;
     align-self: center;
-    margin-top: 2.5rem;
-    margin-bottom: 2.5rem;
+    margin-top: 3rem;
+    color: ${({ theme }) => theme.contrastColors.Color3};
+
+    & + & {
+        margin-top: 1rem;
+    };
 `;
 
 export const StyledLink = styled.a`
     text-decoration: none;
-    color: #000;
+    color: ${({ theme }) => theme.contrastColors.Color3};
     font-size: 1.3rem;
     cursor: pointer;
     margin-left: .5rem;

@@ -12,7 +12,7 @@ export const Container = styled.div`
 
 export const Header = styled.header`
     width: 100vw;
-    height: 12vh;
+    height: 9rem;
 
     background-color: ${({ theme }) => theme.header.backgroundColor};
     padding: 0 5rem;
@@ -22,15 +22,16 @@ export const Header = styled.header`
     justify-content: space-between;
 
     h1 {
-        font-size: 2.8rem;
+        font-size: 3.8rem;
         font-weight: 700;
         color: ${({ theme }) => theme.header.color};
+        margin-left: 2rem;
     };
 `;
 
 export const Content = styled.div`
     width: 100vw;
-    height: 88vh;
+    height: calc(100vh - 9rem);
 
     display: flex;
     flex-direction: column;
@@ -40,23 +41,32 @@ export const Content = styled.div`
     h1 {
         font-size: 4rem;
         font-weight: 700;
+        color: ${({ theme }) => theme.color};
     };
     h2 {
         font-size: 2.5rem;
         font-weight: 500;
         letter-spacing: .1rem;
+        color: ${({ theme }) => theme.color};
     };
 `;
 
 export const StyledLink = styled.a`
     color: ${({ theme }) => theme.header.color};
     font-size: 1.8rem;
-    font-weight: 600;
+    font-weight: 500;
 
     text-decoration: none;
 
     margin-left: 2rem;
+    padding: 1rem 2rem;
     cursor: pointer;
+    transition: all .3s ease;
+
+    &:hover {
+        background-color: ${({ theme }) => theme.header.invertedBackgroundColor};
+        color: #000;
+    };
 `;
 
 export const CallToAction = styled.a`
@@ -65,8 +75,9 @@ export const CallToAction = styled.a`
     margin-top: 2rem;
     border-radius: .2rem;
 
-    background-color: ${({ theme }) => theme.header.backgroundColor};
-    color: ${({ theme }) => theme.header.color};
+    background-color: ${({ theme }) => theme.color};
+    color: ${({ theme }) => theme.contrastColors.Color2};
+    font-weight: 500;
 
     text-decoration: none;
     cursor: pointer;
