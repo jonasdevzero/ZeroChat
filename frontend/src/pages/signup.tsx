@@ -10,7 +10,9 @@ import {
 } from "../styles/pages/signup";
 import {
     Form,
+    TitleContainer,
     Title,
+    ArrowBackButton,
     Wrapper,
     WrapperInputs,
     Input,
@@ -21,6 +23,7 @@ import {
     Info,
     StyledLink,
 } from "../styles/components/Form";
+import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 
 export default function SignUp({ setToken, setUser }) {
     const [name, setName] = useState("");
@@ -31,6 +34,7 @@ export default function SignUp({ setToken, setUser }) {
 
     const [error, setError] = useState<string | undefined>();
 
+    const router = useRouter();
 
     async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -47,17 +51,25 @@ export default function SignUp({ setToken, setUser }) {
             setUser(user);
             setToken(token);
 
-            const router = useRouter();
-            router.push("/chat");
+            return router.push("/chat");
         }).catch((err: AxiosError) => {
-            const { error } = err.response.data;
+            const { message, fields } = err.response.data;
 
-            setError(error);
+            fields.forEach((field: string) => {
+                switch (field) {
+                    case "username":
+                        setUsername("");
+                        break;
+                    case "email":
+                        setEmail("");
+                        break;
+                    case "password":
+                        setPassword("");
+                        setConfirmPassword("");
+                };
+            });
 
-            setUsername("");
-            setEmail("");
-            setPassword("");
-            setConfirmPassword("");
+            setError(message);
         });
     };
 
@@ -68,7 +80,13 @@ export default function SignUp({ setToken, setUser }) {
             </Head>
 
             <Form onSubmit={onSubmit}>
-                <Title>SignUp</Title>
+                <TitleContainer>
+                    <ArrowBackButton type="button" onClick={() => router.back()}>
+                        <ArrowBackIcon />
+                    </ArrowBackButton>
+
+                    <Title>SignUp</Title>
+                </TitleContainer>
 
                 {error ? (
                     <Error>
@@ -145,7 +163,7 @@ export default function SignUp({ setToken, setUser }) {
                     </Wrapper>
                 </WrapperInputs>
 
-                <Submit>SignUp</Submit>
+                <Submit type="submit">SignUp</Submit>
 
                 <Info>
                     Already have an account?
