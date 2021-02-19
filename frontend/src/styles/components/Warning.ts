@@ -16,7 +16,7 @@ export const Container = styled.div<ContainerI>`
 
     transition: top .5s ease;
 
-    width: 22rem;
+    width: 23rem;
     height: 10.5rem;
 
     background-color: ${({ theme }) => theme.contrastColors.Color4};
@@ -29,17 +29,17 @@ export const Container = styled.div<ContainerI>`
         content: "";
         position: absolute;
         top: -.3rem;
-        right: ${({ load }) => load ? "0rem" : "22rem"};
+        right: ${({ load }) => load ? "0rem" : "23rem"};
         transition: right 1.5s ease;
 
-        width: 22rem;
+        width: 23rem;
         height: 10.5rem;
         border-bottom: solid .3rem #6CFA66;
     };
 `;
 
 export const Message = styled.p`
-    font-size: 1.6rem;
+    font-size: 1.5rem;
     font-weight: 500;
     text-align: center;
 
