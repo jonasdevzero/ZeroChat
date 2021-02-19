@@ -7,8 +7,6 @@ import { AxiosError } from "axios";
 
 import {
     Container,
-} from "../styles/pages/signup";
-import {
     Form,
     TitleContainer,
     Title,

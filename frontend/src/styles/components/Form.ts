@@ -1,5 +1,17 @@
 import styled from "styled-components";
 
+export const Container = styled.div`
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+
+    width: 100vw;
+    height: 100vh;
+
+    background-color: ${({ theme }) => theme.backgroundColor};
+`;
+
 export const Form = styled.form`
     display: flex;
     flex-direction: column;
@@ -137,20 +149,20 @@ export const Submit = styled.button`
     border: none;
     outline: none;
 
-    background-color: ${({ theme }) => theme.contrastColors.Color3};
+    background-color: ${({ theme }) => theme.contrastColors.Color4};
     color:  ${({ theme }) => theme.backgroundColor};
     font-weight: 500;
-    transition: background-color .3s ease;
+    transition: opacity .3s ease;
 
     cursor: pointer;
 
     &:hover {
-        background-color: ${({ theme }) => theme.color};
+        opacity: .8;
     };
 
     img {
-        width: 4rem;
-        height: 4rem
+        width: 3rem;
+        height: 3rem
     };
 `;
 
