@@ -147,6 +147,11 @@ export const Submit = styled.button`
     &:hover {
         background-color: ${({ theme }) => theme.color};
     };
+
+    img {
+        width: 4rem;
+        height: 4rem
+    };
 `;
 
 export const Error = styled.div`

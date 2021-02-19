@@ -24,8 +24,9 @@ import {
     StyledLink,
 } from "../styles/components/Form";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
+import ScreenMessage from "../components/ScreenMessage";
 
-export default function SignUp({ setToken, setUser }) {
+export default function SignUp({ setToken, setUser, theme }) {
     const [name, setName] = useState("");
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
@@ -33,11 +34,17 @@ export default function SignUp({ setToken, setUser }) {
     const [confirmPassword, setConfirmPassword] = useState("");
 
     const [error, setError] = useState<string | undefined>();
+    const [loading, setLoading] = useState(false);
+
+    const [success, setSuccess] = useState(undefined);
+    const [screenMessageLoad, setScreenMessageLoad] = useState(false);
 
     const router = useRouter();
 
     async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
+
+        setLoading(true);
 
         await api.post("/user", {
             name,
@@ -51,7 +58,23 @@ export default function SignUp({ setToken, setUser }) {
             setUser(user);
             setToken(token);
 
-            return router.push("/chat");
+            setTimeout(() => {
+                setScreenMessageLoad(true);
+            }, 300);
+
+            setName("");
+            setUsername("");
+            setEmail("");
+            setPassword("");
+            setConfirmPassword("");
+
+            setTimeout(() => {
+                setSuccess(undefined);
+
+                setTimeout(() => {
+                    return router.push("/chat");
+                }, 300);
+            }, 1500);
         }).catch((err: AxiosError) => {
             const { message, fields } = err.response.data;
 
@@ -69,6 +92,7 @@ export default function SignUp({ setToken, setUser }) {
                 };
             });
 
+            setLoading(false);
             setError(message);
         });
     };
@@ -78,6 +102,10 @@ export default function SignUp({ setToken, setUser }) {
             <Head>
                 <title>Zero | SignUp</title>
             </Head>
+
+            <ScreenMessage show={success} load={screenMessageLoad}>
+                Welcome to Zero, redirecting...
+            </ScreenMessage>
 
             <Form onSubmit={onSubmit}>
                 <TitleContainer>
@@ -163,7 +191,14 @@ export default function SignUp({ setToken, setUser }) {
                     </Wrapper>
                 </WrapperInputs>
 
-                <Submit type="submit">SignUp</Submit>
+                <Submit type="submit">
+                    {loading ? (
+                        <img
+                            src={`https://raw.githubusercontent.com/jonasdevzero/MediaHub/53a1fd1cdab3685ab64c2a3d145b6dee4eea64db/images/loading-${theme}.svg`}
+                            alt="loading"
+                        />
+                    ) : "SignUp"}
+                </Submit>
 
                 <Info>
                     Already have an account?

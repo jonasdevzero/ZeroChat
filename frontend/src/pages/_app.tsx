@@ -26,6 +26,7 @@ function MyApp({ Component, pageProps }) {
                 setToken={setToken}
                 user={user}
                 setUser={setUser}
+                theme={theme}
             />
         </ThemeProvider>
     );
