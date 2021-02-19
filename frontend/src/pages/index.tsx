@@ -25,7 +25,7 @@ export default function Home() {
                         <StyledLink>SignIn</StyledLink>
                     </Link>
                     <Link href='/signup'>
-                        <StyledLink>SignUp</StyledLink>
+                        <StyledLink className="signup">SignUp</StyledLink>
                     </Link>
                 </div>
             </Header>

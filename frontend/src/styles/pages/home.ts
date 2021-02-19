@@ -58,14 +58,19 @@ export const StyledLink = styled.a`
 
     text-decoration: none;
 
-    margin-left: 2rem;
-    padding: 1rem 2rem;
+    margin-left: 1rem;
+    padding: .7rem 1.7rem;
+    border-radius: .3rem;
     cursor: pointer;
     transition: all .3s ease;
 
     &:hover {
         background-color: ${({ theme }) => theme.header.invertedBackgroundColor};
         color: #000;
+    };
+
+    &.signup {
+        border: solid .2rem ${({ theme }) => theme.header.color};
     };
 `;
 
@@ -81,4 +86,9 @@ export const CallToAction = styled.a`
 
     text-decoration: none;
     cursor: pointer;
+    transition: opacity .3s ease;
+
+    &:hover {
+        opacity: .8;
+    };
 `;
