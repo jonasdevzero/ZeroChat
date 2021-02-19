@@ -24,7 +24,7 @@ import {
     StyledLink,
 } from "../styles/components/Form";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
-import ScreenMessage from "../components/ScreenMessage";
+import Warning from "../components/Warning";
 
 export default function SignUp({ setToken, setUser, theme }) {
     const [name, setName] = useState("");
@@ -36,8 +36,7 @@ export default function SignUp({ setToken, setUser, theme }) {
     const [error, setError] = useState<string | undefined>();
     const [loading, setLoading] = useState(false);
 
-    const [success, setSuccess] = useState(undefined);
-    const [screenMessageLoad, setScreenMessageLoad] = useState(false);
+    const [successWarning, setSuccessWarning] = useState(false);
 
     const router = useRouter();
 
@@ -58,23 +57,18 @@ export default function SignUp({ setToken, setUser, theme }) {
             setUser(user);
             setToken(token);
 
-            setTimeout(() => {
-                setScreenMessageLoad(true);
-            }, 300);
-
             setName("");
             setUsername("");
             setEmail("");
             setPassword("");
             setConfirmPassword("");
 
-            setTimeout(() => {
-                setSuccess(undefined);
+            setLoading(false);
+            setSuccessWarning(true);
 
-                setTimeout(() => {
-                    return router.push("/chat");
-                }, 300);
-            }, 1500);
+            setTimeout(() => {
+                return router.push("/chat");
+            }, 2000);
         }).catch((err: AxiosError) => {
             const { message, fields } = err.response.data;
 
@@ -103,9 +97,9 @@ export default function SignUp({ setToken, setUser, theme }) {
                 <title>Zero | SignUp</title>
             </Head>
 
-            <ScreenMessage show={success} load={screenMessageLoad}>
+            <Warning showWarning={successWarning}>
                 Welcome to Zero, redirecting...
-            </ScreenMessage>
+            </Warning>
 
             <Form onSubmit={onSubmit}>
                 <TitleContainer>

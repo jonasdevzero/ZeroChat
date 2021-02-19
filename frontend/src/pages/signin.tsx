@@ -23,7 +23,7 @@ import {
     StyledLink,
 } from "../styles/components/Form";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
-import ScreenMessage from "../components/ScreenMessage";
+import Warning from "../components/Warning";
 
 export default function SignIn({ setToken, setUser, token, theme }) {
     const [email, setEmail] = useState("");
@@ -32,8 +32,7 @@ export default function SignIn({ setToken, setUser, token, theme }) {
     const [error, setError] = useState<string | undefined>();
     const [loading, setLoading] = useState(false);
 
-    const [success, setSuccess] = useState(undefined);
-    const [screenMessageLoad, setScreenMessageLoad] = useState(false);
+    const [successWarning, setSuccessWarning] = useState(undefined);
 
     const router = useRouter();
 
@@ -53,7 +52,7 @@ export default function SignIn({ setToken, setUser, token, theme }) {
     async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
 
-        setLoading(true)
+        setLoading(true);
 
         await api.post("/user/login", {
             email,
@@ -64,23 +63,15 @@ export default function SignIn({ setToken, setUser, token, theme }) {
             setToken(token);
             setUser(user);
 
-            setLoading(false);
-            setSuccess(true);
-
-            setTimeout(() => {
-                setScreenMessageLoad(true);
-            }, 300);
-
             setEmail("");
             setPassword("");
 
-            setTimeout(() => {
-                setSuccess(undefined);
+            setLoading(false);
+            setSuccessWarning(true);
 
-                setTimeout(() => {
-                    return router.push("/chat");
-                }, 300);
-            }, 1500);
+            setTimeout(() => {
+                return router.push("/chat");
+            }, 2000);
         }).catch((err: AxiosError) => {
             const { message, fields } = err.response.data;
 
@@ -105,9 +96,9 @@ export default function SignIn({ setToken, setUser, token, theme }) {
                 <title>Zero | SignIn</title>
             </Head>
 
-            <ScreenMessage show={success} load={screenMessageLoad}>
+            <Warning showWarning={successWarning}>
                 Successful login, redirecting...
-            </ScreenMessage>
+            </Warning>
 
             <Form onSubmit={onSubmit}>
                 <TitleContainer>
@@ -160,7 +151,7 @@ export default function SignIn({ setToken, setUser, token, theme }) {
                 </Submit>
 
                 <Info>
-                    Forgot your password?
+                    Forgot password?
                     <Link href="/forgotPassword">
                         <StyledLink>
                             Click here
@@ -168,10 +159,10 @@ export default function SignIn({ setToken, setUser, token, theme }) {
                     </Link>
                 </Info>
                 <Info>
-                    No have an account?
+                    Don't have an account?
                     <Link href="/signup">
                         <StyledLink>
-                            Click here
+                            SignUp
                         </StyledLink>
                     </Link>
                 </Info>
