@@ -142,7 +142,7 @@ export default function SignIn({ setToken, setUser, token, theme }) {
                 <Submit type="submit">
                     {loading ? (
                         <img
-                            src={`https://raw.githubusercontent.com/jonasdevzero/MediaHub/53a1fd1cdab3685ab64c2a3d145b6dee4eea64db/images/loading-${theme}.svg`}
+                            src={`/loading-${theme}.svg`}
                             alt="loading"
                         />
                     ) : "SignIn"}

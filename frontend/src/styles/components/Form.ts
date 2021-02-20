@@ -41,8 +41,8 @@ export const ArrowBackButton = styled.button`
     background-color: transparent;
 
     position: absolute;
-    top: 1rem;
-    left: 1rem;
+    top: .7rem;
+    left: 0;
     width: max-content;
 
     .MuiSvgIcon-root {
