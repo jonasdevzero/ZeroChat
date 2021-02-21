@@ -33,7 +33,7 @@ function Warning({ showWarning, children }: WarningI) {
     }, [showWarning]);
 
     return (
-        <Container show={true} load={true}>
+        <Container show={show} load={load}>
             <Message>{children}</Message>
         </Container>
     )
