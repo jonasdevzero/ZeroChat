@@ -32,7 +32,7 @@ export default function SignUp({ setToken, setUser, theme }) {
     const [confirmPassword, setConfirmPassword] = useState("");
 
     const [error, setError] = useState<string | undefined>();
-    const [loading, setLoading] = useState(false);
+    const [loadingRequest, setLoadingRequest] = useState(false);
 
     const [successWarning, setSuccessWarning] = useState(false);
 
@@ -41,7 +41,7 @@ export default function SignUp({ setToken, setUser, theme }) {
     async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
 
-        setLoading(true);
+        setLoadingRequest(true);
 
         await api.post("/user", {
             name,
@@ -61,7 +61,6 @@ export default function SignUp({ setToken, setUser, theme }) {
             setPassword("");
             setConfirmPassword("");
 
-            setLoading(false);
             setSuccessWarning(true);
 
             setTimeout(() => {
@@ -84,9 +83,10 @@ export default function SignUp({ setToken, setUser, theme }) {
                 };
             });
 
-            setLoading(false);
             setError(message);
         });
+
+        setLoadingRequest(false);
     };
 
     return (
@@ -184,7 +184,7 @@ export default function SignUp({ setToken, setUser, theme }) {
                 </WrapperInputs>
 
                 <Submit type="submit">
-                    {loading ? (
+                    {loadingRequest ? (
                         <img
                             src={`/loading-${theme}.svg`}
                             alt="loading"
@@ -196,7 +196,7 @@ export default function SignUp({ setToken, setUser, theme }) {
                     Already have an account?
                     <Link href="/signin">
                         <StyledLink>
-                            Click here
+                            SignIn
                         </StyledLink>
                     </Link>
                 </Info>

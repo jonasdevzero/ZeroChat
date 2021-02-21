@@ -25,24 +25,29 @@ export default function forgotPassword({ theme }) {
 
     const [error, setError] = useState<string | undefined>("");
     const [successWarning, setSuccessWarning] = useState(undefined);
-    const [loading, setLoading] = useState(false);
+    const [loadingRequest, setLoadingRequest] = useState(false);
 
     const router = useRouter();
 
     async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
 
-        setLoading(true);
+        setLoadingRequest(true);
 
         await api.post("/user/forgot_password", { email }).then(response => {
-            setLoading(false)
+            setEmail("");
+
             setSuccessWarning(true);
+            setTimeout(() => {
+                setSuccessWarning(undefined);
+            }, 2500);
         }).catch((err: AxiosError) => {
             const { message } = err.response.data;
 
             setError(message);
-            setLoading(false);
         });
+
+        setLoadingRequest(false);
     };
 
     return (
@@ -84,7 +89,7 @@ export default function forgotPassword({ theme }) {
                 </Wrapper>
 
                 <Submit type="submit">
-                    {loading ? (
+                    {loadingRequest ? (
                         <img
                             src={`/loading-${theme}.svg`}
                             alt="loading"

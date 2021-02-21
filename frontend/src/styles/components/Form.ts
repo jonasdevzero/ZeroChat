@@ -111,7 +111,7 @@ export const Span = styled.span`
     color: ${({ theme }) => theme.form.span.color};
 
     position: absolute;
-    left: .4rem;
+    left: .6rem;
     bottom: 1.6rem;
 
     transition: all .3s ease;
@@ -128,7 +128,7 @@ export const Input = styled.input`
     font-weight: 500;
     background-color: ${({ theme }) => theme.form.input.backgroundColor};
     color: ${({ theme }) => theme.contrastColors.Color3};
-    padding: 2rem .4rem 1rem .4rem;
+    padding: 2rem .6rem 1rem .6rem;
     box-sizing: border-box;
 
     &:focus + ${Label}  ${Span}, &:valid + ${Label}  ${Span} {

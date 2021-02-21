@@ -28,7 +28,7 @@ export default function SignIn({ setToken, setUser, token, theme }) {
     const [password, setPassword] = useState("");
 
     const [error, setError] = useState<string | undefined>();
-    const [loading, setLoading] = useState(false);
+    const [loadingRequest, setLoadingRequest] = useState(false);
 
     const [successWarning, setSuccessWarning] = useState(undefined);
 
@@ -50,7 +50,7 @@ export default function SignIn({ setToken, setUser, token, theme }) {
     async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
 
-        setLoading(true);
+        setLoadingRequest(true);
 
         await api.post("/user/login", {
             email,
@@ -64,7 +64,6 @@ export default function SignIn({ setToken, setUser, token, theme }) {
             setEmail("");
             setPassword("");
 
-            setLoading(false);
             setSuccessWarning(true);
 
             setTimeout(() => {
@@ -83,9 +82,10 @@ export default function SignIn({ setToken, setUser, token, theme }) {
                 };
             });
 
-            setLoading(false);
             setError(message);
         });
+
+        setLoadingRequest(false);
     };
 
     return (
@@ -140,7 +140,7 @@ export default function SignIn({ setToken, setUser, token, theme }) {
                 </Wrapper>
 
                 <Submit type="submit">
-                    {loading ? (
+                    {loadingRequest ? (
                         <img
                             src={`/loading-${theme}.svg`}
                             alt="loading"
