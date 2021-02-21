@@ -24,12 +24,16 @@ function Warning({ showWarning, children }: WarningI) {
 
             setTimeout(() => {
                 setShow(false);
-            }, 1500);
+
+                setTimeout(() => {
+                    setLoad(false);
+                }, 400);
+            }, 1800);
         };
     }, [showWarning]);
 
     return (
-        <Container show={show} load={load}>
+        <Container show={true} load={true}>
             <Message>{children}</Message>
         </Container>
     )
