@@ -45,7 +45,7 @@ export class createUser1613406151448 implements MigrationInterface {
                 },
                 {
                     name: "expireToken",
-                    type: "date",
+                    type: "timestamp with time zone",
                     isNullable: true,
                 },
                 {
