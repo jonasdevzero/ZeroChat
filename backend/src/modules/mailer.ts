@@ -1,10 +1,13 @@
 import nodemailer from "nodemailer";
 
 export default nodemailer.createTransport({
-    host: "smtp.mailtrap.io",
-    port: 2525,
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true,
     auth: {
-        user: process.env.NODEMAILER_USER,
+        user: "devzerotest@gmail.com",
         pass: process.env.NODEMAILER_PASS
-    }
+    },
+
 });
+

@@ -5,7 +5,7 @@ import UserView from "../views/UserView";
 import { encryptPassword, generateToken, comparePasswords, authenticateToken } from "../utils/user";
 import * as Yup from "yup";
 import crypto from "crypto";
-import transporter from "../utils/mailer";
+import transporter from "../modules/mailer";
 
 export default {
     async index(request: Request, response: Response) {
@@ -213,25 +213,23 @@ export default {
             const user = await userRepository.findOne({ email });
 
             if (!user)
-                return response.status(400).json({ error: "User not found" });
+                return response.status(400).json({ message: "User not found" });
 
             const resetToken = crypto.randomBytes(20).toString("hex");
-            const expireToken = Date.now() + 3600000;
+            const expireToken = new Date();
+            expireToken.setHours(expireToken.getHours() + 1);
 
-            await userRepository.update(email, { resetToken, expireToken });
+            const { id } = user;
+            await userRepository.update(id, { resetToken, expireToken });
 
             transporter.sendMail({
-                to: user.email,
-                from: "78e90a5f28-6cbf41@inbox.mailtrap.io",
+                from: "Dev Zero <devzerotest@gmail.com>",
+                to: email,
                 subject: "Password Reset",
                 html: `
-                    <p>
-                        You request for password reset, click 
-                        <a href="http://localhost:3000/reset/${resetToken}">
-                            here
-                        </a>
-                    </p>`
-            });
+                    <h1>Click <a href="http://localhost:3000/resetPassword/${resetToken}">here</a> to reset your password</h1>               
+                `,
+            })
 
             return response.status(200).json({ message: "Check your email" });
         } catch (err) {
@@ -242,16 +240,20 @@ export default {
 
     async resetPassword(request: Request, response: Response) {
         try {
-            const { password, resetToken } = request.body;
+            const { password, confirmPassword, resetToken } = request.body;
+
+            if (password !== confirmPassword)
+                return response.status(400).json({ message: "Passwords  are diffrent" });
 
             const userRepository = getRepository(User);
-            const user = await userRepository.findOne({ resetToken });
+            const user = await userRepository.findOne({ where: { resetToken } });
 
             if (!user)
-                return response.status(400).json({ error: "Invalid token" });
+                return response.status(400).json({ message: "Invalid token" });
 
-            if (Date.now() > Number(user.expireToken))
-                return response.status(400).json({ error: "Token expired" });
+            const now = new Date();
+            if (now > user.expireToken)
+                return response.status(400).json({ message: "Token expired" });
 
             const { id } = user;
             await userRepository.update(id, {
