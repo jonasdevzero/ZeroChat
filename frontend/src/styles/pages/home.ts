@@ -62,11 +62,10 @@ export const StyledLink = styled.a`
     padding: .7rem 1.7rem;
     border-radius: .3rem;
     cursor: pointer;
-    transition: all .3s ease;
+    transition: opacity .3s ease;
 
     &:hover {
-        background-color: ${({ theme }) => theme.header.invertedBackgroundColor};
-        color: #000;
+        opacity: .8;
     };
 
     &.signup {
