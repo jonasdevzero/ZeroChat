@@ -1,67 +1,99 @@
 import Head from 'next/head';
-import { useState, useEffect } from 'react'
+import { useRouter } from "next/router";
+import { useState, useEffect } from 'react';
 import io from 'socket.io-client';
+import api from "../services/api";
 
 import {
     Container,
+    Inner,
+    Header,
     MessagesContainer,
     Message,
+    MessageSender,
     Form,
     Input,
     Submit,
 } from '../styles/pages/chat';
+import { Sidebar } from "../components"
 
-let socket = io.Socket
+let socket = io.Socket;
+const ENDPOINT = "localhost:3001";
 
-export default function Chat() {
-    const ENDPOINT = "localhost:3001"
+export default function Chat({ user, setUser, setToken }) {
 
-    const [messages, setMessages] = useState([])
+    const [messages, setMessages] = useState([]);
     const [message, setMessage] = useState("");
 
-    useEffect(() => {
-        socket = io(ENDPOINT);
+    const router = useRouter();
 
-        const data = JSON.parse(localStorage.getItem("chat-data"));
+    // useEffect(() => {
+    //     const token = JSON.parse(localStorage.getItem("token"));
 
-        socket.emit("join", { name: data.user, room: data.room }, () => { });
+    //     if (!user) {
+    //         api.post(`/user/auth?access_token=${token}&user_required=true`).then(response => {
+    //             const data = response.data;
 
-        return () => {
-            socket.emit("leave");
-        };
-    }, [ENDPOINT]);
+    //             setUser(data.user);
+    //             setToken(data.token);
+    //         }).catch(() => router.push("/signin"));
+    //     };
 
-    useEffect(() => {
-        socket.on("message", (message) => {
-            setMessages([...messages, message]);
-        });
-    }, [messages]);
+    //     socket = io(ENDPOINT);
 
+    //     socket.emit("join", { name: user?.username, room: "0" }, () => { });
+
+    //     return () => {
+    //         socket?.emit("leave");
+    //     };
+    // }, [ENDPOINT]);
+
+    // useEffect(() => {
+    //     socket?.on("message", (message) => {
+    //         setMessages([...messages, message]);
+    //     });
+    // }, [messages]);
 
     function sendMessage(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
 
-        if (message.length > 0) {
-            socket.emit("sendMessage", message, () => setMessage(""));
-        };
+        // if (message.length > 0) {
+        //     socket.emit("sendMessage", message, () => setMessage(""));
+        // };
     };
 
     return (
-        <>
+        <Container>
             <Head>
-                <title>chat</title>
+                <title>Zero | Chat</title>
             </Head>
 
-            <Container>
+            <Sidebar />
+
+            <Inner>
+                <Header>
+                    Chat name
+                </Header>
+
                 <MessagesContainer>
-                    {messages?.map((message, i) => <Message key={i}>{message}</Message>)}
+                    {messages?.map((msg, i) => {
+                        msg.senderId === user?.id ? (
+                            <MessageSender>
+                                {msg.content}
+                            </MessageSender>
+                        ) : (
+                                <Message>
+                                    {msg.content}
+                                </Message>
+                            )
+                    })}
                 </MessagesContainer>
 
-                <Form onSubmit={sendMessage}>
-                    <Input value={message} onChange={e => setMessage(e.target.value)} />
-                    <Submit type='submit'>Submit</Submit>
+                <Form>
+                    <Input />
+                    <Submit>Send</Submit>
                 </Form>
-            </Container>
-        </>
+            </Inner>
+        </Container>
     );
 };
