@@ -1,9 +1,11 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryColumn, BeforeInsert, BeforeUpdate, BaseEntity } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
+import { encryptPassword } from "../utils/user";
 
 @Entity("user")
-export default class User {
-    @PrimaryGeneratedColumn("increment")
-    id: number;
+export default class User extends BaseEntity {
+    @PrimaryColumn("uuid")
+    id: string;
 
     @Column()
     name: string;
@@ -27,5 +29,24 @@ export default class User {
     expireToken: Date;
 
     @Column()
-    socketId: string;
+    created_at: Date;
+
+    @Column()
+    updated_at: Date;
+
+    @BeforeInsert()
+    private beforeInsert() {
+        const date = new Date();
+
+        this.created_at = date; 
+        this.updated_at = date;
+
+        this.id = uuidv4();
+        this.password = encryptPassword(this.password);
+    };
+
+    @BeforeUpdate()
+    private updateDate() {
+        this.updated_at = new Date();
+    };
 };

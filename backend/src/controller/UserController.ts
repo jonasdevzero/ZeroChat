@@ -71,7 +71,7 @@ export default {
                 name: Yup.string().required(),
                 username: Yup.string().required(),
                 email: Yup.string().required(),
-                password: Yup.string().required(),
+                password: Yup.string().required().min(6),
             });
 
             await schema.validate(data, {
@@ -81,10 +81,7 @@ export default {
                 fields: err.inner.map((field: { path: string }) => field.path),
             }));
 
-            data.password = encryptPassword(password);
-
-            const user = userRepository.create(data);
-            await userRepository.save(user);
+            const user = await userRepository.create(data).save();
 
             return response.status(201).json({
                 token: generateToken({ id: user.id }),

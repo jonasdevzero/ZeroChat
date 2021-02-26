@@ -8,11 +8,10 @@ export class createUser1613406151448 implements MigrationInterface {
             columns: [
                 {
                     name: "id",
-                    type: "integer",
-                    isGenerated: true,
+                    type: "varchar",
                     isPrimary: true,
                     unsigned: true,
-                    generationStrategy: "increment",
+                    isUnique: true,
                 },
                 {
                     name: "name",
@@ -49,9 +48,12 @@ export class createUser1613406151448 implements MigrationInterface {
                     isNullable: true,
                 },
                 {
-                    name: "socketId",
-                    type: "varchar",
-                    isNullable: true,
+                    name: "created_at",
+                    type: "timestamp with time zone",
+                },
+                {
+                    name: "updated_at",
+                    type: "timestamp with time zone",
                 },
             ],
         }));
