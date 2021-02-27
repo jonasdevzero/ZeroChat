@@ -11,7 +11,6 @@ export class createContacts1614368367832 implements MigrationInterface {
                     type: "varchar",
                     isPrimary: true,
                     unsigned: true,
-                    isUnique: true,
                 },
                 {
                     name: "user_id",

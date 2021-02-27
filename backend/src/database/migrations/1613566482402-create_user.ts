@@ -50,6 +50,7 @@ export class createUser1613406151448 implements MigrationInterface {
                 {
                     name: "created_at",
                     type: "timestamp with time zone",
+                    unsigned: true,
                 },
                 {
                     name: "updated_at",
