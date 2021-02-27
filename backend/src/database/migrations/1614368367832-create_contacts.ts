@@ -30,6 +30,10 @@ export class createContacts1614368367832 implements MigrationInterface {
                     isNullable: true,
                 }, 
                 {
+                    name: "last_message_sender",
+                    type: "varchar",
+                },
+                {
                     name: "last_message",
                     type: "text",
                 },

@@ -1,6 +1,7 @@
-import { Entity, Column, PrimaryColumn, BeforeInsert, BeforeUpdate, BaseEntity } from 'typeorm';
+import { Entity, Column, PrimaryColumn, BeforeInsert, BeforeUpdate, BaseEntity, OneToMany, JoinColumn } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { encryptPassword } from "../utils/user";
+import Contacts from "./Contacts";
 
 @Entity("user")
 export default class User extends BaseEntity {
@@ -33,6 +34,10 @@ export default class User extends BaseEntity {
 
     @Column()
     updated_at: Date;
+
+    @OneToMany(_ => Contacts, contacts => contacts.user_id)
+    @JoinColumn({ name: "user_id" })
+    contacts: Contacts;
 
     @BeforeInsert()
     private beforeInsert() {
