@@ -1,40 +1,49 @@
 import {MigrationInterface, QueryRunner, Table} from "typeorm";
 
-export class createGroupUsers1614391225127 implements MigrationInterface {
+export class createGroupUsers1614446500844 implements MigrationInterface {
 
     public async up(queryRunner: QueryRunner): Promise<void> {
+
         await queryRunner.createTable(new Table({
             name: "group_users",
             columns: [
                 {
+                    name: "id",
+                    type: "integer",
+                    isGenerated: true,
+                    isUnique: true,
+                    unsigned: false,
+                    generationStrategy: "increment",
+                },
+                {
                     name: "group_id",
-                    type: "varchar",
+                    type: "uuid",
                 },
                 {
                     name: "user_id",
-                    type: "varchar",
-                }, 
-                {
-                    name: "user_image",
-                    type: "text",
+                    type: "uuid",
                 },
                 {
-                    name: "user_username",
+                    name: "role",
                     type: "varchar",
                 },
             ],
             foreignKeys: [
                 {
-                    name: "GroupId",
+                    name: "GroupUsers",
                     columnNames: ["group_id"],
-                    referencedTableName: "groups",
+                    referencedTableName: "group",
                     referencedColumnNames: ["id"],
+                    onUpdate: "CASCADE",
+                    onDelete: "CASCADE",
                 },
                 {
-                    name: "UserId",
+                    name: "UserGroup",
                     columnNames: ["user_id"],
                     referencedTableName: "user",
                     referencedColumnNames: ["id"],
+                    onUpdate: "CASCADE",
+                    onDelete: "CASCADE",
                 },
             ],
         }));

@@ -1,24 +1,27 @@
 import {MigrationInterface, QueryRunner, Table} from "typeorm";
 
-export class createContacts1614368367832 implements MigrationInterface {
+export class createContact1614443152498 implements MigrationInterface {
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.createTable(new Table({
-            name: "contacts",
+            name: "contact",
             columns: [
                 {
                     name: "id",
-                    type: "varchar",
+                    type: "uuid",
                     isPrimary: true,
-                    unsigned: true,
+                    isGenerated: true,
+                    isUnique: false,
+                    generationStrategy: 'uuid',
+                    default: `uuid_generate_v4()`,
                 },
                 {
                     name: "user_id",
-                    type: "varchar",
+                    type: "uuid",
                 },
                 {
                     name: "contact_id",
-                    type: "varchar",
+                    type: "uuid",
                 },
                 {
                     name: "contact_username",
@@ -26,16 +29,16 @@ export class createContacts1614368367832 implements MigrationInterface {
                 },
                 {
                     name: "contact_image",
-                    type: "text",
-                    isNullable: true,
-                }, 
-                {
-                    name: "last_message_sender",
                     type: "varchar",
+                    isNullable: true,
                 },
                 {
                     name: "last_message",
                     type: "text",
+                },
+                {
+                    name: "last_message_sender",
+                    type: "varchar",
                 },
                 {
                     name: "last_message_time",
@@ -44,17 +47,19 @@ export class createContacts1614368367832 implements MigrationInterface {
             ],
             foreignKeys: [
                 {
-                    name: "UserId",
+                    name: "ContactUser",
                     columnNames: ["user_id"],
                     referencedTableName: "user",
                     referencedColumnNames: ["id"],
-                }
+                    onUpdate: "CASCADE",
+                    onDelete: "CASCADE",
+                },
             ],
         }));
     };
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.dropTable("contacts");
+        await queryRunner.dropTable("contact");
     };
 
 };

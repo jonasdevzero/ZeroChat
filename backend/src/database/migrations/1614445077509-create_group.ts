@@ -1,41 +1,45 @@
 import {MigrationInterface, QueryRunner, Table} from "typeorm";
 
-export class createGroups1614370529833 implements MigrationInterface {
+export class createGroup1614445077509 implements MigrationInterface {
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.createTable(new Table({
-            name: "groups",
+            name: "group",
             columns: [
                 {
                     name: "id",
-                    type: "varchar",
+                    type: "uuid",
                     isPrimary: true,
-                    unsigned: true,
                     isUnique: true,
+                    isGenerated: true,
+                    generationStrategy: 'uuid',
+                    default: `uuid_generate_v4()`,
                 },
                 {
                     name: "name",
                     type: "varchar",
                 },
                 {
-                    name: "image",
-                    type: "text",
-                },
-                {
                     name: "description",
                     type: "varchar",
                 },
                 {
+                    name: "image",
+                    type: "text",
+                    isNullable: true,
+                },
+                {
                     name: "created_by",
-                    type: "varchar",
+                    type: "uuid",
+                    unsigned: true,
+                },
+                {
+                    name: "last_message_sender",
+                    type: "uuid",
                 },
                 {
                     name: "last_message",
                     type: "text",
-                },
-                {
-                    name: "last_message_sender",
-                    type: "varchar",
                 },
                 {
                     name: "last_message_time",
@@ -49,13 +53,13 @@ export class createGroups1614370529833 implements MigrationInterface {
                 {
                     name: "updated_at",
                     type: "timestamp with time zone",
-                },                
+                }, 
             ],
         }));
     };
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.dropTable("groups");
+        await queryRunner.dropTable("group");
     };
 
 };
