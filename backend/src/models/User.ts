@@ -1,11 +1,11 @@
-import { Entity, Column, PrimaryColumn, BeforeInsert, BeforeUpdate, BaseEntity, OneToMany, JoinColumn } from 'typeorm';
-import { v4 as uuidv4 } from 'uuid';
+import { Entity, Column, PrimaryGeneratedColumn, BeforeInsert, BeforeUpdate, BaseEntity, OneToMany } from 'typeorm';
 import { encryptPassword } from "../utils/user";
-import Contacts from "./Contacts";
+import Contact from './Contact';
+import GroupUsers from './GroupUsers';
 
 @Entity("user")
 export default class User extends BaseEntity {
-    @PrimaryColumn("uuid")
+    @PrimaryGeneratedColumn("uuid")
     id: string;
 
     @Column()
@@ -35,9 +35,15 @@ export default class User extends BaseEntity {
     @Column()
     updated_at: Date;
 
-    @OneToMany(_ => Contacts, contacts => contacts.user_id)
-    @JoinColumn({ name: "user_id" })
-    contacts: Contacts;
+    @OneToMany(_ => Contact, contact => contact.user, {
+        cascade: ["update", "remove"],
+    })
+    contacts: Contact[];
+
+    @OneToMany(_ => GroupUsers, groups => groups, {
+        cascade: ["update", "remove"],
+    })
+    groups: GroupUsers[];
 
     @BeforeInsert()
     private beforeInsert() {
@@ -46,7 +52,6 @@ export default class User extends BaseEntity {
         this.created_at = date; 
         this.updated_at = date;
 
-        this.id = uuidv4();
         this.password = encryptPassword(this.password);
     };
 
