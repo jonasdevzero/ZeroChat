@@ -1,9 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from "typeorm";
-import ContactMessages from "./ContactMessages";
-import User from "./User";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, BaseEntity, JoinColumn } from "typeorm";
+import { User, ContactMessages } from "./";
 
 @Entity("contact")
-export default class Contact {
+export default class Contact extends BaseEntity {
     @PrimaryGeneratedColumn("uuid")
     id: string;
 
@@ -26,10 +25,12 @@ export default class Contact {
     lastMessageTime: Date;
 
     @ManyToOne(_ => User, user => user.contacts)
+    @JoinColumn({ name: "user_id" })
     user: User;
 
     @OneToMany(_ => ContactMessages, messages => messages.contact, {
         cascade: ["update", "remove"],
     })
+    @JoinColumn({ name: "id_contact" })
     messages: ContactMessages[];
 };

@@ -95,7 +95,7 @@ export default {
 
     async update(request: Request, response: Response) {
         try {
-            const id = Number(request.params.id);
+            const id = request.params.id;
             const { name, username, picture } = request.body;
 
             const userRepository = getRepository(User);

@@ -1,9 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, AfterInsert, OneToMany } from "typeorm";
-import GroupMessages from "./GroupMessages";
-import GroupUsers from "./GroupUsers";
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, JoinColumn, BeforeInsert } from "typeorm";
+import { GroupMessages, GroupUsers } from "./";
 
 @Entity("group")
-export default class Group {
+export default class Group extends BaseEntity {
     @PrimaryGeneratedColumn("uuid")
     id: string;
 
@@ -16,8 +15,8 @@ export default class Group {
     @Column()
     image: string;
 
-    @Column({ name: "created_by", type: "uuid" })
-    createdBy: string;
+    @Column("uuid")
+    created_by: string;
 
     @Column({ name: "last_message_sender", type: "uuid" })
     lastMessageSender: string;
@@ -28,27 +27,31 @@ export default class Group {
     @Column({ name: "last_message_time" })
     lastMessageTime: Date;
 
-    @Column({ name: "created_at" })
-    createdAt: Date;
+    @Column()
+    created_at: Date;
 
-    @Column({ name: "updated_at" })
-    updatedAt: Date;
+    @Column()
+    updated_at: Date;
 
     @OneToMany(_ => GroupMessages, messages => messages.group, {
         cascade: ["update", "remove"],
     })
+    @JoinColumn({ name: "group_id" })
     messages: GroupMessages[];
 
     @OneToMany(_ => GroupUsers, users => users.group, {
         cascade: ["update", "remove"],
     })
+    @JoinColumn({ name: "group_id" })
     users: GroupUsers[];
 
-    @AfterInsert()
+    @BeforeInsert()
     private setCreatedAt() {
         const date = new Date();
 
-        this.createdAt = date;
-        this.updatedAt = date; 
+        this.lastMessage = "";
+        this.created_at = date;
+        this.updated_at = date; 
+        this.lastMessageTime = date; 
     };
 };

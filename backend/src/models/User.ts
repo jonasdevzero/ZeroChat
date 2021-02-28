@@ -1,7 +1,6 @@
-import { Entity, Column, PrimaryGeneratedColumn, BeforeInsert, BeforeUpdate, BaseEntity, OneToMany } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, BeforeInsert, BeforeUpdate, BaseEntity, OneToMany, JoinColumn } from 'typeorm';
 import { encryptPassword } from "../utils/user";
-import Contact from './Contact';
-import GroupUsers from './GroupUsers';
+import { Contact, GroupUsers } from './';
 
 @Entity("user")
 export default class User extends BaseEntity {
@@ -38,11 +37,13 @@ export default class User extends BaseEntity {
     @OneToMany(_ => Contact, contact => contact.user, {
         cascade: ["update", "remove"],
     })
+    @JoinColumn({ name: "user_id" })
     contacts: Contact[];
 
-    @OneToMany(_ => GroupUsers, groups => groups, {
+    @OneToMany(_ => GroupUsers, groups => groups.group, {
         cascade: ["update", "remove"],
     })
+    @JoinColumn({ name: "user_id" })
     groups: GroupUsers[];
 
     @BeforeInsert()

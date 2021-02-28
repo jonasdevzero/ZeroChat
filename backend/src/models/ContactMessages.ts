@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, AfterInsert } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, AfterInsert, JoinColumn } from "typeorm";
 import Contact from "./Contact";
 
 @Entity("contact_messages")
@@ -9,17 +9,18 @@ export default class ContactMessages {
     @Column()
     message: string;
 
-    @Column({ name: "sender_id", type: "uuid" })
-    senderId: string;
+    @Column("uuid")
+    sender_id: string;
 
-    @Column({ name: "posted_at" })
-    postedAt: Date;
+    @Column()
+    posted_at: Date;
 
     @ManyToOne(_ => Contact, contact => contact.messages)
+    @JoinColumn({ name: "id_contact" })
     contact: Contact;
 
     @AfterInsert()
     private setPostedAt() {
-        this.postedAt = new Date();
+        this.posted_at = new Date();
     };
 };

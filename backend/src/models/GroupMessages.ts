@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, AfterInsert } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, AfterInsert, JoinColumn } from "typeorm";
 import Group from "./Group";
 
 @Entity("group_messages")
@@ -6,20 +6,24 @@ export default class GroupMessages {
     @PrimaryGeneratedColumn("increment")
     id: number;
 
-    @Column({ name: "sender_id", type: "uuid" })
-    senderId: string;
+    @Column("uuid")
+    group_id: string;
+
+    @Column("uuid")
+    sender_id: string;
 
     @Column()
     message: string;
 
-    @Column({ name: "posted_at" })
-    postedAt: Date;
+    @Column()
+    posted_at: Date;
 
     @ManyToOne(_ => Group, group => group.messages)
+    @JoinColumn({ name: "group_id" })
     group: Group;
 
     @AfterInsert()
     private setPostedAt() {
-        this.postedAt = new Date();
+        this.posted_at = new Date();
     };
 };
