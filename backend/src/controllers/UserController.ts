@@ -156,14 +156,17 @@ export default {
                 const { id } = request.body.user;
 
                 const userRepository = getRepository(User);
-                const user = await userRepository.findOne(id);
+                const user = await userRepository.findOne({ 
+                    where: { id }, 
+                    relations: ["contacts", "groups", "contacts.messages", "groups.group", "groups.group.messages", "groups.group.users", "groups.group.users.user"]
+                })            
 
                 if (!user)
                     return response.status(500).json({ error: "Unexpected error" });
 
                 return response.status(200).json({
                     token: generateToken({ id: user.id }),
-                    user: UserView.render(user)
+                    user: UserView.render(user),
                 });
             };
 
@@ -178,7 +181,7 @@ export default {
             const { email, password } = request.body;
 
             const userRepository = getRepository(User);
-            const user = await userRepository.findOne({ email });
+            const user = await userRepository.findOne(email);
 
             if (!user)
                 return response.status(400).json({
@@ -194,7 +197,6 @@ export default {
 
             return response.status(200).json({
                 token: generateToken({ id: user.id }),
-                user: UserView.render(user),
             });
         } catch (err) {
             console.log("error on [login] {user} -> ", err);
