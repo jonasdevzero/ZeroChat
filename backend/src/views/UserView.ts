@@ -1,4 +1,5 @@
-import User from "../models/User";
+import { User } from "../models";
+import { ContactView, GroupUsersView } from "./";
 
 export default {
     render(user: User) {
@@ -9,6 +10,8 @@ export default {
             email: user.email,
             picture: user.picture,
             created_at: user.created_at,
+            contacts: user.contacts ? ContactView.renderMany(user.contacts) : [],
+            groups: user.groups ? GroupUsersView.renderGroups(user.groups) : [],
         };
     },
 
