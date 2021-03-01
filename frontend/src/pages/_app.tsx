@@ -3,19 +3,13 @@ import { ThemeProvider } from 'styled-components';
 import { useState } from 'react';
 import usePersistedState from '../hooks/usePersistedState';
 import { light, dark } from '../styles/theme';
+import { UserI } from "../types/user";
 
-interface User {
-    id: number;
-    name: string;
-    username: string;
-    email: string;
-    picture: string;
-};
 
 function MyApp({ Component, pageProps }) {
-    const [theme, setTheme] = usePersistedState<"light" | "dark">("theme", "light");
+    const [theme, setTheme] = usePersistedState<"light" | "dark">("theme", "dark");
     const [token, setToken] = usePersistedState("token", "");
-    const [user, setUser] = useState<User | undefined>()
+    const [user, setUser] = useState<UserI | undefined>()
 
     return (
         <ThemeProvider theme={theme === 'light' ? light : dark}>
