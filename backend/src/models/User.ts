@@ -40,7 +40,7 @@ export default class User extends BaseEntity {
     @JoinColumn({ name: "user_id" })
     contacts: Contact[];
 
-    @OneToMany(_ => GroupUsers, groups => groups.group, {
+    @OneToMany(_ => GroupUsers, groups => groups.user, {
         cascade: ["update", "remove"],
     })
     @JoinColumn({ name: "user_id" })

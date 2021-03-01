@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, AfterInsert, JoinColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, BeforeInsert, JoinColumn } from "typeorm";
 import Contact from "./Contact";
 
 @Entity("contact_messages")
@@ -19,7 +19,7 @@ export default class ContactMessages {
     @JoinColumn({ name: "id_contact" })
     contact: Contact;
 
-    @AfterInsert()
+    @BeforeInsert()
     private setPostedAt() {
         this.posted_at = new Date();
     };

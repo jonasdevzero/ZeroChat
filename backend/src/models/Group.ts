@@ -50,8 +50,9 @@ export default class Group extends BaseEntity {
         const date = new Date();
 
         this.lastMessage = "";
+        this.lastMessageSender = this.created_by;
+        this.lastMessageTime = date; 
         this.created_at = date;
         this.updated_at = date; 
-        this.lastMessageTime = date; 
     };
 };
