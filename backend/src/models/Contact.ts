@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, BaseEntity, JoinColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, BaseEntity, JoinColumn, OneToMany } from "typeorm";
 import { User, ContactMessages } from "./";
 
 @Entity("contact")
@@ -6,23 +6,14 @@ export default class Contact extends BaseEntity {
     @PrimaryGeneratedColumn("uuid")
     id: string;
 
-    @Column({ name: "contact_id", type: "uuid" })
-    contactId: string;
+    @Column("uuid")
+    contact_id: string;
 
-    @Column({ name: "contact_username" })
-    contactUsername: string;
+    @Column()
+    contact_username: string;
 
-    @Column({ name: "contact_image" })
-    contactImage: string;
-
-    @Column({ name: "last_message" })
-    lastMessage: string;
-
-    @Column({ name: "last_message_sender", type: "uuid" })
-    lastMessageSender: string;
-
-    @Column({ name: "last_message_time" })
-    lastMessageTime: Date;
+    @Column()
+    contact_image: string;
 
     @ManyToOne(_ => User, user => user.contacts)
     @JoinColumn({ name: "user_id" })

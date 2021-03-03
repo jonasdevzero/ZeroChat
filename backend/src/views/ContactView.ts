@@ -3,12 +3,10 @@ import { Contact } from "../models";
 export default {
     render(contact: Contact) {
         return {
-            id: contact.contactId,
-            username: contact.contactUsername,
-            image: contact.contactImage,
-            last_message: contact.lastMessage,
-            last_message_sender: contact.lastMessageSender,
-            last_message_time: contact.lastMessageTime,
+            id_contact: contact.id,
+            id: contact.contact_id,
+            username: contact.contact_username,
+            image: contact.contact_image,
             messages: contact.messages,
         };
     },

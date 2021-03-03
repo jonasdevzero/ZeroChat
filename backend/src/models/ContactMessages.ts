@@ -1,8 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, BeforeInsert, JoinColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, BeforeInsert, BaseEntity, JoinColumn } from "typeorm";
 import Contact from "./Contact";
 
 @Entity("contact_messages")
-export default class ContactMessages {
+export default class ContactMessages extends BaseEntity {
     @PrimaryGeneratedColumn("increment")
     id: number;
     
