@@ -10,8 +10,8 @@ export class createContact1614443152498 implements MigrationInterface {
                     name: "id",
                     type: "uuid",
                     isPrimary: true,
+                    isUnique: true,
                     isGenerated: true,
-                    isUnique: false,
                     generationStrategy: 'uuid',
                     default: `uuid_generate_v4()`,
                 },
@@ -32,18 +32,6 @@ export class createContact1614443152498 implements MigrationInterface {
                     type: "varchar",
                     isNullable: true,
                 },
-                {
-                    name: "last_message",
-                    type: "text",
-                },
-                {
-                    name: "last_message_sender",
-                    type: "varchar",
-                },
-                {
-                    name: "last_message_time",
-                    type: "timestamp with time zone"
-                }
             ],
             foreignKeys: [
                 {

@@ -11,7 +11,7 @@ export class createContactMessages1614444358120 implements MigrationInterface {
                     type: "integer",
                     isGenerated: true,
                     isUnique: true,
-                    unsigned: false,
+                    unsigned: true,
                     generationStrategy: "increment",
                 },
                 {
