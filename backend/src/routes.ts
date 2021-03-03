@@ -1,5 +1,7 @@
 import { Router } from "express";
 import UserController from "./controllers/UserController";
+import GroupController from "./controllers/GroupController";
+import ContactController from "./controllers/ContactController";
 
 const routes = Router();
 
@@ -17,5 +19,11 @@ routes.delete("/user/:id", UserController.auth, UserController.delete);
 
 routes.put("/user/reset_password", UserController.resetPassword);
 routes.put("/user/:id", UserController.auth, UserController.update);
+
+routes.get("/group", GroupController.index);
+routes.post("/group", UserController.auth, GroupController.create);
+
+routes.get("/contact", ContactController.index);
+routes.post("/contact", ContactController.create);
 
 export default routes;
