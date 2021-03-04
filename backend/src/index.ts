@@ -16,41 +16,26 @@ const io = new socketio.Server(server, {
 
 const PORT = process.env.PORT || 3001;
 
-interface User {
-    id: string;
-    name: string;
-    room: string;
-};
-
-let users: User[] = []
-
 io.on('connection', (socket: socketio.Socket) => {
-    socket.on("join", ({ name, room }, callback) => {
-        if (room) {
-            users.push({ name: name, room, id: socket.id })
-
-            console.log(`user: ${name}, [Join] the room: ${room}`);
-            socket.join(room);
+    socket.on("start", (rooms: string[], callback) => {
+        if (rooms) {
+            console.log(`user: ${rooms[0]} is online`);
+            socket.join(rooms);
         };
 
         callback();
     });
 
-    socket.on("sendMessage", (message, callback) => {
-        const user = users.find(user => user.id === socket.id);
-        if (!user) return;
-
-        io.to(user.room).emit("message", message);
+    socket.on("sendPrivateMessage", (message, callback) => {
+        io.to(message.sender_id).to(message.contact.contact_id).emit("privateMessage", message);
 
         callback();
     });
 
-    socket.on("leave", () => {
-        const user = users.find(user => user.id === socket.id);
-        if (!user) return;
+    socket.on("sendGroupMessage", ({ message, from, to }, callback) => {
+        io.to(to).emit("groupMessage", { message, from, to });
 
-        console.log(`user: ${user.name}, [leave] the room: ${user.room}`);
-        socket.leave(user.room);
+        callback();
     });
 });
 

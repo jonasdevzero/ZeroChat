@@ -25,5 +25,6 @@ routes.post("/group", UserController.auth, GroupController.create);
 
 routes.get("/contact", ContactController.index);
 routes.post("/contact", ContactController.create);
+routes.post("/contact/message", UserController.auth ,ContactController.createMessage);
 
 export default routes;
