@@ -1,4 +1,5 @@
 export interface ContactMessagesI {
+    id: number;
     sender_id: string;
     message: string;
     posted_at: Date;
@@ -8,9 +9,6 @@ export interface ContactI {
     id: string;
     username: string;
     image: string;
-    last_message: string;
-    last_message_sender: string;
-    last_message_time: Date;
     messages: ContactMessagesI[];
 };
 
@@ -34,9 +32,6 @@ export interface GroupI {
     description: string;
     image: string;
     created_at: Date;
-    last_message: string;
-    last_message_sender: string;
-    last_message_time: Date;
     messages: GroupMessagesI[];
     users: GroupUsersI[];
 };

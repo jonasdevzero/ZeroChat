@@ -35,7 +35,7 @@ export default {
                 
 
             const contactRepository = getRepository(Contact);
-            
+
             const existsContact = await contactRepository.findOne({ where: { contact_id, user } });
             if (existsContact)
                 return response.status(400).json({ message: "Contact already exists" });
@@ -94,10 +94,10 @@ export default {
 
             const contactMessagesRepository = getRepository(ContactMessages);
 
-            await contactMessagesRepository.create({ message, sender_id, contact }).save();
+            const newMessage = await contactMessagesRepository.create({ message, sender_id, contact }).save();
             await contactMessagesRepository.create({ message, sender_id, contact: receiverContact }).save();
 
-            return response.status(201).json({ message: "ok" });
+            return response.status(201).json({ message: newMessage });
         } catch (err) {
             console.log(err);
             return response.status(500).json({ message: "Internal server error" });
