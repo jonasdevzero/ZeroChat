@@ -1,9 +1,9 @@
 import Head from 'next/head';
 import { useRouter } from "next/router";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import io from 'socket.io-client';
 import api from "../services/api";
-import { UserI, ContactI, GroupI, ContactMessagesI, GroupMessagesI } from "../types/user";
+import { UserI, ContactI, GroupI } from "../types/user";
 
 import {
     Container,
@@ -16,9 +16,13 @@ import {
     Form,
     Input,
     Submit,
+    ScrollToBottom,
+    Wrapper,
 } from '../styles/pages/chat';
 import { Sidebar } from "../components"
 import { Avatar } from "@material-ui/core";
+import SendIcon from '@material-ui/icons/Send';
+import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 
 let socket = io.Socket;
 const ENDPOINT = "localhost:3001";
@@ -39,6 +43,9 @@ export default function Chat({ user, setUser, setToken, token }: ChatI) {
     const [message, setMessage] = useState("");
 
     const router = useRouter();
+
+    const privateMessages = useRef(null);
+    const [showScrollButton, setShowScrollButton] = useState(false);
 
     useEffect(() => {
         socket = io(ENDPOINT);
@@ -86,13 +93,19 @@ export default function Chat({ user, setUser, setToken, token }: ChatI) {
 
                     return contact;
                 }),
-            })
+            });
+
+            scrollToBottom(true);
         });
 
         socket.on("groupMessage", ({ message, to }) => {
             //...
         });
     }, [currentContact?.messages]);
+
+    useEffect(() => {
+        scrollToBottom();
+    }, [currentContact, currentGroup]);
 
     async function privateMessage(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -115,6 +128,33 @@ export default function Chat({ user, setUser, setToken, token }: ChatI) {
 
         if (message.length > 0) {
             socket.emit("sendGroupMessage", { message, from: user?.id, to: currentGroup })
+        };
+    };
+
+    function scrollToBottom(newMessage?: boolean) {
+        if (privateMessages.current) {
+            const { scrollTop, clientHeight, scrollHeight } = privateMessages.current;
+            const scroll = scrollHeight - clientHeight;
+
+            if (newMessage) {
+                if (scrollTop + 200 > scrollHeight - clientHeight) {
+                    privateMessages.current.scrollTo(0, scroll);
+                };
+            } else {
+                privateMessages.current.scrollTo(0, scroll);
+            };
+        };
+    };
+
+    function onScroll() {
+        if (privateMessages.current) {
+            const { scrollTop, clientHeight, scrollHeight } = privateMessages.current;
+
+            if (!(scrollTop + 100 > scrollHeight - clientHeight)) {
+                setShowScrollButton(true);
+            } else {
+                setShowScrollButton(false);
+            };
         };
     };
 
@@ -145,19 +185,34 @@ export default function Chat({ user, setUser, setToken, token }: ChatI) {
                                 <h2>{currentRoomType === "contacts" ? currentContact?.username : currentGroup?.name}</h2>
                             </Header>
 
-                            <MessagesContainer>
+                            <MessagesContainer ref={privateMessages} onScroll={() => onScroll()}>
                                 {currentContact?.messages?.map((msg, i) => {
-                                    return msg?.sender_id === user?.id ? (
-                                        <MessageSender key={i}>{msg?.message}</MessageSender>
+                                    return msg ? msg.sender_id === user?.id ? (
+                                        <MessageSender key={i}>
+                                            {msg.message}
+                                        </MessageSender>
                                     ) : (
-                                            <Message key={i}>{msg?.message}</Message>
+                                            <Message key={i}>
+                                                {msg.message}
+                                            </Message>
                                         )
+                                        : null
                                 })}
+
+                                {showScrollButton ? (
+                                    <ScrollToBottom onClick={() => scrollToBottom()}>
+                                        <KeyboardArrowDownIcon fontSize="large" />
+                                    </ScrollToBottom>
+                                ) : null}
                             </MessagesContainer>
 
                             <Form onSubmit={currentRoomType === "contacts" ? privateMessage : groupMessage}>
-                                <Input value={message} onChange={e => setMessage(e.target.value)} />
-                                <Submit>Send</Submit>
+                                <Wrapper>
+                                    <Input value={message} onChange={e => setMessage(e.target.value)} />
+                                    <Submit>
+                                        <SendIcon fontSize="large" />
+                                    </Submit>
+                                </Wrapper>
                             </Form>
                         </>
                     )}
