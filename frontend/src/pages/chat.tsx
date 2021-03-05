@@ -54,14 +54,30 @@ export default function Chat({ user, setUser, setToken, token }: ChatI) {
         api.post(`/user/auth?access_token=${token}&user_required=true`).then(response => {
             const data = response.data;
 
-            setUser(data.user);
             setToken(data.token);
 
             const rooms: string[] = [];
             rooms.push(data.user.id);
             data.user.groups.forEach(group => rooms.push(group.id));
 
-            socket.emit("start", rooms, () => { });
+            const contacts: string[] = []
+            data.user.contacts.forEach(contact => contacts.push(contact.id));
+
+            socket.emit("join", { rooms, contacts }, (contactsOnline: string[]) => {
+                if (contactsOnline.length > 0) {
+                    data.user.contacts.map((contact: ContactI) => {
+                        if (contactsOnline.find(contactOnline => contact.id === contactOnline)) {
+                            contact.online = true
+                            return contact;
+                        };
+
+                        contact.online = false;
+                        return contact;
+                    })
+                };
+
+                setUser(data.user);
+            });
         }).catch(() => {
             return router.push("/signin");
         });
@@ -71,6 +87,8 @@ export default function Chat({ user, setUser, setToken, token }: ChatI) {
             socket.off("privateMessage");
             socket.off("sendPrivateMessage");
             socket.off("groupMessage");
+            socket.off("userJoin");
+            socket.off("userLeft");
             socket.disconnect();
         };
     }, []);
@@ -101,7 +119,35 @@ export default function Chat({ user, setUser, setToken, token }: ChatI) {
         socket.on("groupMessage", ({ message, to }) => {
             //...
         });
-    }, [currentContact?.messages]);
+
+        socket.on("userJoin", (userId: string) => {
+            setUser({
+                ...user,
+                contacts: user?.contacts?.map(contact => {
+                    if (contact.id === userId) {
+                        contact.online = true;
+                        return contact;
+                    };
+
+                    return contact;
+                }),
+            });
+        });
+
+        socket.on("userLeft", (userId: string) => {
+            setUser({
+                ...user,
+                contacts: user?.contacts?.map(contact => {
+                    if (contact.id === userId) {
+                        contact.online = false;
+                        return contact;
+                    };
+
+                    return contact;
+                }),
+            });
+        });
+    }, [user]);
 
     useEffect(() => {
         scrollToBottom();
