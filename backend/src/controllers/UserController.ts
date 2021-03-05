@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { getRepository } from "typeorm";
+import { getRepository, Like } from "typeorm";
 import User from "../models/User";
 import UserView from "../views/UserView";
 import { encryptPassword, generateToken, comparePasswords, authenticateToken } from "../utils/user";
@@ -12,7 +12,15 @@ export default {
         try {
             const userRepository = getRepository(User);
 
-            const users = await userRepository.find();
+            const { username } = request.query;
+            let users: User[] = [];
+
+            if (username) {
+                users = await userRepository.find({ where: { username: Like(`%${username}%`) } });
+            } else {
+                users = await userRepository.find();
+            };
+
 
             return response.status(200).json({ user: UserView.renderMany(users) });
         } catch (err) {
@@ -68,10 +76,10 @@ export default {
                 });
 
             const schema = Yup.object().shape({
-                name: Yup.string().required(),
-                username: Yup.string().required(),
-                email: Yup.string().required(),
-                password: Yup.string().required().min(6),
+                name: Yup.string().trim().required(),
+                username: Yup.string().trim().lowercase().required(),
+                email: Yup.string().trim().lowercase().required(),
+                password: Yup.string().min(6).trim().required(),
             });
 
             await schema.validate(data, {
@@ -181,7 +189,7 @@ export default {
             const { email, password } = request.body;
 
             const userRepository = getRepository(User);
-            const user = await userRepository.findOne(email);
+            const user = await userRepository.findOne({ email });
 
             if (!user)
                 return response.status(400).json({
