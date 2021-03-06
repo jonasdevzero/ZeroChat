@@ -9,7 +9,8 @@ export interface ContactI {
     id: string;
     username: string;
     image: string;
-    messages: ContactMessagesI[];
+    messages: ContactMessagesI[] | [];
+    online: true | false;
 };
 
 export interface GroupMessagesI {

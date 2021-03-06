@@ -16,13 +16,18 @@ import {
     Form,
     Input,
     Submit,
+    IconButton,
     ScrollToBottom,
     Wrapper,
+    EmojiPickerContainer,
 } from '../styles/pages/chat';
 import { Sidebar } from "../components"
 import { Avatar } from "@material-ui/core";
 import SendIcon from '@material-ui/icons/Send';
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
+import InsertEmoticonIcon from '@material-ui/icons/InsertEmoticon';
+import "emoji-mart/css/emoji-mart.css";
+import { Picker, BaseEmoji } from "emoji-mart";
 
 let socket = io.Socket;
 const ENDPOINT = "localhost:3001";
@@ -46,6 +51,8 @@ export default function Chat({ user, setUser, setToken, token }: ChatI) {
 
     const privateMessages = useRef(null);
     const [showScrollButton, setShowScrollButton] = useState(false);
+
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
     useEffect(() => {
         socket = io(ENDPOINT);
@@ -94,26 +101,38 @@ export default function Chat({ user, setUser, setToken, token }: ChatI) {
     }, []);
 
     useEffect(() => {
-        socket.on("privateMessage", (message) => {
+        socket.on("privateMessage", ({ message, senderContact }) => {
             const sender = message.sender_id;
             const receiver = message.contact.contact_id;
 
-            setUser({
-                ...user,
-                contacts: user?.contacts?.map(contact => {
-                    if (receiver === contact?.id || sender === contact?.id) {
-                        const updatedMessages = contact?.messages?.map(msg => msg?.id === message?.id ? null : msg);
-                        updatedMessages.push(message);
+            if (!(user?.contacts?.find(c => c?.id === senderContact)) && user?.id !== sender) {
+                const updatedContacts = user?.contacts;
+                updatedContacts?.unshift(senderContact);
 
-                        contact.messages = updatedMessages;
+                setUser({
+                    ...user,
+                    contacts: updatedContacts
+                })
+            } else {
+                setUser({
+                    ...user,
+                    contacts: user?.contacts?.map(contact => {
+                        if (receiver === contact?.id || sender === contact?.id) {
+                            const updatedMessages = contact?.messages?.map(msg => msg?.id === message?.id ? null : msg);
+                            updatedMessages?.push(message);
+
+                            contact.messages = updatedMessages;
+                            return contact;
+                        }
+
                         return contact;
-                    }
+                    }),
+                });
+            };
 
-                    return contact;
-                }),
-            });
-
-            scrollToBottom(true);
+            if (currentContact?.id === receiver) {
+                scrollToBottom(true);
+            };
         });
 
         socket.on("groupMessage", ({ message, to }) => {
@@ -151,6 +170,28 @@ export default function Chat({ user, setUser, setToken, token }: ChatI) {
 
     useEffect(() => {
         scrollToBottom();
+
+        if (currentRoomType === "contacts" && currentContact && !(currentContact?.messages)) {
+            api.get(`/contact/messages?access_token=${token}&id=${user?.id}&contact_id=${currentContact?.id}`)
+                .then(response => {
+                    const data = response.data;
+
+                    setUser({
+                        ...user,
+                        contacts: user?.contacts?.map(contact => {
+                            if (data.contact.contact_id === contact.id) {
+
+                                contact.messages = data.contact.messages;
+                                return contact;
+                            }
+
+                            return contact;
+                        }),
+                    });
+
+                    scrollToBottom();
+                });
+        };
     }, [currentContact, currentGroup]);
 
     async function privateMessage(e: React.FormEvent<HTMLFormElement>) {
@@ -162,14 +203,14 @@ export default function Chat({ user, setUser, setToken, token }: ChatI) {
                 sender_id: user?.id,
                 receiver_id: currentContact?.id,
             }).then(response => {
-                const { message } = response.data;
+                const { message, senderContact } = response.data;
 
-                socket.emit("sendPrivateMessage", message, () => setMessage(""));
+                socket.emit("sendPrivateMessage", { message, senderContact }, () => setMessage(""));
             });
         };
     };
 
-    function groupMessage(e: React.FormEvent<HTMLFormElement>) {
+    async function groupMessage(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
 
         if (message.length > 0) {
@@ -225,43 +266,56 @@ export default function Chat({ user, setUser, setToken, token }: ChatI) {
                         <h1>Select a room to chat</h1>
                     </ContainerWithoutChat>
                 ) : (
-                        <>
-                            <Header>
-                                <Avatar src={currentRoomType === "contacts" ? currentContact?.image : currentGroup?.image} />
-                                <h2>{currentRoomType === "contacts" ? currentContact?.username : currentGroup?.name}</h2>
-                            </Header>
+                    <>
+                        <Header>
+                            <Avatar src={currentRoomType === "contacts" ? currentContact?.image : currentGroup?.image} />
+                            <h2>{currentRoomType === "contacts" ? currentContact?.username : currentGroup?.name}</h2>
+                        </Header>
 
-                            <MessagesContainer ref={privateMessages} onScroll={() => onScroll()}>
-                                {currentContact?.messages?.map((msg, i) => {
-                                    return msg ? msg.sender_id === user?.id ? (
-                                        <MessageSender key={i}>
-                                            {msg.message}
-                                        </MessageSender>
-                                    ) : (
-                                            <Message key={i}>
-                                                {msg.message}
-                                            </Message>
-                                        )
-                                        : null
-                                })}
+                        <MessagesContainer ref={privateMessages} onScroll={() => onScroll()}>
+                            {currentContact?.messages?.map((msg, i) => {
+                                return msg ? msg.sender_id === user?.id ? (
+                                    <MessageSender key={i}>
+                                        {msg.message}
+                                    </MessageSender>
+                                ) : (
+                                    <Message key={i}>
+                                        {msg.message}
+                                    </Message>
+                                )
+                                    : null
+                            })}
 
-                                {showScrollButton ? (
-                                    <ScrollToBottom onClick={() => scrollToBottom()}>
-                                        <KeyboardArrowDownIcon fontSize="large" />
-                                    </ScrollToBottom>
-                                ) : null}
-                            </MessagesContainer>
+                            {showScrollButton ? (
+                                <ScrollToBottom onClick={() => scrollToBottom()}>
+                                    <KeyboardArrowDownIcon fontSize="large" />
+                                </ScrollToBottom>
+                            ) : null}
+                        </MessagesContainer>
 
-                            <Form onSubmit={currentRoomType === "contacts" ? privateMessage : groupMessage}>
-                                <Wrapper>
-                                    <Input value={message} onChange={e => setMessage(e.target.value)} />
-                                    <Submit>
-                                        <SendIcon fontSize="large" />
-                                    </Submit>
-                                </Wrapper>
-                            </Form>
-                        </>
-                    )}
+                        <Form onSubmit={currentRoomType === "contacts" ? privateMessage : groupMessage}>
+                            {showEmojiPicker ? (
+                                <EmojiPickerContainer>
+                                    <Picker onSelect={(emoji: BaseEmoji) => setMessage(message.concat(emoji.native))} />
+                                </EmojiPickerContainer>
+                            ) : null}
+
+                            <IconButton
+                                type="button"
+                                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                            >
+                                <InsertEmoticonIcon fontSize="large" />
+                            </IconButton>
+
+                            <Wrapper>
+                                <Input value={message} onChange={e => setMessage(e.target.value)} />
+                                <Submit type="submit">
+                                    <SendIcon fontSize="large" />
+                                </Submit>
+                            </Wrapper>
+                        </Form>
+                    </>
+                )}
             </Inner>
         </Container>
     );

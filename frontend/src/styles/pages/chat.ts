@@ -85,15 +85,22 @@ export const Form = styled.form`
     width: 100%;
     position: absolute;
     bottom: 0;
+    padding: 0 1rem;
 
     background-color: #333;
+
+    .MuiSvgIcon-root {
+        color: #fff;
+        cursor: pointer;
+    };
 `;
 
 export const Wrapper = styled.div`
     display: flex;
 
-    width: 98%;
+    width: 100%;
     height: max-content;
+    margin-left: 1rem;
 
     position: relative;
 `;
@@ -127,6 +134,16 @@ export const Submit = styled.button`
     right: 0;
 `;
 
+export const IconButton = styled.button`
+    width: 3.5rem;
+    height: 3.5rem;
+
+    outline: none;
+    border: none;
+    border-radius: 0;
+    background-color: transparent;
+`;
+
 export const ContainerWithoutChat = styled.div`
     width: 100%;
     height: 100%;
@@ -154,4 +171,10 @@ export const ScrollToBottom = styled.button`
 
     border-radius: 50%;
     cursor: pointer;
+`;
+
+export const EmojiPickerContainer = styled.div`
+    position: absolute;
+    bottom: 6rem;
+    left: 1rem;
 `;
