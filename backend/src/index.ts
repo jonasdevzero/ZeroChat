@@ -16,7 +16,7 @@ const io = new socketio.Server(server, {
 
 const PORT = process.env.PORT || 3001;
 
-const users: Array<{
+let users: Array<{
     id: string;
     socketId: string;
     contacts: string[]
@@ -62,7 +62,7 @@ io.on('connection', (socket: socketio.Socket) => {
 
     socket.on("disconnect", () => {
         const disconnectedUser = users.find(user => user.socketId === socket.id);
-        users.filter(user => user?.id !== disconnectedUser?.id ? user : null);
+        users = users.filter(user => user?.id !== disconnectedUser?.id ? user : null);
 
         console.log(`user disconnected: ${disconnectedUser?.id}`);
 
