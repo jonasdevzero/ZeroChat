@@ -48,8 +48,8 @@ io.on('connection', (socket: socketio.Socket) => {
         callback(contactsOnline);
     });
 
-    socket.on("sendPrivateMessage", (message, callback) => {
-        io.to(message.sender_id).to(message.contact.contact_id).emit("privateMessage", message);
+    socket.on("sendPrivateMessage", ({ message, senderContact }, callback) => {
+        io.to(message.sender_id).to(message.contact.contact_id).emit("privateMessage", { message, senderContact });
 
         callback();
     });
