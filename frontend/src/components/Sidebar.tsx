@@ -6,8 +6,12 @@ import {
     RoomsContainer,
     Room,
     SelectChatType,
+    Status,
+    ChatTypeButton
 } from "../styles/components/Sidebar";
 import { Avatar } from "@material-ui/core";
+import PersonIcon from '@material-ui/icons/Person';
+import GroupIcon from '@material-ui/icons/Group';
 
 interface SidebarI {
     user: UserI;
@@ -22,7 +26,7 @@ interface SidebarI {
 function Sidebar({ user, setCurrentContact, setCurrentGroup, currentRoomType, setCurrentRoomType }: SidebarI) {
     return (
         <Container>
-            <Header onClick={() => setCurrentContact(null)}>
+            <Header>
                 <Avatar src={user?.picture} />
                 <h2>{user?.username}</h2>
             </Header>
@@ -32,8 +36,9 @@ function Sidebar({ user, setCurrentContact, setCurrentGroup, currentRoomType, se
                     user?.contacts?.map((contact, i) => {
                         return (
                             <Room key={i} onClick={() => setCurrentContact(contact)}>
-                                <Avatar src={contact?.image} />
-                                <h3>{contact?.username}</h3>
+                                <Avatar src={contact.image} />
+                                <h3>{contact.username}</h3>
+                                <Status className={contact.online ? "online" : "offline"} />
                             </Room>
                         );
                     })
@@ -41,8 +46,8 @@ function Sidebar({ user, setCurrentContact, setCurrentGroup, currentRoomType, se
                         user?.groups?.map((group, i) => {
                             return (
                                 <Room key={i} onClick={() => setCurrentGroup(group)}>
-                                    <Avatar src={group?.image} />
-                                    <h3>{group?.name}</h3>
+                                    <Avatar src={group.image} />
+                                    <h3>{group.name}</h3>
                                 </Room>
                             )
                         })
@@ -50,12 +55,21 @@ function Sidebar({ user, setCurrentContact, setCurrentGroup, currentRoomType, se
             </RoomsContainer>
 
             <SelectChatType>
-                <button
-                    type="button"
-                    onClick={() => setCurrentRoomType(currentRoomType === "contacts" ? "groups" : "contacts")}
+
+                <ChatTypeButton
+                    className={currentRoomType === "contacts" && "selected"}
+                    onClick={() => setCurrentRoomType("contacts")}
                 >
-                    {currentRoomType}
-                </button>
+                    <PersonIcon fontSize="large" />
+                </ChatTypeButton>
+
+                <ChatTypeButton
+                    className={currentRoomType === "groups" && "selected"}
+                    onClick={() => setCurrentRoomType("groups")}
+                >
+                    <GroupIcon fontSize="large" />
+                </ChatTypeButton>
+
             </SelectChatType>
         </Container>
     );
