@@ -58,6 +58,10 @@ export default function Chat({ user, setUser, setToken, token }: ChatI) {
         socket = io(ENDPOINT);
         const token = JSON.parse(localStorage.getItem("token"));
 
+        if (!token) {
+            router.push("/signin");
+        };
+
         api.post(`/user/auth?access_token=${token}&user_required=true`).then(response => {
             const data = response.data;
 
@@ -86,7 +90,7 @@ export default function Chat({ user, setUser, setToken, token }: ChatI) {
                 setUser(data.user);
             });
         }).catch(() => {
-            return router.push("/signin");
+            router.push("/signin");
         });
 
         return () => {

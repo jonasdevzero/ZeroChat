@@ -23,7 +23,7 @@ import {
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import Warning from "../components/Warning";
 
-export default function SignIn({ setToken, setUser, token, theme }) {
+export default function SignIn({ setToken, theme }) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
@@ -35,12 +35,11 @@ export default function SignIn({ setToken, setUser, token, theme }) {
     const router = useRouter();
 
     useEffect(() => {
+        const token = JSON.parse(localStorage.getItem("token"));
+
         if (token) {
             api.post(`/user/auth?access_token=${token}&user_required=true`).then(response => {
-                const { token, user } = response.data;
-
-                setToken(token);
-                setUser(user);
+                setToken(response.data.token);
 
                 return router.push("/chat");
             });
@@ -56,10 +55,7 @@ export default function SignIn({ setToken, setUser, token, theme }) {
             email,
             password,
         }).then(response => {
-            const { token, user } = response.data;
-
-            setToken(token);
-            setUser(user);
+            setToken(response.data.token);
 
             setEmail("");
             setPassword("");
@@ -72,7 +68,7 @@ export default function SignIn({ setToken, setUser, token, theme }) {
         }).catch((err: AxiosError) => {
             const { message, fields } = err.response.data;
 
-            fields.forEach((field: string) => {
+            fields?.forEach((field: string) => {
                 switch (field) {
                     case "email":
                         setEmail("");
