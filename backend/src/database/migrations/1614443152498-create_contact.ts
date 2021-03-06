@@ -32,6 +32,19 @@ export class createContact1614443152498 implements MigrationInterface {
                     type: "varchar",
                     isNullable: true,
                 },
+                {
+                    name: "unread_messages",
+                    type: "integer",
+                    isNullable: true,
+                },
+                {
+                    name: "active",
+                    type: "boolean",
+                },
+                {
+                    name: "blocked",
+                    type: "boolean",
+                },
             ],
             foreignKeys: [
                 {

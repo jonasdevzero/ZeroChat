@@ -15,6 +15,13 @@ export class createContactMessages1614444358120 implements MigrationInterface {
                     generationStrategy: "increment",
                 },
                 {
+                    name: "double_contact_id",
+                    type: "uuid",
+                    isUnique: false,
+                    isPrimary: false,
+                    unsigned: true,
+                },
+                {
                     name: "id_contact",
                     type: "uuid",
                     unsigned: true,
