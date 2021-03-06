@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { getRepository, Like } from "typeorm";
+import { getRepository, Like, SelectQueryBuilder } from "typeorm";
 import User from "../models/User";
 import UserView from "../views/UserView";
 import { encryptPassword, generateToken, comparePasswords, authenticateToken } from "../utils/user";
@@ -19,9 +19,7 @@ export default {
                 users = await userRepository.find({ where: { username: Like(`%${username}%`) } });
             } else {
                 users = await userRepository.find();
-            };
-
-
+            };       
             return response.status(200).json({ user: UserView.renderMany(users) });
         } catch (err) {
             console.log("error on [index] {user} -> ", err);
@@ -164,10 +162,14 @@ export default {
                 const { id } = request.body.user;
 
                 const userRepository = getRepository(User);
-                const user = await userRepository.findOne({ 
-                    where: { id }, 
-                    relations: ["contacts", "groups", "contacts.messages", "groups.group", "groups.group.messages", "groups.group.users", "groups.group.users.user"]
-                })            
+                const user = await userRepository.findOne({
+                    where: (queryBuilder: SelectQueryBuilder<User>) => {
+                        queryBuilder
+                            .where("User.id = :id", { id })
+                            .andWhere("User__contacts.active = :active", { active: true })
+                    },
+                    relations: ["contacts", "groups", "groups.group", "groups.group.users", "groups.group.users.user"]
+                });
 
                 if (!user)
                     return response.status(500).json({ error: "Unexpected error" });

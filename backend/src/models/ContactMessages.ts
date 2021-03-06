@@ -5,6 +5,9 @@ import Contact from "./Contact";
 export default class ContactMessages extends BaseEntity {
     @PrimaryGeneratedColumn("increment")
     id: number;
+
+    @Column("uuid")
+    double_contact_id: string;
     
     @Column()
     message: string;

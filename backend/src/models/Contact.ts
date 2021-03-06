@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, BaseEntity, JoinColumn, OneToMany } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, BaseEntity, JoinColumn, OneToMany, BeforeInsert } from "typeorm";
 import { User, ContactMessages } from "./";
 
 @Entity("contact")
@@ -15,6 +15,15 @@ export default class Contact extends BaseEntity {
     @Column()
     contact_image: string;
 
+    @Column()
+    unread_messages: number;
+
+    @Column()
+    active: boolean;
+
+    @Column()
+    blocked: boolean;
+
     @ManyToOne(_ => User, user => user.contacts)
     @JoinColumn({ name: "user_id" })
     user: User;
@@ -24,4 +33,9 @@ export default class Contact extends BaseEntity {
     })
     @JoinColumn({ name: "id_contact" })
     messages: ContactMessages[];
+
+    @BeforeInsert() 
+    private setBlocked() {
+        this.blocked = false;
+    };
 };
