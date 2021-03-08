@@ -67,6 +67,35 @@ export default {
         };
     },
 
+    async update(request: Request, response: Response) {
+        try {
+            const { 
+                user_id,
+                contact_id,
+                unread_messages 
+            } = request.body;
+            const { only_unread_messages } = request.query;
+
+            const contactRepository = getRepository(Contact);
+            const contact = await contactRepository.findOne({ user: { id: user_id }, contact_id });
+            
+            if (!contact)
+                return response.status(400).json({ message: "id or contact_id is invalid" });
+
+            const id = contact.id; 
+
+            if (Boolean(only_unread_messages)) { 
+                await contactRepository.update(id, { unread_messages: unread_messages == 0 ? null : unread_messages });
+                return response.status(201).json({ message: "ok" });
+            };
+
+            //...
+        } catch (err) {
+            console.log(err);
+            return response.status(500).json({ message: "internal Server Error" });
+        };
+    },
+
     async indexMessages(request: Request, response: Response) {
         try {
             const { id, contact_id } = request.query;
@@ -98,7 +127,7 @@ export default {
 
             const contactRepository = getRepository(Contact);
             const senderContact = await contactRepository.findOne({ user: { id: sender_id }, contact_id: receiver_id });
-            const receiverContact = await contactRepository.findOne({ user: { id: receiver_id }, contact_id: sender_id });
+            let receiverContact = await contactRepository.findOne({ user: { id: receiver_id }, contact_id: sender_id });
 
             if (!senderContact)
                 return response.status(400).json({ message: "id_contact invalid" });
@@ -121,7 +150,11 @@ export default {
             const newMessage = await contactMessagesRepository.create({ message, sender_id, contact: senderContact, double_contact_id }).save();
             await contactMessagesRepository.create({ message, sender_id, contact: receiverContact, double_contact_id }).save();
 
-            return response.status(201).json({ message: newMessage, senderContact });
+            const unread_messages = typeof receiverContact.unread_messages == "number" ? ++receiverContact.unread_messages : 1;
+            const id = receiverContact.id;
+            await contactRepository.update(id, { unread_messages });
+
+            return response.status(201).json({ message: newMessage, senderContact, unread_messages });
         } catch (err) {
             console.log(err);
             return response.status(500).json({ message: "Internal server error" });

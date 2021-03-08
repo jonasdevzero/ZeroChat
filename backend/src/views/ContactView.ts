@@ -7,6 +7,7 @@ export default {
             username: contact.contact_username,
             image: contact.contact_image,
             messages: contact.messages,
+            unread_messages: contact.unread_messages,
         };
     },
 
