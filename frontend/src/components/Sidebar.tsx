@@ -3,6 +3,7 @@ import { UserI, ContactI, GroupI } from "../types/user";
 import {
     Container,
     Header,
+    User,
     RoomsContainer,
     Room,
     SelectChatType,
@@ -10,9 +11,12 @@ import {
     ChatTypeButton,
     UnreadMessages
 } from "../styles/components/Sidebar";
-import { Avatar } from "@material-ui/core";
-import PersonIcon from '@material-ui/icons/Person';
-import GroupIcon from '@material-ui/icons/Group';
+import { Avatar, IconButton } from "@material-ui/core";
+import {
+    Person as PersonIcon,
+    Group as GroupIcon,
+    MoreVert as MoreVertIcon,
+} from "@material-ui/icons";
 
 interface SidebarI {
     user: UserI;
@@ -28,15 +32,24 @@ function Sidebar({ user, setCurrentContact, setCurrentGroup, currentRoomType, se
     return (
         <Container>
             <Header>
-                <Avatar src={user?.picture} />
-                <h2>{user?.username}</h2>
+                <User>
+                    <Avatar src={user?.picture} />
+                    <h2>{user?.username}</h2>
+                </User>
+
+                <IconButton>
+                    <MoreVertIcon />
+                </IconButton>
             </Header>
 
             <RoomsContainer>
                 {currentRoomType === "contacts" ? (
                     user?.contacts?.map((contact, i) => {
                         return (
-                            <Room key={i} onClick={() => setCurrentContact(contact)}>
+                            <Room
+                                key={i}
+                                onClick={() => setCurrentContact(contact)}
+                            >
                                 <Avatar src={contact.image} />
                                 <h3>{contact.username}</h3>
                                 <Status className={contact.online ? "online" : "offline"} />
@@ -50,31 +63,40 @@ function Sidebar({ user, setCurrentContact, setCurrentGroup, currentRoomType, se
                         );
                     })
                 ) : (
-                        user?.groups?.map((group, i) => {
-                            return (
-                                <Room key={i} onClick={() => setCurrentGroup(group)}>
-                                    <Avatar src={group.image} />
-                                    <h3>{group.name}</h3>
-                                </Room>
-                            )
-                        })
-                    )}
+                    user?.groups?.map((group, i) => {
+                        return (
+                            <Room
+                                key={i}
+                                onClick={() => setCurrentGroup(group)}
+                            >
+                                <Avatar src={group.image} />
+                                <h3>{group.name}</h3>
+                            </Room>
+                        )
+                    })
+                )}
             </RoomsContainer>
 
             <SelectChatType>
 
                 <ChatTypeButton
                     className={currentRoomType === "contacts" && "selected"}
-                    onClick={() => setCurrentRoomType("contacts")}
+                    onClick={() => {
+                        setCurrentGroup(undefined);
+                        setCurrentRoomType("contacts");
+                    }}
                 >
-                    <PersonIcon fontSize="large" />
+                    <PersonIcon />
                 </ChatTypeButton>
 
                 <ChatTypeButton
                     className={currentRoomType === "groups" && "selected"}
-                    onClick={() => setCurrentRoomType("groups")}
+                    onClick={() => {
+                        setCurrentContact(undefined)
+                        setCurrentRoomType("groups")
+                    }}
                 >
-                    <GroupIcon fontSize="large" />
+                    <GroupIcon />
                 </ChatTypeButton>
 
             </SelectChatType>

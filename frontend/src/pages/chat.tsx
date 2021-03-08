@@ -9,6 +9,7 @@ import {
     Container,
     Inner,
     Header,
+    Contact,
     ContainerWithoutChat,
     MessagesContainer,
     Message,
@@ -22,10 +23,15 @@ import {
     EmojiPickerContainer,
 } from '../styles/pages/chat';
 import { Sidebar } from "../components"
-import { Avatar } from "@material-ui/core";
-import SendIcon from '@material-ui/icons/Send';
-import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
-import InsertEmoticonIcon from '@material-ui/icons/InsertEmoticon';
+import { Avatar, IconButton as IButton } from "@material-ui/core";
+import {
+    Send as SendIcon,
+    KeyboardArrowDown as KeyboardArrowDownIcon,
+    InsertEmoticon as InsertEmoticonIcon,
+    MoreVert as MoreVertIcon,
+    Call as CallIcon,
+    Videocam as VideocamIcon,
+} from "@material-ui/icons";
 import "emoji-mart/css/emoji-mart.css";
 import { Picker, BaseEmoji } from "emoji-mart";
 
@@ -302,30 +308,59 @@ export default function Chat({ user, setUser, setToken, token }: ChatI) {
             />
 
             <Inner>
-                {!currentContact || currentGroup ? (
+                {!currentContact && !currentGroup ? (
                     <ContainerWithoutChat>
-                        <h1>Select a room to chat</h1>
+                        {currentRoomType === "contacts" ? "Select a contact to chat" : "Select a group to chat"}
                     </ContainerWithoutChat>
                 ) : (
                     <>
                         <Header>
-                            <Avatar src={currentRoomType === "contacts" ? currentContact?.image : currentGroup?.image} />
-                            <h2>{currentRoomType === "contacts" ? currentContact?.username : currentGroup?.name}</h2>
+                            <Contact>
+                                <Avatar src={currentRoomType === "contacts" ? currentContact?.image : currentGroup?.image} />
+                                <h2>{currentRoomType === "contacts" ? currentContact?.username : currentGroup?.name}</h2>
+                            </Contact>
+
+                            <IButton>
+                                <CallIcon />
+                            </IButton>
+
+                            <IButton>
+                                <VideocamIcon />
+                            </IButton>
+
+                            <IButton>
+                                <MoreVertIcon />
+                            </IButton>
                         </Header>
 
                         <MessagesContainer ref={privateMessages} onScroll={() => onScroll()}>
-                            {currentContact?.messages?.map((msg, i) => {
-                                return msg ? msg.sender_id === user?.id ? (
-                                    <MessageSender key={i}>
-                                        {msg.message}
-                                    </MessageSender>
-                                ) : (
-                                    <Message key={i}>
-                                        {msg.message}
-                                    </Message>
-                                )
-                                    : null
-                            })}
+                            {currentRoomType === "contacts" ?
+                                currentContact?.messages?.map((msg, i) => {
+                                    return msg ? msg.sender_id === user?.id ? (
+                                        <MessageSender key={i}>
+                                            {msg.message}
+                                        </MessageSender>
+                                    ) : (
+                                        <Message key={i}>
+                                            {msg.message}
+                                        </Message>
+                                    )
+                                        : null
+                                })
+                                :
+                                currentGroup?.messages?.map((msg, i) => {
+                                    return msg ? msg.sender_id === user?.id ? (
+                                        <MessageSender key={i}>
+                                            {msg.message}
+                                        </MessageSender>
+                                    ) : (
+                                        <Message key={i}>
+                                            {msg.message}
+                                        </Message>
+                                    )
+                                        : null
+                                })
+                            }
 
                             {showScrollButton ? (
                                 <ScrollToBottom onClick={() => scrollToBottom()}>

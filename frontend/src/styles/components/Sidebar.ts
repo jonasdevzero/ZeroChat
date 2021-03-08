@@ -25,6 +25,19 @@ export const Header = styled.header`
     h2 {
         margin-left: 1rem;
     };
+
+    .MuiSvgIcon-root {
+        font-size: 2.5rem !important;
+        color: #fff;
+    };
+`;
+
+export const User = styled.div`
+    display: flex;
+    align-items: center;
+    width: 100%;
+
+    cursor: pointer;
 `;
 
 export const RoomsContainer = styled.div`
@@ -57,23 +70,9 @@ export const Room = styled.div`
     };
 `;
 
-export const SelectChatType = styled.div`
-    display: flex;
-    align-items: center;
-
-    height: 5rem;
-    width: 100%;
-    padding: .5rem;
-
-    position: absolute;
-    bottom: 0;
-
-    border-top: solid .1rem #777;
-`;
-
 export const Status = styled.p`
-    width: .7rem;
-    height: .7rem;
+    width: .5rem;
+    height: .5rem;
 
     margin-left: .5rem;
     border-radius: 50%;
@@ -83,29 +82,6 @@ export const Status = styled.p`
     };
     &.offline {
         background-color: lightgray;
-    };
-`;
-
-export const ChatTypeButton = styled.button`
-    width: 3.8rem;
-    height: 3.8rem;
-
-    margin-left: 1rem;
-    border: none;
-    outline: none;
-    border-radius: 50%;
-
-    background-color: #000;
-    cursor: pointer;
-
-    & > .MuiSvgIcon-root {
-        color: #fff;
-    };
-
-    &.selected {
-        & > .MuiSvgIcon-root {
-            color: green;
-        };
     };
 `;
 
@@ -123,4 +99,42 @@ export const UnreadMessages = styled.span`
 
     margin-left: auto;
     margin-right: 1rem;
+`;
+
+export const SelectChatType = styled.div`
+    display: flex;
+    align-items: center;
+
+    height: 5rem;
+    width: 100%;
+    padding: .5rem;
+
+    position: absolute;
+    bottom: 0;
+
+    background-color: #222;
+`;
+
+export const ChatTypeButton = styled.button`
+    width: 4.2rem;
+    height: 4.2rem;
+
+    margin-left: .7rem;
+    border: none;
+    outline: none;
+    border-radius: 50%;
+
+    background-color: #000;
+    cursor: pointer;
+
+    & > .MuiSvgIcon-root {
+        color: #fff;
+        font-size: 2.5rem;
+    };
+
+    &.selected {
+        & > .MuiSvgIcon-root {
+            color: green;
+        };
+    };
 `;

@@ -27,7 +27,22 @@ export const Header = styled.header`
     border-bottom: solid .1rem #555;
     padding: 0 1rem;
 
+    .MuiSvgIcon-root {
+        font-size: 2.5rem !important;
+        color: #fff;
+    };
+`;
+
+export const Contact = styled.div`
+    display: flex;
+    align-items: center;
+    width: 100%;
+
+    cursor: pointer;
+
     h2 {
+        font-size: 1.6rem;
+        font-weight: 500;
         margin-left: 1rem;
     };
 `;
