@@ -4,8 +4,6 @@ export const Container = styled.main`
     display: flex;
     width: 100vw;
     height: 100vh;
-
-    background-color: #222;
 `;
 
 export const Inner = styled.div`
@@ -24,7 +22,7 @@ export const Header = styled.header`
     display: flex;
     align-items: center;
 
-    border-bottom: solid .1rem #555;
+    background-color: #1e1e1e;
     padding: 0 1rem;
 
     .MuiSvgIcon-root {
@@ -55,13 +53,9 @@ export const MessagesContainer = styled.div`
     flex-direction: column;
     padding: 2rem 5rem;
 
+    background-color: #303030;
+
     overflow-y: scroll;
-
-    translate: scroll .5s ease;
-
-    &::-webkit-scrollbar {
-        width: 0px;
-    };
 `;
 
 export const Message = styled.span`
@@ -72,16 +66,16 @@ export const Message = styled.span`
     margin-bottom: 1rem;
 
     padding: 1rem 2rem;
-    background-color: #333;
+    background-color: #222;
 
-    border-radius: 0 .5rem .5rem .5rem;
+    border-radius: 0 1rem 1rem 1rem;
 `;
 
 export const MessageSender = styled(Message)`
     margin-right: 0;
     margin-left: auto;
 
-    border-radius: .5rem 0 .5rem .5rem;
+    border-radius: 1rem 0 1rem 1rem;
 `;
 
 export const MessageUsername = styled.p`
@@ -102,7 +96,7 @@ export const FormContainer = styled.div`
     bottom: 0;
     padding: 0 1rem;
 
-    background-color: #333;
+    background-color: #2a2a2a;
 
     .MuiSvgIcon-root {
         color: #fff;
@@ -161,23 +155,25 @@ export const ContainerWithoutChat = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
+
+    background-color: #303030;
 `;
 
 export const ScrollToBottom = styled.button`
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 3rem;
-    height: 3rem;
+    width: 3.5rem;
+    height: 3.5rem;
     position: fixed;
 
     bottom: 7rem;
-    right: 1rem;
+    right: 1.4rem;
 
     border: none;
     outline: none;
 
-    background-color: #000;
+    background-color: #191818;
     color: #fff;
 
     border-radius: 50%;

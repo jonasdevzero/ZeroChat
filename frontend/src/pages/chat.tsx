@@ -130,6 +130,7 @@ export default function Chat({ user, setUser, setToken, token }: ChatI) {
                         if (receiver === contact?.id || sender === contact?.id) {
                             const updatedMessages = contact?.messages?.map(msg => msg?.id === message?.id ? null : msg);
                             updatedMessages?.push(message);
+                            contact.messages = updatedMessages;
 
                             if (user?.id === receiver && contact?.id === sender) {
                                 if (currentContact?.id === sender) {
@@ -145,7 +146,6 @@ export default function Chat({ user, setUser, setToken, token }: ChatI) {
                                 };
                             };
 
-                            contact.messages = updatedMessages;
                             return contact;
                         }
 
