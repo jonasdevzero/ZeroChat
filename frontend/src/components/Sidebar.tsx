@@ -7,7 +7,8 @@ import {
     Room,
     SelectChatType,
     Status,
-    ChatTypeButton
+    ChatTypeButton,
+    UnreadMessages
 } from "../styles/components/Sidebar";
 import { Avatar } from "@material-ui/core";
 import PersonIcon from '@material-ui/icons/Person';
@@ -39,6 +40,12 @@ function Sidebar({ user, setCurrentContact, setCurrentGroup, currentRoomType, se
                                 <Avatar src={contact.image} />
                                 <h3>{contact.username}</h3>
                                 <Status className={contact.online ? "online" : "offline"} />
+
+                                {contact.unread_messages ? (
+                                    <UnreadMessages>
+                                        {contact.unread_messages}
+                                    </UnreadMessages>
+                                ) : null}
                             </Room>
                         );
                     })

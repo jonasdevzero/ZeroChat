@@ -11,6 +11,7 @@ export interface ContactI {
     image: string;
     messages: ContactMessagesI[] | [];
     online: true | false;
+    unread_messages: number | null;
 };
 
 export interface GroupMessagesI {

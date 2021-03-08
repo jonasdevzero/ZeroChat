@@ -109,3 +109,18 @@ export const ChatTypeButton = styled.button`
     };
 `;
 
+export const UnreadMessages = styled.span`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+
+    background-color: green;
+    color: #fff;
+
+    margin-left: auto;
+    margin-right: 1rem;
+`;
