@@ -6,7 +6,6 @@ export const Container = styled.aside`
     flex: .25;
     height: 100vh;
 
-    background-color: #181818;
     border-right: solid .1rem #555;
 
     position: relative;
@@ -19,17 +18,20 @@ export const Header = styled.header`
     display: flex;
     align-items: center;
 
-    border-bottom: solid .2rem #777;
-    padding: 0 1rem;
-
-    h2 {
-        margin-left: 1rem;
-    };
+    background-color: #1e1e1e;
+    padding: 0 .75rem;
 
     .MuiSvgIcon-root {
         font-size: 2.5rem !important;
         color: #fff;
     };
+`;
+
+export const Inner = styled.div`
+    height: calc(100% - 7rem);
+    width: 100%;
+
+    display: flex;
 `;
 
 export const User = styled.div`
@@ -38,22 +40,34 @@ export const User = styled.div`
     width: 100%;
 
     cursor: pointer;
+
+    h2 {
+        font-size: 1.8rem;
+        font-weight: 500;
+        margin-left: 1rem;
+    };
+
+    .MuiAvatar-root {
+        width: 4.5rem;
+        height: 4.5rem;
+    };
 `;
 
 export const RoomsContainer = styled.div`
+    display: flex;
+    flex-direction: column;
+
     width: 100%;
-    height: calc(100% - 12rem);
+    height: 100%;
+
+    background-color: #2b2b2b;
 
     overflow-y: scroll;
-
-    &::-webkit-scrollbar {
-        width: 0px;
-    };
 `;
 
 export const Room = styled.div`
     width: 100%;
-    height: 8rem;
+    height: 7rem;
 
     display: flex;
     align-items: center;
@@ -101,16 +115,14 @@ export const UnreadMessages = styled.span`
     margin-right: 1rem;
 `;
 
-export const SelectChatType = styled.div`
+export const Options = styled.div`
     display: flex;
+    flex-direction: column;
     align-items: center;
 
-    height: 5rem;
-    width: 100%;
+    height: 100%;
+    width: 6.5rem;
     padding: .5rem;
-
-    position: absolute;
-    bottom: 0;
 
     background-color: #222;
 `;
@@ -119,7 +131,7 @@ export const ChatTypeButton = styled.button`
     width: 4.2rem;
     height: 4.2rem;
 
-    margin-left: .7rem;
+    margin-top: .7rem;
     border: none;
     outline: none;
     border-radius: 50%;

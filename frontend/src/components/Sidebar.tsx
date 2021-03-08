@@ -4,9 +4,10 @@ import {
     Container,
     Header,
     User,
+    Inner,
     RoomsContainer,
     Room,
-    SelectChatType,
+    Options,
     Status,
     ChatTypeButton,
     UnreadMessages
@@ -42,64 +43,66 @@ function Sidebar({ user, setCurrentContact, setCurrentGroup, currentRoomType, se
                 </IconButton>
             </Header>
 
-            <RoomsContainer>
-                {currentRoomType === "contacts" ? (
-                    user?.contacts?.map((contact, i) => {
-                        return (
-                            <Room
-                                key={i}
-                                onClick={() => setCurrentContact(contact)}
-                            >
-                                <Avatar src={contact.image} />
-                                <h3>{contact.username}</h3>
-                                <Status className={contact.online ? "online" : "offline"} />
+            <Inner>
+                <Options>
 
-                                {contact.unread_messages ? (
-                                    <UnreadMessages>
-                                        {contact.unread_messages}
-                                    </UnreadMessages>
-                                ) : null}
-                            </Room>
-                        );
-                    })
-                ) : (
-                    user?.groups?.map((group, i) => {
-                        return (
-                            <Room
-                                key={i}
-                                onClick={() => setCurrentGroup(group)}
-                            >
-                                <Avatar src={group.image} />
-                                <h3>{group.name}</h3>
-                            </Room>
-                        )
-                    })
-                )}
-            </RoomsContainer>
+                    <ChatTypeButton
+                        className={currentRoomType === "contacts" && "selected"}
+                        onClick={() => {
+                            setCurrentGroup(undefined);
+                            setCurrentRoomType("contacts");
+                        }}
+                    >
+                        <PersonIcon />
+                    </ChatTypeButton>
 
-            <SelectChatType>
+                    <ChatTypeButton
+                        className={currentRoomType === "groups" && "selected"}
+                        onClick={() => {
+                            setCurrentContact(undefined)
+                            setCurrentRoomType("groups")
+                        }}
+                    >
+                        <GroupIcon />
+                    </ChatTypeButton>
 
-                <ChatTypeButton
-                    className={currentRoomType === "contacts" && "selected"}
-                    onClick={() => {
-                        setCurrentGroup(undefined);
-                        setCurrentRoomType("contacts");
-                    }}
-                >
-                    <PersonIcon />
-                </ChatTypeButton>
+                </Options>
 
-                <ChatTypeButton
-                    className={currentRoomType === "groups" && "selected"}
-                    onClick={() => {
-                        setCurrentContact(undefined)
-                        setCurrentRoomType("groups")
-                    }}
-                >
-                    <GroupIcon />
-                </ChatTypeButton>
+                <RoomsContainer>
+                    {currentRoomType === "contacts" ? (
+                        user?.contacts?.map((contact, i) => {
+                            return (
+                                <Room
+                                    key={i}
+                                    onClick={() => setCurrentContact(contact)}
+                                >
+                                    <Avatar src={contact.image} />
+                                    <h3>{contact.username}</h3>
+                                    <Status className={contact.online ? "online" : "offline"} />
 
-            </SelectChatType>
+                                    {contact.unread_messages ? (
+                                        <UnreadMessages>
+                                            {contact.unread_messages}
+                                        </UnreadMessages>
+                                    ) : null}
+                                </Room>
+                            );
+                        })
+                    ) : (
+                        user?.groups?.map((group, i) => {
+                            return (
+                                <Room
+                                    key={i}
+                                    onClick={() => setCurrentGroup(group)}
+                                >
+                                    <Avatar src={group.image} />
+                                    <h3>{group.name}</h3>
+                                </Room>
+                            )
+                        })
+                    )}
+                </RoomsContainer>
+            </Inner>
         </Container>
     );
 };
