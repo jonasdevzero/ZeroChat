@@ -13,12 +13,12 @@ import {
     MessagesContainer,
     Message,
     MessageSender,
+    FormContainer,
     Form,
     Input,
     Submit,
     IconButton,
     ScrollToBottom,
-    Wrapper,
     EmojiPickerContainer,
 } from '../styles/pages/chat';
 import { Sidebar } from "../components"
@@ -30,7 +30,7 @@ import "emoji-mart/css/emoji-mart.css";
 import { Picker, BaseEmoji } from "emoji-mart";
 
 let socket = io.Socket;
-const ENDPOINT = "localhost:3001";
+const ENDPOINT = "ws://localhost:3001";
 
 interface ChatI {
     user: UserI;
@@ -55,7 +55,7 @@ export default function Chat({ user, setUser, setToken, token }: ChatI) {
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
     useEffect(() => {
-        socket = io(ENDPOINT);
+        socket = io(ENDPOINT, { transports: ["websocket"] });
         const token = JSON.parse(localStorage.getItem("token"));
 
         if (!token) {
@@ -105,11 +105,11 @@ export default function Chat({ user, setUser, setToken, token }: ChatI) {
     }, []);
 
     useEffect(() => {
-        socket.on("privateMessage", ({ message, senderContact }) => {
+        socket.on("privateMessage", ({ message, senderContact, unread_messages }) => {
             const sender = message.sender_id;
             const receiver = message.contact.contact_id;
 
-            if (!(user?.contacts?.find(c => c?.id === senderContact)) && user?.id !== sender) {
+            if (!(user?.contacts?.find(c => c?.id === sender)) && user?.id !== sender) {
                 const updatedContacts = user?.contacts;
                 updatedContacts?.unshift(senderContact);
 
@@ -125,6 +125,20 @@ export default function Chat({ user, setUser, setToken, token }: ChatI) {
                             const updatedMessages = contact?.messages?.map(msg => msg?.id === message?.id ? null : msg);
                             updatedMessages?.push(message);
 
+                            if (user?.id === receiver && contact?.id === sender) {
+                                if (currentContact?.id === sender) {
+                                    api.put(`/contact/message?access_token=${token}&only_unread_messages=true`, {
+                                        unread_messages: 0,
+                                        user_id: user?.id,
+                                        contact_id: currentContact.id,
+                                    });
+
+                                    contact.unread_messages = null;
+                                } else {
+                                    contact.unread_messages = unread_messages;
+                                };
+                            };
+
                             contact.messages = updatedMessages;
                             return contact;
                         }
@@ -134,7 +148,7 @@ export default function Chat({ user, setUser, setToken, token }: ChatI) {
                 });
             };
 
-            if (currentContact?.id === receiver) {
+            if (currentContact?.id === receiver || currentContact?.id === sender) {
                 scrollToBottom(true);
             };
         });
@@ -196,10 +210,33 @@ export default function Chat({ user, setUser, setToken, token }: ChatI) {
                     scrollToBottom();
                 });
         };
+
+        if (currentRoomType === "contacts" && currentContact && currentContact.unread_messages) {
+            api.put(`/contact/message?access_token=${token}&only_unread_messages=true`, {
+                unread_messages: 0,
+                user_id: user?.id,
+                contact_id: currentContact.id,
+            }).then(() => {
+                setUser({
+                    ...user,
+                    contacts: user?.contacts?.map(contact => {
+                        if (currentContact.id === contact.id) {
+
+                            contact.unread_messages = null;
+                            return contact;
+                        }
+
+                        return contact;
+                    }),
+                });
+            });
+        };
     }, [currentContact, currentGroup]);
 
     async function privateMessage(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
+
+        setShowEmojiPicker(false);
 
         if (message.length > 0) {
             await api.post(`/contact/message?access_token=${token}`, {
@@ -207,9 +244,9 @@ export default function Chat({ user, setUser, setToken, token }: ChatI) {
                 sender_id: user?.id,
                 receiver_id: currentContact?.id,
             }).then(response => {
-                const { message, senderContact } = response.data;
+                const { message, senderContact, unread_messages } = response.data;
 
-                socket.emit("sendPrivateMessage", { message, senderContact }, () => setMessage(""));
+                socket.emit("sendPrivateMessage", { message, senderContact, unread_messages }, () => setMessage(""));
             });
         };
     };
@@ -297,7 +334,7 @@ export default function Chat({ user, setUser, setToken, token }: ChatI) {
                             ) : null}
                         </MessagesContainer>
 
-                        <Form onSubmit={currentRoomType === "contacts" ? privateMessage : groupMessage}>
+                        <FormContainer>
                             {showEmojiPicker ? (
                                 <EmojiPickerContainer>
                                     <Picker onSelect={(emoji: BaseEmoji) => setMessage(message.concat(emoji.native))} />
@@ -311,13 +348,20 @@ export default function Chat({ user, setUser, setToken, token }: ChatI) {
                                 <InsertEmoticonIcon fontSize="large" />
                             </IconButton>
 
-                            <Wrapper>
-                                <Input value={message} onChange={e => setMessage(e.target.value)} />
+                            <Form onSubmit={currentRoomType === "contacts" ? privateMessage : groupMessage}>
+                                <Input
+                                    type="text"
+                                    value={message}
+                                    onChange={e => setMessage(e.target.value)}
+                                    autoComplete="off"
+                                    onFocus={() => setShowEmojiPicker(false)}
+                                />
+
                                 <Submit type="submit">
                                     <SendIcon fontSize="large" />
                                 </Submit>
-                            </Wrapper>
-                        </Form>
+                            </Form>
+                        </FormContainer>
                     </>
                 )}
             </Inner>

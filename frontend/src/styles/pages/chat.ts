@@ -75,7 +75,7 @@ export const MessageUsername = styled.p`
     left: .5rem;
 `;
 
-export const Form = styled.form`
+export const FormContainer = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
@@ -95,14 +95,9 @@ export const Form = styled.form`
     };
 `;
 
-export const Wrapper = styled.div`
+export const Form = styled.form`
     display: flex;
-
     width: 100%;
-    height: max-content;
-    margin-left: 1rem;
-
-    position: relative;
 `;
 
 export const Input = styled.input`
@@ -115,6 +110,7 @@ export const Input = styled.input`
 
     color: #fff;
     background-color: #555;
+    margin: 0 1rem;
     padding: 0 3.5rem 0 1rem;
     border-radius: .2rem;
 `;
@@ -131,7 +127,7 @@ export const Submit = styled.button`
     background-color: transparent;
 
     position: absolute;
-    right: 0;
+    right: 2.5rem;
 `;
 
 export const IconButton = styled.button`
