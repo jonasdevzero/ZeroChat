@@ -1,19 +1,14 @@
+import "dotenv";
+import "./database";
 import express from 'express';
 import { Server } from 'http';
 import socketio from 'socket.io';
-import "dotenv";
-import "./database"
-import routes from './routes';
 import cors from 'cors';
+import cluster from "cluster";
+import { cpus } from "os";
+import routes from './routes';
 
-const app = express();
-const server = new Server(app);
-const io = new socketio.Server(server, {
-    cors: {
-        origin: "http://localhost:3000",
-    },
-})
-
+const numCPUs = cpus().length;
 const PORT = process.env.PORT || 3001;
 
 let users: Array<{
@@ -22,58 +17,85 @@ let users: Array<{
     contacts: string[]
 }> = [];
 
-io.on('connection', (socket: socketio.Socket) => {
-    socket.on("join", ({ rooms, contacts }, callback) => {
-        socket.join(rooms);
-        const userId = rooms[0];
-
-        users.push({
-            id: userId,
-            socketId: socket.id,
-            contacts
-        });
-
-        let contactsOnline: string[] = [];
-
-        contacts.forEach((contact: string) => {
-            users.find(user => user.id === contact) ? contactsOnline.push(contact) : null
-        });
-
-        console.log(`user connected: ${userId}`);
-
-        contacts.forEach((contact: string) => {
-            socket.to(contact).emit("userJoin", userId);
-        });
-
-        callback(contactsOnline);
+if (cluster.isMaster) {
+    const app = express();
+    const server = new Server(app);
+    new socketio.Server(server, {
+        cors: {
+            origin: "http://localhost:3000",
+        },
     });
 
-    socket.on("sendPrivateMessage", ({ message, senderContact }, callback) => {
-        io.to(message.sender_id).to(message.contact.contact_id).emit("privateMessage", { message, senderContact });
+    for (let index = 0; index < numCPUs; index++) {
+        cluster.fork();
+    };
 
-        callback();
+    cluster.on("exit", (worker) => {
+        console.log(`Process ${worker.process.pid} died`);
+        cluster.fork();
     });
-
-    socket.on("sendGroupMessage", ({ message, from, to }, callback) => {
-        io.to(to).emit("groupMessage", { message, from, to });
-
-        callback();
+} else {
+    const app = express();
+    const server = new Server(app);
+    const io = new socketio.Server(server, {
+        cors: {
+            origin: "http://localhost:3000",
+        },
     });
+    
+    io.on('connection', (socket: socketio.Socket) => {
+        socket.on("join", ({ rooms, contacts }, callback) => {
+            socket.join(rooms);
+            const userId = rooms[0];
 
-    socket.on("disconnect", () => {
-        const disconnectedUser = users.find(user => user.socketId === socket.id);
-        users = users.filter(user => user?.id !== disconnectedUser?.id ? user : null);
+            users.push({
+                id: userId,
+                socketId: socket.id,
+                contacts
+            });
 
-        console.log(`user disconnected: ${disconnectedUser?.id}`);
+            let contactsOnline: string[] = [];
 
-        disconnectedUser?.contacts.forEach(contact => {
-            socket.to(contact).emit("userLeft", disconnectedUser.id);
+            contacts.forEach((contact: string) => {
+                users.find(user => user.id === contact) ? contactsOnline.push(contact) : null
+            });
+
+            console.log(`user connected: ${userId}`);
+
+            contacts.forEach((contact: string) => {
+                socket.to(contact).emit("userJoin", userId);
+            });
+
+            callback(contactsOnline);
+        });
+
+        socket.on("sendPrivateMessage", ({ message, senderContact, unread_messages }, callback) => {
+            io.to(message.sender_id).to(message.contact.contact_id).emit("privateMessage", { message, senderContact, unread_messages });
+
+            callback();
+        });
+
+        socket.on("sendGroupMessage", ({ message, from, to }, callback) => {
+            io.to(to).emit("groupMessage", { message, from, to });
+
+            callback();
+        });
+
+        socket.on("disconnect", () => {
+            const disconnectedUser = users.find(user => user.socketId === socket.id);
+            users = users.filter(user => user?.id !== disconnectedUser?.id ? user : null);
+
+            console.log(`user disconnected: ${disconnectedUser?.id}`);
+
+            disconnectedUser?.contacts.forEach(contact => {
+                socket.to(contact).emit("userLeft", disconnectedUser.id);
+            });
         });
     });
-});
 
-app.use(cors());
-app.use(express.json());
-app.use(routes);
+    app.use(cors());
+    app.use(express.json());
+    app.use(routes);
 
-server.listen(PORT, () => console.log("Server running -> " + PORT));
+    server.listen(PORT, () => console.log(`Running the server on port: ${PORT}, with the cluster worker: ${cluster.worker.id}`));
+};
