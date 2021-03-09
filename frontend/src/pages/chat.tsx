@@ -39,13 +39,14 @@ let socket = io.Socket;
 const ENDPOINT = "ws://localhost:3001";
 
 interface ChatI {
-    user: UserI;
-    setUser: React.Dispatch<React.SetStateAction<UserI>>;
     token: string;
     setToken: React.Dispatch<React.SetStateAction<string>>;
+    theme: "light" | "dark";
+    setTheme: React.Dispatch<React.SetStateAction<"light" | "dark">>
 };
 
-export default function Chat({ user, setUser, setToken, token }: ChatI) {
+export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
+    const [user, setUser] = useState<UserI>()
 
     const [currentRoomType, setCurrentRoomType] = useState<"contacts" | "groups">("contacts");
     const [currentContact, setCurrentContact] = useState<ContactI>();
@@ -300,17 +301,26 @@ export default function Chat({ user, setUser, setToken, token }: ChatI) {
 
             <Sidebar
                 user={user}
+                setToken={setToken}
+
                 currentRoomType={currentRoomType}
                 setCurrentRoomType={setCurrentRoomType}
 
                 setCurrentContact={setCurrentContact}
                 setCurrentGroup={setCurrentGroup}
+
+                theme={theme}
+                setTheme={setTheme}
             />
 
             <Inner>
                 {!currentContact && !currentGroup ? (
                     <ContainerWithoutChat>
-                        {currentRoomType === "contacts" ? "Select a contact to chat" : "Select a group to chat"}
+                        {currentRoomType === "contacts" ? (
+                            <h1>Select a contact to chat</h1>
+                        ) : (
+                            <h1>Select a group to chat</h1>
+                        )}
                     </ContainerWithoutChat>
                 ) : (
                     <>

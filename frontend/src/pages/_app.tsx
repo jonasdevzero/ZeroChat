@@ -1,15 +1,12 @@
 import GlobalStyle from '../styles/global';
 import { ThemeProvider } from 'styled-components';
-import { useState } from 'react';
 import usePersistedState from '../hooks/usePersistedState';
 import { light, dark } from '../styles/theme';
-import { UserI } from "../types/user";
 
 
 function MyApp({ Component, pageProps }) {
     const [theme, setTheme] = usePersistedState<"light" | "dark">("theme", "dark");
     const [token, setToken] = usePersistedState("token", "");
-    const [user, setUser] = useState<UserI | undefined>()
 
     return (
         <ThemeProvider theme={theme === 'light' ? light : dark}>
@@ -18,9 +15,8 @@ function MyApp({ Component, pageProps }) {
                 {...pageProps}
                 token={token}
                 setToken={setToken}
-                user={user}
-                setUser={setUser}
                 theme={theme}
+                setTheme={setTheme}
             />
         </ThemeProvider>
     );

@@ -35,6 +35,7 @@ export const Contact = styled.div`
     display: flex;
     align-items: center;
     width: 100%;
+    margin-right: 20%;
 
     cursor: pointer;
 

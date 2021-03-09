@@ -17,4 +17,15 @@ export default createGlobalStyle`
         width: 100vw;
         height: 100%;
     };
+
+    ::-webkit-scrollbar {
+        width: .8rem;
+    };
+    ::-webkit-scrollbar-thumb {
+        background-color: #777;
+        border-left: solid .1rem #303030;
+    };
+    ::-webkit-scrollbar-thumb:hover {
+        background-color: #555;
+    };
 `;
