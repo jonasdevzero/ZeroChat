@@ -37,7 +37,7 @@ export const Inner = styled.div`
 export const User = styled.div`
     display: flex;
     align-items: center;
-    width: 100%;
+    margin-right: auto;
 
     cursor: pointer;
 
@@ -65,6 +65,44 @@ export const RoomsContainer = styled.div`
     overflow-y: scroll;
 `;
 
+export const Search = styled.form`
+    display: flex;
+    position: relative;
+
+    width: 100%;
+    height: 4.5rem;
+    padding: .7rem;
+    background-color: #252525;
+    border-bottom: solid .1rem #777;
+`;
+
+export const SearchInput = styled.input`
+    width: 100%;
+    height: 100%;
+
+    background-color: #2b2b2b;
+    color: #fff;
+    border: none;
+    outline: none;
+    border-radius: 1.2rem;
+    padding: 0 1rem;
+`;
+
+export const SearchButton = styled.button`
+    position: absolute;
+    right: 1.5rem;
+    top: 1.2rem;
+
+    background-color: transparent;
+    border: none;
+    outline: none;
+
+    .MuiSvgIcon-root {
+        color: lightgray;
+        font-size: 2rem;
+    };
+`;
+
 export const Room = styled.div`
     width: 100%;
     height: 7rem;
@@ -75,12 +113,22 @@ export const Room = styled.div`
     border-bottom: solid .1rem #777;
     padding: 0 1rem;
 
+    transition: background-color .2s ease;
     cursor: pointer;
 
     h3 {
         font-size: 1.6rem;
         font-weight: 500;
         margin-left: 1rem;
+    };
+
+    .MuiAvatar-root {
+        width: 4.2rem;
+        height: 4.2rem;
+    };
+
+    &:hover {
+        background-color: #252525;
     };
 `;
 
@@ -119,15 +167,17 @@ export const Options = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: space-between;
 
     height: 100%;
     width: 6.5rem;
     padding: .5rem;
+    padding-bottom: 1.2rem;
 
     background-color: #222;
 `;
 
-export const ChatTypeButton = styled.button`
+export const OptionButton = styled.button`
     width: 4.2rem;
     height: 4.2rem;
 
@@ -136,16 +186,36 @@ export const ChatTypeButton = styled.button`
     outline: none;
     border-radius: 50%;
 
-    background-color: #000;
+    background-color: #191919;
     cursor: pointer;
 
-    & > .MuiSvgIcon-root {
+    &:hover {
+        &.option {
+            .MuiSvgIcon-root {
+                color: green;
+            };
+        };
+        &.theme {
+            .MuiSvgIcon-root {
+                color: yellow;
+            };
+        };
+        &.off {
+            .MuiSvgIcon-root {
+                color: red;
+            };
+        };
+    };
+
+    .MuiSvgIcon-root {
         color: #fff;
-        font-size: 2.5rem;
+        font-size: 2.2rem;
+
+        transition: color .3s ease;
     };
 
     &.selected {
-        & > .MuiSvgIcon-root {
+        .MuiSvgIcon-root {
             color: green;
         };
     };

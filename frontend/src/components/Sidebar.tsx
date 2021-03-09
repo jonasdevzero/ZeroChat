@@ -1,3 +1,6 @@
+import { useRouter } from "next/router";
+import { useState } from "react";
+
 import { UserI, ContactI, GroupI } from "../types/user";
 
 import {
@@ -6,30 +9,47 @@ import {
     User,
     Inner,
     RoomsContainer,
+    Search,
+    SearchInput,
+    SearchButton,
     Room,
     Options,
     Status,
-    ChatTypeButton,
+    OptionButton,
     UnreadMessages
 } from "../styles/components/Sidebar";
 import { Avatar, IconButton } from "@material-ui/core";
 import {
     Person as PersonIcon,
     Group as GroupIcon,
+    PersonAdd as PersonAddIcon,
+    GroupAdd as GroupAddIcon,
     MoreVert as MoreVertIcon,
+    Brightness3 as Brightness3Icon,
+    Brightness7 as Brightness7Icon,
+    PowerSettingsNew as PowerSettingsNewIcon,
+    Search as SearchIcon,
 } from "@material-ui/icons";
 
 interface SidebarI {
     user: UserI;
+    setToken: React.Dispatch<React.SetStateAction<string>>
 
     currentRoomType: "contacts" | "groups";
     setCurrentRoomType: React.Dispatch<React.SetStateAction<"contacts" | "groups">>
 
     setCurrentContact: React.Dispatch<React.SetStateAction<ContactI>>;
     setCurrentGroup: React.Dispatch<React.SetStateAction<GroupI>>;
+
+    theme: "light" | "dark";
+    setTheme: React.Dispatch<React.SetStateAction<"light" | "dark">>
 };
 
-function Sidebar({ user, setCurrentContact, setCurrentGroup, currentRoomType, setCurrentRoomType }: SidebarI) {
+function Sidebar({ user, setToken, setCurrentContact, setCurrentGroup, currentRoomType, setCurrentRoomType, theme, setTheme }: SidebarI) {
+    const router = useRouter();
+
+    const [search, setSearch] = useState("");
+
     return (
         <Container>
             <Header>
@@ -45,30 +65,74 @@ function Sidebar({ user, setCurrentContact, setCurrentGroup, currentRoomType, se
 
             <Inner>
                 <Options>
+                    <div>
+                        <OptionButton
+                            className={`option ${currentRoomType === "contacts" && "selected"}`}
+                            onClick={() => {
+                                setCurrentGroup(undefined);
+                                setCurrentRoomType("contacts");
+                            }}
+                        >
+                            <PersonIcon />
+                        </OptionButton>
 
-                    <ChatTypeButton
-                        className={currentRoomType === "contacts" && "selected"}
-                        onClick={() => {
-                            setCurrentGroup(undefined);
-                            setCurrentRoomType("contacts");
-                        }}
-                    >
-                        <PersonIcon />
-                    </ChatTypeButton>
+                        <OptionButton
+                            className={`option ${currentRoomType === "groups" && "selected"}`}
+                            onClick={() => {
+                                setCurrentContact(undefined);
+                                setCurrentRoomType("groups");
+                            }}
+                        >
+                            <GroupIcon />
+                        </OptionButton>
 
-                    <ChatTypeButton
-                        className={currentRoomType === "groups" && "selected"}
-                        onClick={() => {
-                            setCurrentContact(undefined)
-                            setCurrentRoomType("groups")
-                        }}
-                    >
-                        <GroupIcon />
-                    </ChatTypeButton>
+                        <OptionButton className="option" >
+                            <PersonAddIcon />
+                        </OptionButton>
 
+                        <OptionButton className="option">
+                            <GroupAddIcon />
+                        </OptionButton>
+                    </div>
+
+                    <div>
+                        <OptionButton
+                            className="theme"
+                            onClick={() => theme === "dark" ? setTheme("light") : setTheme("dark")}
+                        >
+                            {theme === "dark" ? (
+                                <Brightness3Icon />
+                            ) : (
+                                <Brightness7Icon />
+                            )}
+                        </OptionButton>
+
+                        <OptionButton
+                            className="off"
+                            onClick={() => {
+                                setToken("");
+                                router.push("/");
+                            }}
+                        >
+                            <PowerSettingsNewIcon />
+                        </OptionButton>
+                    </div>
                 </Options>
 
                 <RoomsContainer>
+                    <Search>
+                        <SearchInput
+                            type="text"
+                            placeholder={`Find a ${currentRoomType === "contacts" ? "contact" : "group"}`}
+                            value={search}
+                            onChange={e => setSearch(e.target.value)}
+                        />
+
+                        <SearchButton type="button">
+                            <SearchIcon />
+                        </SearchButton>
+                    </Search>
+
                     {currentRoomType === "contacts" ? (
                         user?.contacts?.map((contact, i) => {
                             return (
