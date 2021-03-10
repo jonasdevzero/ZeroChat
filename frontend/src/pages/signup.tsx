@@ -51,7 +51,6 @@ export default function SignUp({ setToken, theme }) {
             confirmPassword,
         }).then(response => {
             const { token } = response.data;
-
             setToken(token);
 
             setName("");
@@ -59,8 +58,6 @@ export default function SignUp({ setToken, theme }) {
             setEmail("");
             setPassword("");
             setConfirmPassword("");
-
-            console.log("ok")
 
             setSuccessWarning(true);
 

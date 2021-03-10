@@ -3,6 +3,7 @@ import { Contact } from "../models";
 export default {
     render(contact: Contact) {
         return {
+            id_contact: contact.id,
             id: contact.contact.id,
             username: contact.contact.username,
             image: contact.contact.picture,

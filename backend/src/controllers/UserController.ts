@@ -18,8 +18,10 @@ export default {
             if (username) {
                 users = await userRepository.find({ where: { username: Like(`%${username}%`) } });
             } else {
-                users = await userRepository.find();
-            };       
+                users = await userRepository.find({
+                    relations: ["contacts", "contacts.contact", "groups", "groups.group", "groups.group.users", "groups.group.users.user"]
+                });
+            };
             return response.status(200).json({ user: UserView.renderMany(users) });
         } catch (err) {
             console.log("error on [index] {user} -> ", err);
@@ -74,10 +76,10 @@ export default {
                 });
 
             const schema = Yup.object().shape({
-                name: Yup.string().trim().required(),
+                name: Yup.string().required(),
                 username: Yup.string().trim().lowercase().required(),
                 email: Yup.string().trim().lowercase().required(),
-                password: Yup.string().min(6).trim().required(),
+                password: Yup.string().min(6).required(),
             });
 
             await schema.validate(data, {
@@ -90,8 +92,7 @@ export default {
             const user = await userRepository.create(data).save();
 
             return response.status(201).json({
-                token: generateToken({ id: user.id }),
-                user: UserView.render(user),
+                token: generateToken({ id: user.id })
             });
         } catch (err) {
             console.log("error on [create] {user} -> ", err);
@@ -161,23 +162,23 @@ export default {
                 request.body.user = userVerified;
                 const { id } = request.body.user;
 
-                const userRepository = getRepository(User);
-                const user = await userRepository.findOne({
-                    where: (queryBuilder: SelectQueryBuilder<User>) => {
-                        queryBuilder
-                            .where("User.id = :id", { id })
-                            .andWhere("User__contacts.active = :active", { active: true })
-                    },
-                    relations: ["contacts", "groups", "groups.group", "groups.group.users", "groups.group.users.user"]
-                });
+                try {
+                    const userRepository = getRepository(User);
+                    const user = await userRepository.findOne({
+                        where: { id },
+                        relations: ["contacts", "contacts.contact", "groups", "groups.group", "groups.group.users", "groups.group.users.user"]
+                    });
 
-                if (!user)
-                    return response.status(500).json({ error: "Unexpected error" });
+                    if (!user)
+                        return response.status(500).json({ error: "Unexpected error" });
 
-                return response.status(200).json({
-                    token: generateToken({ id: user.id }),
-                    user: UserView.render(user),
-                });
+                    return response.status(200).json({
+                        token: generateToken({ id: user.id }),
+                        user: UserView.render(user),
+                    });
+                } catch (err) {
+                    console.log(err)
+                };
             };
 
             next()

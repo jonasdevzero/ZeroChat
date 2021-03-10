@@ -8,6 +8,14 @@ import cluster from "cluster";
 import { cpus } from "os";
 import routes from './routes';
 
+const app = express();
+const server = new Server(app);
+const io = new socketio.Server(server, {
+    cors: {
+        origin: "http://localhost:3000",
+    },
+});
+
 const numCPUs = cpus().length;
 const PORT = process.env.PORT || 3001;
 
@@ -18,31 +26,14 @@ let users: Array<{
 }> = [];
 
 if (cluster.isMaster) {
-    const app = express();
-    const server = new Server(app);
-    new socketio.Server(server, {
-        cors: {
-            origin: "http://localhost:3000",
-        },
-    });
-
     for (let index = 0; index < numCPUs; index++) {
         cluster.fork();
     };
 
     cluster.on("exit", (worker) => {
         console.log(`Process ${worker.process.pid} died`);
-        cluster.fork();
     });
 } else {
-    const app = express();
-    const server = new Server(app);
-    const io = new socketio.Server(server, {
-        cors: {
-            origin: "http://localhost:3000",
-        },
-    });
-    
     io.on('connection', (socket: socketio.Socket) => {
         socket.on("join", ({ rooms, contacts }, callback) => {
             socket.join(rooms);
@@ -63,7 +54,7 @@ if (cluster.isMaster) {
             console.log(`user connected: ${userId}`);
 
             contacts.forEach((contact: string) => {
-                socket.to(contact).emit("userJoin", userId);
+                socket.to(contact).emit("userJoinOrLeft", { userId, status: "join" });
             });
 
             callback(contactsOnline);
@@ -88,7 +79,7 @@ if (cluster.isMaster) {
             console.log(`user disconnected: ${disconnectedUser?.id}`);
 
             disconnectedUser?.contacts.forEach(contact => {
-                socket.to(contact).emit("userLeft", disconnectedUser.id);
+                socket.to(contact).emit("userJoinOrLeft", { userId: disconnectedUser.id, status: "left" });
             });
         });
     });
