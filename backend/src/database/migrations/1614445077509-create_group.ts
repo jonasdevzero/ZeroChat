@@ -34,18 +34,6 @@ export class createGroup1614445077509 implements MigrationInterface {
                     unsigned: true,
                 },
                 {
-                    name: "last_message_sender",
-                    type: "uuid",
-                },
-                {
-                    name: "last_message",
-                    type: "text",
-                },
-                {
-                    name: "last_message_time",
-                    type: "timestamp with time zone",
-                },
-                {
                     name: "created_at",
                     type: "timestamp with time zone",
                     unsigned: true,

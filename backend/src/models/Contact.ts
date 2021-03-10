@@ -10,12 +10,6 @@ export default class Contact extends BaseEntity {
     contact_id: string;
 
     @Column()
-    contact_username: string;
-
-    @Column()
-    contact_image: string;
-
-    @Column()
     unread_messages: number;
 
     @Column()
@@ -23,6 +17,10 @@ export default class Contact extends BaseEntity {
 
     @Column()
     blocked: boolean;
+
+    @ManyToOne(_ => User, user => user.self_contact)
+    @JoinColumn({ name: "contact_id" })
+    contact: User;
 
     @ManyToOne(_ => User, user => user.contacts)
     @JoinColumn({ name: "user_id" })

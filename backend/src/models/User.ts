@@ -46,6 +46,12 @@ export default class User extends BaseEntity {
     @JoinColumn({ name: "user_id" })
     groups: GroupUsers[];
 
+    @OneToMany(_ => Contact, contact => contact.contact, {
+        cascade: ["update", "remove"],
+    })
+    @JoinColumn({ name: "contact_id" })
+    self_contact: Contact[];
+
     @BeforeInsert()
     private beforeInsert() {
         const date = new Date();

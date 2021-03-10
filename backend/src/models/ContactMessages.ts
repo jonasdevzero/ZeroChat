@@ -7,6 +7,9 @@ export default class ContactMessages extends BaseEntity {
     id: number;
 
     @Column("uuid")
+    id_contact: string;
+
+    @Column("uuid")
     double_contact_id: string;
     
     @Column()

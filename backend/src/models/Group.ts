@@ -18,15 +18,6 @@ export default class Group extends BaseEntity {
     @Column("uuid")
     created_by: string;
 
-    @Column({ name: "last_message_sender", type: "uuid" })
-    lastMessageSender: string;
-
-    @Column({ name: "last_message" })
-    lastMessage: string;
-
-    @Column({ name: "last_message_time" })
-    lastMessageTime: Date;
-
     @Column()
     created_at: Date;
 
@@ -49,9 +40,6 @@ export default class Group extends BaseEntity {
     private setCreatedAt() {
         const date = new Date();
 
-        this.lastMessage = "";
-        this.lastMessageSender = this.created_by;
-        this.lastMessageTime = date; 
         this.created_at = date;
         this.updated_at = date; 
     };
