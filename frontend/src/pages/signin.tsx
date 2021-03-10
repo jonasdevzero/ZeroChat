@@ -42,7 +42,7 @@ export default function SignIn({ setToken, theme }) {
                 setToken(response.data.token);
 
                 return router.push("/chat");
-            });
+            }).catch(() => {});
         };
     }, []);
 

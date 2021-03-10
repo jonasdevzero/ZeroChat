@@ -67,7 +67,8 @@ export default function SignUp({ setToken, setUser, theme }) {
                 return router.push("/chat");
             }, 2000);
         }).catch((err: AxiosError) => {
-            const { message, fields } = err.response.data;
+            const message = err?.response?.data?.message;
+            const fields = err?.response?.data?.fields;
 
             fields.forEach((field: string) => {
                 switch (field) {
