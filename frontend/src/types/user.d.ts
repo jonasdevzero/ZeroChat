@@ -3,15 +3,20 @@ export interface ContactMessagesI {
     sender_id: string;
     message: string;
     posted_at: Date;
+    id_contact: string;
+    double_contact_id: string;
 };
 
 export interface ContactI {
+    id_contact: strng;
     id: string;
     username: string;
     image: string;
     messages: ContactMessagesI[] | [];
     online: true | false;
     unread_messages: number | null;
+    active: true | false;
+    blocked: true | false;
 };
 
 export interface GroupMessagesI {

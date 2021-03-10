@@ -33,19 +33,21 @@ import {
 
 interface SidebarI {
     user: UserI;
-    setToken: React.Dispatch<React.SetStateAction<string>>
+    setToken: React.Dispatch<React.SetStateAction<string>>;
+
+    setCurrentContainer: React.Dispatch<React.SetStateAction<"contacts" | "groups" | "profile" | "addContact" | "createGroup">>;
 
     currentRoomType: "contacts" | "groups";
-    setCurrentRoomType: React.Dispatch<React.SetStateAction<"contacts" | "groups">>
+    setCurrentRoomType: React.Dispatch<React.SetStateAction<"contacts" | "groups">>;
 
     setCurrentContact: React.Dispatch<React.SetStateAction<ContactI>>;
     setCurrentGroup: React.Dispatch<React.SetStateAction<GroupI>>;
 
     theme: "light" | "dark";
-    setTheme: React.Dispatch<React.SetStateAction<"light" | "dark">>
+    setTheme: React.Dispatch<React.SetStateAction<"light" | "dark">>;
 };
 
-function Sidebar({ user, setToken, setCurrentContact, setCurrentGroup, currentRoomType, setCurrentRoomType, theme, setTheme }: SidebarI) {
+function Sidebar({ user, setToken, setCurrentContainer, setCurrentContact, setCurrentGroup, currentRoomType, setCurrentRoomType, theme, setTheme }: SidebarI) {
     const router = useRouter();
 
     const [search, setSearch] = useState("");
@@ -53,7 +55,7 @@ function Sidebar({ user, setToken, setCurrentContact, setCurrentGroup, currentRo
     return (
         <Container>
             <Header>
-                <User>
+                <User onClick={() => setCurrentContainer("profile")}>
                     <Avatar src={user?.picture} />
                     <h2>{user?.username}</h2>
                 </User>
@@ -70,6 +72,7 @@ function Sidebar({ user, setToken, setCurrentContact, setCurrentGroup, currentRo
                             className={`option ${currentRoomType === "contacts" && "selected"}`}
                             onClick={() => {
                                 setCurrentGroup(undefined);
+                                setCurrentContainer("contacts");
                                 setCurrentRoomType("contacts");
                             }}
                         >
@@ -80,17 +83,24 @@ function Sidebar({ user, setToken, setCurrentContact, setCurrentGroup, currentRo
                             className={`option ${currentRoomType === "groups" && "selected"}`}
                             onClick={() => {
                                 setCurrentContact(undefined);
+                                setCurrentContainer("groups")
                                 setCurrentRoomType("groups");
                             }}
                         >
                             <GroupIcon />
                         </OptionButton>
 
-                        <OptionButton className="option" >
+                        <OptionButton
+                            className="option"
+                            onClick={() => setCurrentContainer("addContact")}
+                        >
                             <PersonAddIcon />
                         </OptionButton>
 
-                        <OptionButton className="option">
+                        <OptionButton
+                            className="option"
+                            onClick={() => setCurrentContainer("createGroup")}
+                        >
                             <GroupAddIcon />
                         </OptionButton>
                     </div>
@@ -135,7 +145,7 @@ function Sidebar({ user, setToken, setCurrentContact, setCurrentGroup, currentRo
 
                     {currentRoomType === "contacts" ? (
                         user?.contacts?.map((contact, i) => {
-                            return (
+                            return contact.active ? (
                                 <Room
                                     key={i}
                                     onClick={() => setCurrentContact(contact)}
@@ -150,7 +160,7 @@ function Sidebar({ user, setToken, setCurrentContact, setCurrentGroup, currentRo
                                         </UnreadMessages>
                                     ) : null}
                                 </Room>
-                            );
+                            ) : null;
                         })
                     ) : (
                         user?.groups?.map((group, i) => {
