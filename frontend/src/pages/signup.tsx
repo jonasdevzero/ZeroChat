@@ -24,7 +24,7 @@ import {
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import Warning from "../components/Warning";
 
-export default function SignUp({ setToken, setUser, theme }) {
+export default function SignUp({ setToken, theme }) {
     const [name, setName] = useState("");
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
@@ -50,9 +50,8 @@ export default function SignUp({ setToken, setUser, theme }) {
             password,
             confirmPassword,
         }).then(response => {
-            const { user, token } = response.data;
+            const { token } = response.data;
 
-            setUser(user);
             setToken(token);
 
             setName("");
@@ -60,6 +59,8 @@ export default function SignUp({ setToken, setUser, theme }) {
             setEmail("");
             setPassword("");
             setConfirmPassword("");
+
+            console.log("ok")
 
             setSuccessWarning(true);
 
@@ -70,7 +71,7 @@ export default function SignUp({ setToken, setUser, theme }) {
             const message = err?.response?.data?.message;
             const fields = err?.response?.data?.fields;
 
-            fields.forEach((field: string) => {
+            fields?.forEach((field: string) => {
                 switch (field) {
                     case "username":
                         setUsername("");
