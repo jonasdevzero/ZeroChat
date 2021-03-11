@@ -61,7 +61,11 @@ export const RoomsContainer = styled.div`
     height: 100%;
 
     background-color: #2b2b2b;
+`;
 
+export const Rooms = styled.div`
+    width: 100%;
+    height: 100%;
     overflow-y: scroll;
 `;
 

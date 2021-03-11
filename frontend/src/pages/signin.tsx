@@ -38,7 +38,7 @@ export default function SignIn({ setToken, theme }) {
         const token = JSON.parse(localStorage.getItem("token"));
 
         if (token) {
-            api.post(`/user/auth?access_token=${token}&user_required=true`).then(response => {
+            api.post(`/user/auth?access_token=${token}&signin_auth=true`).then(response => {
                 setToken(response.data.token);
 
                 return router.push("/chat");

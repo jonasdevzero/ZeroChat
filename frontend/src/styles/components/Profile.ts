@@ -1,74 +1,5 @@
 import styled from "styled-components";
 
-export const Container = styled.div`
-    display: flex;
-    flex-direction: column;
-    position: relative;
-
-    width: 100%;
-    height: 100%;
-
-    background-color: #303030;
-
-    overflow-y: scroll;
-
-    @keyframes screen-animation {
-        0% {
-            width: 28rem;
-            height: 22rem;
-        };
-        100% {
-            width: 37rem;
-            height: 31rem;
-        };
-    };
-
-    @keyframes delete-screent-animation {
-        0% {
-            width: 28rem;
-            height: 18em;
-        };
-        100% {
-            width: 37rem;
-            height: 22.2rem;
-        };
-    };
-
-    @keyframes fill-animation {
-        0% {
-            background-color: transparent;
-        };
-        100% {
-            background-color: rgba(0, 0, 0, 0.6);
-        };
-    };
-`;
-
-export const Header = styled.header`
-    display: flex;
-    align-items: flex-end;
-
-    padding: 0 3rem;
-    margin: 0 9rem;
-    margin-top: 4.6rem;
-    border-bottom: solid .1rem #777;
-
-    h1 {
-        font-size: 4rem;
-        font-weight: 700;
-        margin-bottom: 2rem;
-    };
-`;
-
-export const Inner = styled.div`
-    width: 60rem;
-    margin: 2.5rem auto;
-    padding: 3.5rem;
-    border-radius: .7rem;
-
-    background-color: #2c2c2c;
-`;
-
 export const Info = styled.div`
     display: flex;
     align-items: center;
@@ -190,19 +121,6 @@ export const Button = styled.button`
     };
 `;
 
-export const Submit = styled.button`
-    padding: 1rem 2rem;
-    border: none;
-    border-radius: .4rem;
-    outline: none;
-
-    font-size: 1.4rem;
-    font-weight: 500;
-    color: #fff;
-    background-color: green;
-    cursor: pointer;
-`;
-
 export const Message = styled.p`
     position: absolute;
     top: -3.5rem;
@@ -231,6 +149,38 @@ export const Message = styled.p`
     };
 `;
 
+export const WrapperScreen = styled.div`
+    @keyframes screen-animation {
+        0% {
+            width: 28rem;
+            height: 22rem;
+        };
+        100% {
+            width: 37rem;
+            height: 31rem;
+        };
+    };
+
+    @keyframes delete-screent-animation {
+        0% {
+            width: 28rem;
+            height: 18em;
+        };
+        100% {
+            width: 37rem;
+            height: 22.2rem;
+        };
+    };
+
+    @keyframes fill-animation {
+        0% {
+            background-color: transparent;
+        };
+        100% {
+            background-color: rgba(0, 0, 0, 0.6);
+        };
+    };
+`;
 
 export const Screen = styled.div`
     width: 37rem;

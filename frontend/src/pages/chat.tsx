@@ -9,7 +9,7 @@ import {
     Container,
     Inner,
     Header,
-    Contact,
+    Room,
     ContainerWithoutChat,
     MessagesContainer,
     Message,
@@ -289,7 +289,9 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
 
             <Inner>
                 {currentContainer === "profile" ? (
-                    <Profile />
+                    <Profile
+                        user={user}
+                    />
                 ) :
                     currentContainer === "contacts" || currentContainer === "groups" ? (
                         !currentContact && !currentGroup ? (
@@ -303,10 +305,10 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
                         ) : (
                             <>
                                 <Header>
-                                    <Contact>
+                                    <Room>
                                         <Avatar src={currentRoomType === "contacts" ? currentContact?.image : currentGroup?.image} />
                                         <h2>{currentRoomType === "contacts" ? currentContact?.username : currentGroup?.name}</h2>
-                                    </Contact>
+                                    </Room>
 
                                     {currentRoomType === "contacts" ? (
                                         <>
@@ -318,11 +320,12 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
                                                 <VideocamIcon />
                                             </IButton>
 
-                                            <IButton>
-                                                <MoreVertIcon />
-                                            </IButton>
                                         </>
                                     ) : null}
+
+                                    <IButton>
+                                        <MoreVertIcon />
+                                    </IButton>
                                 </Header>
 
                                 <MessagesContainer ref={messagesContainerRef} onScroll={() => onScroll()}>

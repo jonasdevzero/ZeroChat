@@ -31,7 +31,7 @@ export const Header = styled.header`
     };
 `;
 
-export const Contact = styled.div`
+export const Room = styled.div`
     display: flex;
     align-items: center;
     width: 100%;

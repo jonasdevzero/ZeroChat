@@ -9,6 +9,7 @@ import {
     User,
     Inner,
     RoomsContainer,
+    Rooms,
     Search,
     SearchInput,
     SearchButton,
@@ -143,38 +144,40 @@ function Sidebar({ user, setToken, setCurrentContainer, setCurrentContact, setCu
                         </SearchButton>
                     </Search>
 
-                    {currentRoomType === "contacts" ? (
-                        user?.contacts?.map((contact, i) => {
-                            return contact.active ? (
-                                <Room
-                                    key={i}
-                                    onClick={() => setCurrentContact(contact)}
-                                >
-                                    <Avatar src={contact.image} />
-                                    <h3>{contact.username}</h3>
-                                    <Status className={contact.online ? "online" : "offline"} />
+                    <Rooms>
+                        {currentRoomType === "contacts" ? (
+                            user?.contacts?.map((contact, i) => {
+                                return contact.active ? (
+                                    <Room
+                                        key={i}
+                                        onClick={() => setCurrentContact(contact)}
+                                    >
+                                        <Avatar src={contact.image} />
+                                        <h3>{contact.username}</h3>
+                                        <Status className={contact.online ? "online" : "offline"} />
 
-                                    {contact.unread_messages ? (
-                                        <UnreadMessages>
-                                            {contact.unread_messages}
-                                        </UnreadMessages>
-                                    ) : null}
-                                </Room>
-                            ) : null;
-                        })
-                    ) : (
-                        user?.groups?.map((group, i) => {
-                            return (
-                                <Room
-                                    key={i}
-                                    onClick={() => setCurrentGroup(group)}
-                                >
-                                    <Avatar src={group.image} />
-                                    <h3>{group.name}</h3>
-                                </Room>
-                            )
-                        })
-                    )}
+                                        {contact.unread_messages ? (
+                                            <UnreadMessages>
+                                                {contact.unread_messages}
+                                            </UnreadMessages>
+                                        ) : null}
+                                    </Room>
+                                ) : null;
+                            })
+                        ) : (
+                            user?.groups?.map((group, i) => {
+                                return (
+                                    <Room
+                                        key={i}
+                                        onClick={() => setCurrentGroup(group)}
+                                    >
+                                        <Avatar src={group.image} />
+                                        <h3>{group.name}</h3>
+                                    </Room>
+                                )
+                            })
+                        )}
+                    </Rooms>
                 </RoomsContainer>
             </Inner>
         </Container>

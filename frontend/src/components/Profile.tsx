@@ -2,9 +2,6 @@ import { useState } from "react";
 import { UserI } from "../types/user";
 
 import {
-    Container,
-    Header,
-    Inner,
     Info,
     Form,
     InputWrapper,
@@ -12,12 +9,18 @@ import {
     Input,
     InputContainer,
     Button,
-    Submit,
     Message,
+    WrapperScreen,
     Screen,
     Fill,
     Close,
 } from "../styles/components/Profile";
+import {
+    Container,
+    Header,
+    Inner,
+
+} from "../styles/components/Container";
 import Warning from "./Warning";
 import { Avatar } from "@material-ui/core";
 import {
@@ -136,7 +139,7 @@ export default function Profile({ user }: ProfileI) {
                                 type="button"
                                 onClick={() => setUpdateEmailScreen(true)}
                             >
-                                update
+                                Change
                             </Button>
 
                             {showMessage ? (
@@ -164,7 +167,7 @@ export default function Profile({ user }: ProfileI) {
             </Inner>
 
             {updateEmailScreen ? (
-                <>
+                <WrapperScreen>
                     <Screen>
                         <Close
                             type="button"
@@ -193,11 +196,11 @@ export default function Profile({ user }: ProfileI) {
                     <Fill
                         onClick={() => closeNewEmailScreen()}
                     />
-                </>
+                </WrapperScreen>
             ) : null}
 
             {deleteAccountScreen ? (
-                <>
+                <WrapperScreen>
                     <Screen className="delete">
                         <Close
                             type="button"
@@ -221,7 +224,7 @@ export default function Profile({ user }: ProfileI) {
                     <Fill
                         onClick={() => closeDeleteAccountScreen()}
                     />
-                </>
+                </WrapperScreen>
             ) : null}
         </Container>
     );
