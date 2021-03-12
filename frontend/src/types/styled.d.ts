@@ -1,6 +1,6 @@
 import 'styled-components';
 
-import { light } from './theme';
+import { light } from '../styles/theme';
 
 export type Theme = typeof light;
 
