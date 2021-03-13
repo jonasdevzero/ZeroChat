@@ -1,5 +1,6 @@
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Fuse from "fuse.js";
 
 import { UserI, ContactI, GroupI } from "../types/user";
 
@@ -38,9 +39,6 @@ interface SidebarI {
 
     setCurrentContainer: React.Dispatch<React.SetStateAction<"contacts" | "groups" | "profile" | "addContact" | "createGroup">>;
 
-    currentRoomType: "contacts" | "groups";
-    setCurrentRoomType: React.Dispatch<React.SetStateAction<"contacts" | "groups">>;
-
     setCurrentContact: React.Dispatch<React.SetStateAction<ContactI>>;
     setCurrentGroup: React.Dispatch<React.SetStateAction<GroupI>>;
 
@@ -48,10 +46,32 @@ interface SidebarI {
     setTheme: React.Dispatch<React.SetStateAction<"light" | "dark">>;
 };
 
-function Sidebar({ user, setToken, setCurrentContainer, setCurrentContact, setCurrentGroup, currentRoomType, setCurrentRoomType, theme, setTheme }: SidebarI) {
+function Sidebar({
+    user,
+    setToken,
+    setCurrentContainer,
+    setCurrentContact,
+    setCurrentGroup,
+    theme,
+    setTheme
+}: SidebarI) {
     const router = useRouter();
 
     const [search, setSearch] = useState("");
+    const [searchResult, setSearchResult] = useState([]);
+    const [currentRoomType, setCurrentRoomType] = useState<"contacts" | "groups">("contacts");
+
+    useEffect(() => {
+        if (currentRoomType === "contacts") {
+            const fuse = new Fuse(user?.contacts, { keys: ["username"] });
+            const result = fuse.search(search).map(({ item }) => item);
+            setSearchResult(result);
+        } else {
+            const fuse = new Fuse(user?.groups, { keys: ["name"] });
+            const result = fuse.search(search).map(({ item }) => item);
+            setSearchResult(result);
+        };
+    }, [search, user?.contacts, user?.groups]);
 
     return (
         <Container>
@@ -72,7 +92,6 @@ function Sidebar({ user, setToken, setCurrentContainer, setCurrentContact, setCu
                         <OptionButton
                             className={`option ${currentRoomType === "contacts" && "selected"}`}
                             onClick={() => {
-                                setCurrentGroup(undefined);
                                 setCurrentContainer("contacts");
                                 setCurrentRoomType("contacts");
                             }}
@@ -83,7 +102,6 @@ function Sidebar({ user, setToken, setCurrentContainer, setCurrentContact, setCu
                         <OptionButton
                             className={`option ${currentRoomType === "groups" && "selected"}`}
                             onClick={() => {
-                                setCurrentContact(undefined);
                                 setCurrentContainer("groups")
                                 setCurrentRoomType("groups");
                             }}
@@ -146,36 +164,89 @@ function Sidebar({ user, setToken, setCurrentContainer, setCurrentContact, setCu
 
                     <Rooms>
                         {currentRoomType === "contacts" ? (
-                            user?.contacts?.map((contact, i) => {
-                                return contact.active ? (
-                                    <Room
-                                        key={i}
-                                        onClick={() => setCurrentContact(contact)}
-                                    >
-                                        <Avatar src={contact.image} />
-                                        <h3>{contact.username}</h3>
-                                        <Status className={contact.online ? "online" : "offline"} />
+                            search.length > 0 ? (
+                                searchResult.map((contact, i) => {
+                                    return contact.active ? (
+                                        <Room
+                                            key={i}
+                                            onClick={() => {
+                                                setSearch("");
+                                                setCurrentContainer("contacts");
+                                                setCurrentGroup(undefined);
+                                                setCurrentContact(contact);
+                                            }}
+                                        >
+                                            <Avatar src={contact.image} />
+                                            <h3>{contact.username}</h3>
+                                            <Status className={contact.online ? "online" : "offline"} />
 
-                                        {contact.unread_messages ? (
-                                            <UnreadMessages>
-                                                {contact.unread_messages}
-                                            </UnreadMessages>
-                                        ) : null}
-                                    </Room>
-                                ) : null;
-                            })
+                                            {contact.unread_messages ? (
+                                                <UnreadMessages>
+                                                    {contact.unread_messages}
+                                                </UnreadMessages>
+                                            ) : null}
+                                        </Room>
+                                    ) : null;
+                                })
+                            ) : (
+                                user?.contacts?.map((contact, i) => {
+                                    return contact.active ? (
+                                        <Room
+                                            key={i}
+                                            onClick={() => {
+                                                setCurrentContainer("contacts");
+                                                setCurrentGroup(undefined);
+                                                setCurrentContact(contact);
+                                            }}
+                                        >
+                                            <Avatar src={contact.image} />
+                                            <h3>{contact.username}</h3>
+                                            <Status className={contact.online ? "online" : "offline"} />
+
+                                            {contact.unread_messages ? (
+                                                <UnreadMessages>
+                                                    {contact.unread_messages}
+                                                </UnreadMessages>
+                                            ) : null}
+                                        </Room>
+                                    ) : null;
+                                })
+                            )
                         ) : (
-                            user?.groups?.map((group, i) => {
-                                return (
-                                    <Room
-                                        key={i}
-                                        onClick={() => setCurrentGroup(group)}
-                                    >
-                                        <Avatar src={group.image} />
-                                        <h3>{group.name}</h3>
-                                    </Room>
-                                )
-                            })
+                            search.length > 0 ? (
+                                searchResult.map((group, i) => {
+                                    return (
+                                        <Room
+                                            key={i}
+                                            onClick={() => {
+                                                setSearch("");
+                                                setCurrentContainer("groups");
+                                                setCurrentContact(undefined);
+                                                setCurrentGroup(group);
+                                            }}
+                                        >
+                                            <Avatar src={group.image} />
+                                            <h3>{group.name}</h3>
+                                        </Room>
+                                    )
+                                })
+                            ) : (
+                                user?.groups?.map((group, i) => {
+                                    return (
+                                        <Room
+                                            key={i}
+                                            onClick={() => {
+                                                setCurrentContainer("groups");
+                                                setCurrentContact(undefined);
+                                                setCurrentGroup(group);
+                                            }}
+                                        >
+                                            <Avatar src={group.image} />
+                                            <h3>{group.name}</h3>
+                                        </Room>
+                                    )
+                                })
+                            )
                         )}
                     </Rooms>
                 </RoomsContainer>
