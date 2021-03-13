@@ -115,37 +115,51 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
     }, []);
 
     useEffect(() => {
-        socket.on("privateMessage", ({ message, unread_messages }) => {
+        socket.on("privateMessage", ({ message }) => {
             const sender = message.sender_id;
             const receiver = message.contact.id;
+            const unread_messages = message.contact.unread_messages;
 
-            setUser({
-                ...user,
-                contacts: user?.contacts?.map(contact => {
-                    if (receiver === contact?.id || sender === contact?.id) { // update messages
-                        const updatedMessages = contact?.messages?.map(msg => msg?.id === message?.id ? null : msg);
-                        updatedMessages?.push(message);
-                        contact.messages = updatedMessages;
-                        contact.active = true;
+            const existsContact = user?.contacts?.find(c => c.id === sender);
 
-                        if (user?.id === receiver && contact?.id === sender) {
-                            if (currentContact && currentContact?.id === sender) {
-                                api.put(`/contact/message?access_token=${token}&only_unread_messages=true`, {
-                                    unread_messages: 0,
-                                    user_id: user?.id,
-                                    contact_id: currentContact.id,
-                                });
+            if (!existsContact && user?.id === receiver) {
+                api.get(`/contact?access_token=${token}&id=${user?.id}`)
+                    .then(response => {
+                        setUser({
+                            ...user,
+                            contacts: response.data.contacts,
+                        })
+                    });
+            } else {
+                setUser({
+                    ...user,
+                    contacts: user?.contacts?.map(contact => {
+                        if (receiver === contact?.id || sender === contact?.id) { // update messages
+                            const updatedMessages = contact?.messages?.map(msg => msg?.id === message?.id ? null : msg);
+                            updatedMessages?.push(message);
+                            contact.messages = updatedMessages;
+                            contact.active = true;
 
-                                contact.unread_messages = null;
-                            } else {
-                                contact.unread_messages = unread_messages;
+                            if (user?.id === receiver) {
+                                if (currentContact && currentContact.id === sender) {
+                                    api.put(`/contact/message?access_token=${token}&only_unread_messages=true`, {
+                                        unread_messages: 0,
+                                        user_id: user?.id,
+                                        contact_id: currentContact.id,
+                                    });
+
+                                    contact.unread_messages = undefined;
+                                } else {
+                                    contact.unread_messages = unread_messages;
+                                };
+
                             };
                         };
-                    };
 
-                    return contact;
-                }),
-            });
+                        return contact;
+                    }),
+                });
+            };
 
             if (currentContact?.id === receiver || currentContact?.id === sender) {
                 scrollToBottom(true);
@@ -167,7 +181,7 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
                 }),
             });
         });
-    }, [user]);
+    }, [user, currentContact, currentGroup]);
 
     useEffect(() => {
         scrollToBottom();
@@ -191,7 +205,7 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
                 });
         };
 
-        if (currentContainer === "contacts" && currentContact && currentContact.unread_messages) {
+        if (currentContainer === "contacts" && currentContact && currentContact?.unread_messages > 0) {
             api.put(`/contact/message?access_token=${token}&only_unread_messages=true`, {
                 unread_messages: 0,
                 user_id: user?.id,
@@ -201,7 +215,7 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
                     ...user,
                     contacts: user?.contacts?.map(contact => {
                         if (currentContact.id === contact.id)
-                            contact.unread_messages = null;
+                            contact.unread_messages = undefined;
 
                         return contact;
                     }),
@@ -392,7 +406,12 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
                         )
                     ) :
                         currentContainer === "addContact" ? (
-                            <AddContact />
+                            <AddContact
+                                user={user}
+                                setUser={setUser}
+                                setCurrentContact={setCurrentContact}
+                                setCurrentContainer={setCurrentContainer}
+                            />
                         ) :
                             currentContainer === "createGroup" ? (
                                 <CreateGroup

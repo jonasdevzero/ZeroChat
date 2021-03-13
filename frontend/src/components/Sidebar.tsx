@@ -62,11 +62,11 @@ function Sidebar({
     const [currentRoomType, setCurrentRoomType] = useState<"contacts" | "groups">("contacts");
 
     useEffect(() => {
-        if (currentRoomType === "contacts") {
-            const fuse = new Fuse(user?.contacts, { keys: ["username"] });
+        if (currentRoomType === "contacts" && user?.contacts) {
+            const fuse = new Fuse(user.contacts, { keys: ["username"] });
             const result = fuse.search(search).map(({ item }) => item);
             setSearchResult(result);
-        } else {
+        } else if (currentRoomType === "groups" && user?.groups) {
             const fuse = new Fuse(user?.groups, { keys: ["name"] });
             const result = fuse.search(search).map(({ item }) => item);
             setSearchResult(result);
@@ -76,7 +76,11 @@ function Sidebar({
     return (
         <Container>
             <Header>
-                <User onClick={() => setCurrentContainer("profile")}>
+                <User onClick={() => {
+                    setCurrentContainer("profile")
+                    setCurrentContact(undefined);
+                    setCurrentGroup(undefined);
+                }}>
                     <Avatar src={user?.picture} />
                     <h2>{user?.username}</h2>
                 </User>
@@ -111,14 +115,22 @@ function Sidebar({
 
                         <OptionButton
                             className="option"
-                            onClick={() => setCurrentContainer("addContact")}
+                            onClick={() => {
+                                setCurrentContainer("addContact");
+                                setCurrentContact(undefined);
+                                setCurrentGroup(undefined);
+                            }}
                         >
                             <PersonAddIcon />
                         </OptionButton>
 
                         <OptionButton
                             className="option"
-                            onClick={() => setCurrentContainer("createGroup")}
+                            onClick={() => {
+                                setCurrentContainer("createGroup");
+                                setCurrentContact(undefined);
+                                setCurrentGroup(undefined);
+                            }}
                         >
                             <GroupAddIcon />
                         </OptionButton>
