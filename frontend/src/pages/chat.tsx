@@ -399,7 +399,9 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
                             <AddContact />
                         ) :
                             currentContainer === "createGroup" ? (
-                                <CreateGroup />
+                                <CreateGroup
+                                    user={user}
+                                />
                             ) : null
                 }
             </Inner>
