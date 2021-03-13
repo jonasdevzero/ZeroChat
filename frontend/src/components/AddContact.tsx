@@ -76,7 +76,7 @@ export default function AddContact() {
                         </NotFound>
                     ) : (
                         <Initial>
-                            <strong>search for users to add to your contacts</strong>
+                            <strong>Search for users to add to your contacts</strong>
                         </Initial>
                     )}
                 </Contacts>

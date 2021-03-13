@@ -15,7 +15,7 @@ export const Input = styled.input`
     padding: 0 3.3rem 0 1rem;
     border: none;
     outline: none;
-    border-radius: 1.5rem;
+    border-radius: .7rem;
 
     color: lightgray;
     background-color: #353535;
