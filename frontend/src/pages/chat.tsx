@@ -55,7 +55,6 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
 
     const [currentContainer, setCurrentContainer] = useState<"profile" | "contacts" | "groups" | "addContact" | "createGroup">("contacts");
 
-    const [currentRoomType, setCurrentRoomType] = useState<"contacts" | "groups">("contacts");
     const [currentContact, setCurrentContact] = useState<ContactI>();
     const [currentGroup, setCurrentGroup] = useState<GroupI>();
 
@@ -118,7 +117,7 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
     useEffect(() => {
         socket.on("privateMessage", ({ message, unread_messages }) => {
             const sender = message.sender_id;
-            const receiver = message.contact.contact_id;
+            const receiver = message.contact.id;
 
             setUser({
                 ...user,
@@ -173,7 +172,7 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
     useEffect(() => {
         scrollToBottom();
 
-        if (currentRoomType === "contacts" && currentContact && !(currentContact?.messages)) {
+        if (currentContainer === "contacts" && currentContact && !(currentContact?.messages)) {
             api.get(`/contact/messages?access_token=${token}&id=${user?.id}&contact_id=${currentContact?.id}`)
                 .then(response => {
                     const data = response.data;
@@ -192,7 +191,7 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
                 });
         };
 
-        if (currentRoomType === "contacts" && currentContact && currentContact.unread_messages) {
+        if (currentContainer === "contacts" && currentContact && currentContact.unread_messages) {
             api.put(`/contact/message?access_token=${token}&only_unread_messages=true`, {
                 unread_messages: 0,
                 user_id: user?.id,
@@ -277,9 +276,6 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
 
                 setCurrentContainer={setCurrentContainer}
 
-                currentRoomType={currentRoomType}
-                setCurrentRoomType={setCurrentRoomType}
-
                 setCurrentContact={setCurrentContact}
                 setCurrentGroup={setCurrentGroup}
 
@@ -296,7 +292,7 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
                     currentContainer === "contacts" || currentContainer === "groups" ? (
                         !currentContact && !currentGroup ? (
                             <ContainerWithoutChat>
-                                {currentRoomType === "contacts" ? (
+                                {currentContainer === "contacts" ? (
                                     <h1>Select a contact to chat</h1>
                                 ) : (
                                     <h1>Select a group to chat</h1>
@@ -306,11 +302,11 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
                             <>
                                 <Header>
                                     <Room>
-                                        <Avatar src={currentRoomType === "contacts" ? currentContact?.image : currentGroup?.image} />
-                                        <h2>{currentRoomType === "contacts" ? currentContact?.username : currentGroup?.name}</h2>
+                                        <Avatar src={currentGroup ? currentContact?.image : currentGroup?.image} />
+                                        <h2>{currentContact ? currentContact.username : currentGroup.name}</h2>
                                     </Room>
 
-                                    {currentRoomType === "contacts" ? (
+                                    {currentContact ? (
                                         <>
                                             <IButton>
                                                 <CallIcon />
@@ -329,7 +325,7 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
                                 </Header>
 
                                 <MessagesContainer ref={messagesContainerRef} onScroll={() => onScroll()}>
-                                    {currentRoomType === "contacts" ?
+                                    {currentContact ?
                                         currentContact?.messages?.map((msg, i) => {
                                             return msg ? msg.sender_id === user?.id ? (
                                                 <MessageSender key={i}>
@@ -378,7 +374,7 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
                                         <InsertEmoticonIcon fontSize="large" />
                                     </IconButton>
 
-                                    <Form onSubmit={currentRoomType === "contacts" ? privateMessage : groupMessage}>
+                                    <Form onSubmit={currentContainer === "contacts" ? privateMessage : groupMessage}>
                                         <Input
                                             type="text"
                                             value={message}

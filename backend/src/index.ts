@@ -60,8 +60,8 @@ if (cluster.isMaster) {
             callback(contactsOnline);
         });
 
-        socket.on("sendPrivateMessage", ({ message, senderContact, unread_messages }, callback) => {
-            io.to(message.sender_id).to(message.contact.contact_id).emit("privateMessage", { message, senderContact, unread_messages });
+        socket.on("sendPrivateMessage", ({ message, unread_messages }, callback) => {
+            io.to(message.sender_id).to(message.contact.id).emit("privateMessage", { message, unread_messages });
 
             callback();
         });

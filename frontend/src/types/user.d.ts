@@ -8,7 +8,7 @@ export interface ContactMessagesI {
 };
 
 export interface ContactI {
-    id_contact: strng;
+    id_contact: string;
     id: string;
     username: string;
     image: string;

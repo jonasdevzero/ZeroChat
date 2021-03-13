@@ -132,21 +132,32 @@ export default {
             if (receiverContact?.blocked)
                 return response.status(400).json({ message: "You are blocked" });
 
-            const id = receiverContact.id;
-            if (!receiverContact?.active)
-                await contactRepository.update(id, { active: true });
 
             const contactMessagesRepository = getRepository(ContactMessages);
 
             const double_contact_id = uuidv4();
 
-            const newMessage = await contactMessagesRepository.create({ message, sender_id, contact: { id: id_contact }, double_contact_id }).save();
+            const messageData = await contactMessagesRepository.create({ message, sender_id, contact: { id: id_contact }, double_contact_id }).save();
             await contactMessagesRepository.create({ message, sender_id, contact: { id: receiverContact.id }, double_contact_id }).save();
 
+            const id = receiverContact.id;
             const unread_messages = typeof receiverContact.unread_messages == "number" ? ++receiverContact.unread_messages : 1;
-            await contactRepository.update(id, { unread_messages });
+            await contactRepository.update(id, { unread_messages, active: true });
 
-            return response.status(201).json({ message: newMessage, unread_messages });
+            const newMessage = {
+                id: messageData.id,
+                double_contact_id: messageData.double_contact_id,
+                id_contact,
+                sender_id,
+                message,
+                contact: {
+                    id: receiver_id,
+                    unread_messages,
+                },
+                posted_at: messageData.posted_at,
+            };
+
+            return response.status(201).json({ message: newMessage });
         } catch (err) {
             console.log(err);
             return response.status(500).json({ message: "Internal server error" });
