@@ -2,13 +2,18 @@ import { Request, Response } from "express";
 import { getRepository } from "typeorm";
 import { Contact, ContactMessages, User } from "../models";
 import { v4 as uuidv4 } from "uuid";
+import { ContactView } from "../views";
 
 export default {
     async index(request: Request, response: Response) {
         try {
+            const { id } = request.query;
             const contactRepository = getRepository(Contact);
 
-            const contacts = await contactRepository.find();
+            const contacts = await contactRepository.find({ 
+                where: { user: { id } },
+                relations: ["contact"],
+            });
 
             return response.status(200).json({ contacts });
         } catch (err) {
@@ -57,7 +62,7 @@ export default {
             const createdContact = await contactRepository.create(data).save();
             await contactRepository.create(data2).save()
 
-            return response.status(201).json({ contact: createdContact });
+            return response.status(201).json({ contact: ContactView.render(createdContact) });
         } catch (err) {
             console.log(err);
             return response.status(500).json({ message: "Internal server error" });

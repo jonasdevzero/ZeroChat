@@ -22,7 +22,7 @@ export default {
                     relations: ["contacts", "contacts.contact", "groups", "groups.group", "groups.group.users", "groups.group.users.user"]
                 });
             };
-            return response.status(200).json({ user: UserView.renderMany(users) });
+            return response.status(200).json({ users: UserView.renderMany(users) });
         } catch (err) {
             console.log("error on [index] {user} -> ", err);
             return response.status(500).json({ error: "Internal server error" });
@@ -151,14 +151,14 @@ export default {
 
     async auth(request: Request, response: Response, next: NextFunction) {
         try {
-            const { access_token, user_required } = request.query;
+            const { access_token, user_required, signin_auth } = request.query;
 
             if (!access_token)
                 return response.status(401).json({ error: "The access token is undefined" });
 
             const userVerified = authenticateToken(access_token.toString());
 
-            if (Boolean(user_required)) {
+            if (Boolean(user_required) || Boolean(signin_auth)) {
                 request.body.user = userVerified;
                 const { id } = request.body.user;
 
