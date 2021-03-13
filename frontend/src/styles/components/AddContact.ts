@@ -42,8 +42,11 @@ export const Contacts = styled.div`
     flex-direction: column;
 
     width: 100%;
+    max-height: 30rem;
     margin-top: 3rem;
     padding: 0 2rem;
+
+    overflow-y: scroll;
 `;
 
 export const Contact = styled.div`
@@ -51,7 +54,7 @@ export const Contact = styled.div`
     align-items: center;
     justify-content: space-between;
 
-    margin-bottom: .5rem;
+    margin-bottom: .2rem;
     padding: 1rem;
     border-radius: .3rem;
 
@@ -63,7 +66,6 @@ export const Contact = styled.div`
     p {
         margin-left: .7rem;
         font-size: 1.6rem;
-
     };
 
     &:hover {

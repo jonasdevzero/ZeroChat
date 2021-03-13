@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { UserI } from "../types/user";
+import { useState, useEffect, Dispatch } from "react";
+import { UserI, ContactI } from "../types/user";
+import api from "../services/api";
 
 import {
     Container,
@@ -13,7 +14,6 @@ import {
     Contact,
     Submit,
     WrapperAvatar,
-    NotFound,
     Initial,
 } from "../styles/components/AddContact";
 import { Avatar } from "@material-ui/core";
@@ -22,21 +22,54 @@ import {
     Add as AddIcon,
 } from "@material-ui/icons";
 
-export default function AddContact() {
+interface AddContactI {
+    user: UserI;
+    setUser: Dispatch<React.SetStateAction<UserI>>;
+    setCurrentContact: Dispatch<React.SetStateAction<ContactI>>
+    setCurrentContainer: Dispatch<React.SetStateAction<"profile" | "contacts" | "groups" | "addContact" | "createGroup">>
+};
+
+export default function AddContact({ user, setUser, setCurrentContact, setCurrentContainer }: AddContactI) {
     const [username, setUsername] = useState("");
 
-    const [contacts, setContact] = useState<UserI[]>();
-    const [notFound, setNotFound] = useState(false);
+    const [contacts, setContacts] = useState<UserI[]>();
 
     function onSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
-
-        //...
     };
 
-    function add(contact: UserI) {
-        //...
+    async function add(contact: UserI) {
+        const token = JSON.parse(localStorage.getItem("token"))
+
+        await api.post(`/contact?access_token=${token}`, {
+            id: user.id,
+            contact_id: contact.id
+        }).then(response => {
+            const newContact: ContactI = response.data.contact;
+
+            const updatedContacts: ContactI[] = [newContact];
+            user.contacts.forEach(contact => updatedContacts.push(contact))
+
+            setUser({
+                ...user,
+                contacts: updatedContacts
+            });
+
+            setCurrentContact(newContact);
+            setCurrentContainer("contacts");
+        });
     };
+
+    useEffect(() => {
+        if (username.length > 3) {
+            api.get(`/user?username=${username}`).then(response => {
+                const users = response.data.users;
+                setContacts(users.filter((u: UserI) => u.id !== user.id && !(user.contacts.find(c => c.id === u.id))))
+            });
+        } else {
+            setContacts(undefined);
+        };
+    }, [username])
 
     return (
         <Container>
@@ -61,7 +94,7 @@ export default function AddContact() {
                 <Contacts>
                     {contacts ? contacts.map((contact, i) => {
                         return (
-                            <Contact onClick={() => add(contact)}>
+                            <Contact onClick={() => add(contact)} key={i}>
                                 <WrapperAvatar>
                                     <Avatar src={contact.picture} />
                                     <p>{contact.username}</p>
@@ -70,11 +103,7 @@ export default function AddContact() {
                                 <AddIcon fontSize="large" />
                             </Contact>
                         );
-                    }) : notFound ? (
-                        <NotFound>
-                            <strong>No users found!</strong>
-                        </NotFound>
-                    ) : (
+                    }) : (
                         <Initial>
                             <strong>Search for users to add to your contacts</strong>
                         </Initial>
