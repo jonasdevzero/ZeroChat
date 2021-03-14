@@ -60,16 +60,22 @@ export default function AddContact({ user, setUser, setCurrentContact, setCurren
         });
     };
 
-    useEffect(() => {
-        if (username.length > 3) {
-            api.get(`/user?username=${username}`).then(response => {
-                const users = response.data.users;
-                setContacts(users.filter((u: UserI) => u.id !== user.id && !(user.contacts.find(c => c.id === u.id))))
-            });
-        } else {
-            setContacts(undefined);
+    useEffect(() => { // debouncing
+        let timeout = setTimeout(() => {
+            if (username.length > 0) {
+                api.get(`/user?username=${username}`).then(response => {
+                    const users = response.data.users;
+                    setContacts(users.filter((u: UserI) => u.id !== user.id && !(user.contacts.find(c => c.id === u.id))));
+                });
+            } else {
+                setContacts(undefined)
+            };
+        }, 500);
+
+        return () => {
+            clearTimeout(timeout);
         };
-    }, [username])
+    }, [username]);
 
     return (
         <Container>
