@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { getRepository, Like, SelectQueryBuilder } from "typeorm";
+import { getRepository, Like } from "typeorm";
 import User from "../models/User";
 import UserView from "../views/UserView";
 import { encryptPassword, generateToken, comparePasswords, authenticateToken } from "../utils/user";
@@ -18,9 +18,7 @@ export default {
             if (username) {
                 users = await userRepository.find({ where: { username: Like(`%${username}%`) } });
             } else {
-                users = await userRepository.find({
-                    relations: ["contacts", "contacts.contact", "groups", "groups.group", "groups.group.users", "groups.group.users.user"]
-                });
+                users = await userRepository.find();
             };
             return response.status(200).json({ users: UserView.renderMany(users) });
         } catch (err) {

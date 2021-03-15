@@ -19,6 +19,9 @@ export default class Group extends BaseEntity {
     created_by: string;
 
     @Column()
+    last_message_time: Date;
+
+    @Column()
     created_at: Date;
 
     @Column()

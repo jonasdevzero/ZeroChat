@@ -10,15 +10,43 @@ export default {
             const { id } = request.query;
             const contactRepository = getRepository(Contact);
 
-            const contacts = await contactRepository.find({ 
-                where: { user: { id } },
-                relations: ["contact"],
-            });
+            const contacts = await contactRepository
+                .createQueryBuilder("contact")
+                .orderBy("contact.last_message_time", "DESC")
+                .leftJoin("contact.user", "user")
+                .where("user.id = :id", { id })
+                .leftJoinAndSelect("contact.contact", "c")
+                .getMany()
 
-            return response.status(200).json({ contacts });
+            return response.status(200).json({ contacts: ContactView.renderMany(contacts) });
         } catch (err) {
             console.log(err);
             return response.status(500).json({ message: "Internal server error" })
+        };
+    },
+
+    async show(request: Request, response: Response) {
+        try {
+            const { id } = request.params;
+            const { user_id } = request.query;
+
+            if (!user_id || !id)
+                return response.status(400).json({ message: "user_id or contact_id is empty!" });
+
+            const contactRepository = getRepository(Contact);
+
+            const contact = await contactRepository.findOne({ 
+                where: { user: { id: String(user_id) }, contact: { id } },
+                relations: ["contact", "messages"],     
+            });
+
+            if (!contact) 
+                return response.status(400).json({ message: "Contact does not found" });
+                
+            return response.status(200).json({ contact: ContactView.render(contact) });
+        } catch (err) {
+            console.log(err);
+            return response.status(500).json({ message: "Internal Server Error" });
         };
     },
 
@@ -45,18 +73,21 @@ export default {
             if (existsContact)
                 return response.status(400).json({ message: "Contact already exists" });
 
+            const now = new Date();
             const data = {
                 user,
                 contact_id: userContact.id,
                 contact: userContact,
                 active: true,
                 blocked: false,
+                last_message_time: now,
             };
             const data2 = {
                 user: userContact,
                 contact: user,
                 active: false,
                 blocked: false,
+                last_message_time: now,
             };
 
             const createdContact = await contactRepository.create(data).save();
@@ -141,13 +172,40 @@ export default {
             const contactMessagesRepository = getRepository(ContactMessages);
 
             const double_contact_id = uuidv4();
+            const posted_at = new Date();
+            const unread_messages = typeof receiverContact.unread_messages == "number" ? ++receiverContact.unread_messages : 1;
 
-            const messageData = await contactMessagesRepository.create({ message, sender_id, contact: { id: id_contact }, double_contact_id }).save();
-            await contactMessagesRepository.create({ message, sender_id, contact: { id: receiverContact.id }, double_contact_id }).save();
+            const messageData = await contactMessagesRepository.create({ 
+                message, 
+                sender_id, 
+                contact: { 
+                    id: id_contact 
+                }, 
+                double_contact_id, 
+                posted_at 
+            }).save();
+            await contactMessagesRepository.create({ 
+                message, 
+                sender_id, 
+                contact: { 
+                    id: receiverContact.id 
+                }, 
+                double_contact_id, 
+                posted_at 
+            }).save();
 
             const id = receiverContact.id;
-            const unread_messages = typeof receiverContact.unread_messages == "number" ? ++receiverContact.unread_messages : 1;
-            await contactRepository.update(id, { unread_messages, active: true });
+            await contactRepository.update(id, { unread_messages, active: true, last_message_time: posted_at });
+
+            // test
+            await contactRepository
+                .createQueryBuilder("contact")
+                .leftJoin("contact.user", "user")
+                .update()
+                .set({ last_message_time: posted_at })                
+                .where("user.id = :user_id", { user_id: sender_id  })
+                .andWhere("contact.contact_id = :contact_id", { contact_id: receiver_id })
+                .execute();
 
             const newMessage = {
                 id: messageData.id,
@@ -159,7 +217,7 @@ export default {
                     id: receiver_id,
                     unread_messages,
                 },
-                posted_at: messageData.posted_at,
+                posted_at
             };
 
             return response.status(201).json({ message: newMessage });

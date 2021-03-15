@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, BeforeInsert, JoinColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from "typeorm";
 import Group from "./Group";
 
 @Entity("group_messages")
@@ -21,9 +21,4 @@ export default class GroupMessages {
     @ManyToOne(_ => Group, group => group.messages)
     @JoinColumn({ name: "group_id" })
     group: Group;
-
-    @BeforeInsert()
-    private setPostedAt() {
-        this.posted_at = new Date();
-    };
 };

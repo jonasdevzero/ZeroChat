@@ -13,6 +13,9 @@ export default class Contact extends BaseEntity {
     unread_messages: number;
 
     @Column()
+    last_message_time: Date;
+
+    @Column()
     active: boolean;
 
     @Column()

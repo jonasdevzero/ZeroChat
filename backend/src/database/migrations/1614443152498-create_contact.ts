@@ -29,6 +29,11 @@ export class createContact1614443152498 implements MigrationInterface {
                     isNullable: true,
                 },
                 {
+                    name: "last_message_time",
+                    type: "timestamp with time zone",
+                    isNullable: true,
+                },
+                {
                     name: "active",
                     type: "boolean",
                 },
