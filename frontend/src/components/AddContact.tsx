@@ -27,9 +27,10 @@ interface AddContactI {
     setUser: Dispatch<React.SetStateAction<UserI>>;
     setCurrentContact: Dispatch<React.SetStateAction<ContactI>>
     setCurrentContainer: Dispatch<React.SetStateAction<"profile" | "contacts" | "groups" | "addContact" | "createGroup">>
+    socket: any;
 };
 
-export default function AddContact({ user, setUser, setCurrentContact, setCurrentContainer }: AddContactI) {
+export default function AddContact({ user, setUser, setCurrentContact, setCurrentContainer, socket }: AddContactI) {
     const [username, setUsername] = useState("");
 
     const [contacts, setContacts] = useState<UserI[]>();
@@ -46,21 +47,26 @@ export default function AddContact({ user, setUser, setCurrentContact, setCurren
             contact_id: contact.id
         }).then(response => {
             const newContact: ContactI = response.data.contact;
+            newContact.messages = [];
 
-            const updatedContacts: ContactI[] = [newContact];
-            user.contacts.forEach(contact => updatedContacts.push(contact))
+            socket?.emit("is-online", newContact.id, (online: boolean) => {
+                newContact.online = online;
 
-            setUser({
-                ...user,
-                contacts: updatedContacts
+                const updatedContacts: ContactI[] = [newContact];
+                user.contacts.forEach(contact => updatedContacts.push(contact))
+
+                setUser({
+                    ...user,
+                    contacts: updatedContacts
+                });
+
+                setCurrentContact(newContact);
+                setCurrentContainer("contacts");
             });
-
-            setCurrentContact(newContact);
-            setCurrentContainer("contacts");
         });
     };
 
-    useEffect(() => { // debouncing
+    useEffect(() => {
         let timeout = setTimeout(() => {
             if (username.length > 0) {
                 api.get(`/user?username=${username}`).then(response => {

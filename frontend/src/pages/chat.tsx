@@ -75,47 +75,60 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
             router.push("/signin");
         };
 
-        api.post(`/user/auth?access_token=${token}&user_required=true`).then(response => {
+        api.post(`/user/auth?access_token=${token}&user_required=true`).then(response => { // auth and get user
             const data = response.data;
 
             setToken(data.token);
 
-            const rooms: string[] = [];
-            rooms.push(data.user.id);
-            data.user.groups.forEach(group => rooms.push(group.id));
+            api.get(`/group?access_token=${token}&id=${data.user.id}`).then(response => { // get groups by last messages time
+                const { groups } = response.data;
 
-            const contacts: string[] = []
-            data.user.contacts.forEach(contact => contacts.push(contact.id));
+                data.user.groups = groups;
 
-            socket.emit("join", { rooms, contacts }, (contactsOnline: string[]) => {
-                if (contactsOnline.length > 0) {
-                    data.user.contacts.map((contact: ContactI) => {
-                        if (contactsOnline.find(contactOnline => contact.id === contactOnline)) {
-                            contact.online = true;
-                        } else {
-                            contact.online = false;
+                const rooms: string[] = [];
+                rooms.push(data.user.id);
+                groups.forEach(group => rooms.push(group.id));
+
+                api.get(`/contact?access_token=${token}&id=${data.user.id}`).then(response => { // get contacts by last messages time
+                    const { contacts } = response.data;
+
+                    data.user.contacts = contacts;
+
+                    const contactsId: string[] = []
+                    contacts.forEach(contact => contactsId.push(contact.id));
+
+                    socket.emit("join", { rooms, contacts: contactsId }, (contactsOnline: string[]) => {
+                        if (contactsOnline.length > 0) {
+                            data.user.contacts.map((contact: ContactI) => {
+                                if (contactsOnline.find(contactOnline => contact.id === contactOnline)) {
+                                    contact.online = true;
+                                } else {
+                                    contact.online = false;
+                                };
+
+                                return contact;
+                            });
                         };
 
-                        return contact;
+                        setUser(data.user);
                     });
-                };
-
-                setUser(data.user);
+                });
             });
         }).catch(() => {
             router.push("/signin");
         });
 
         return () => {
-            socket.off("privateMessage");
-            socket.off("groupMessage");
-            socket.off("userJoinOrLeft");
             socket.disconnect();
+            socket.off("private-message");
+            socket.off("group-message");
+            socket.off("contact-status-change");
+            socket.off("is-online");
         };
     }, []);
 
     useEffect(() => {
-        socket.on("privateMessage", ({ message }) => {
+        socket.on("private-message", ({ message }) => {
             const sender = message.sender_id;
             const receiver = message.contact.id;
             const unread_messages = message.contact.unread_messages;
@@ -123,24 +136,37 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
             const existsContact = user?.contacts?.find(c => c.id === sender);
 
             if (!existsContact && user?.id === receiver) {
-                api.get(`/contact?access_token=${token}&id=${user?.id}`)
+                api.get(`/contact/${sender}?access_token=${token}&user_id=${user?.id}`)
                     .then(response => {
-                        setUser({
-                            ...user,
-                            contacts: response.data.contacts,
-                        })
+                        const { contact } = response.data;
+
+                        socket.emit("is-online", contact.id, (online: boolean) => {
+                            contact.online = online;
+
+                            const updatedContacts: ContactI[] = [contact];
+                            user?.contacts?.forEach(c => updatedContacts.push(c))
+                            setUser({
+                                ...user,
+                                contacts: updatedContacts,
+                            })
+                        });
                     });
             } else {
+                let position: number;
+
                 setUser({
                     ...user,
-                    contacts: user?.contacts?.map(contact => {
+                    contacts: user?.contacts?.map((contact, i) => {
                         if (receiver === contact?.id || sender === contact?.id) { // update messages
                             const updatedMessages = contact?.messages?.map(msg => msg?.id === message?.id ? null : msg);
                             updatedMessages?.push(message);
                             contact.messages = updatedMessages;
                             contact.active = true;
 
+                            position = i
+
                             if (user?.id === receiver) {
+                                console.log(currentContact)
                                 if (currentContact && currentContact.id === sender) {
                                     api.put(`/contact/message?access_token=${token}&only_unread_messages=true`, {
                                         unread_messages: 0,
@@ -159,6 +185,13 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
                         return contact;
                     }),
                 });
+
+                if (position !== 0) {
+                    setUser({
+                        ...user,
+                        contacts: changePosition(user?.contacts, position, 0),
+                    });
+                };
             };
 
             if (currentContact?.id === receiver || currentContact?.id === sender) {
@@ -166,16 +199,16 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
             };
         });
 
-        socket.on("groupMessage", ({ message, to }) => {
+        socket.on("group-message", ({ message, to }) => {
             //...
         });
 
-        socket.on("userJoinOrLeft", ({ userId, status }: { userId: string, status: "join" | "left" }) => {
+        socket.on("contact-status-change", ({ contact_id, status }: { contact_id: string, status: "online" | "offline" }) => {
             setUser({
                 ...user,
                 contacts: user?.contacts?.map(contact => {
-                    if (contact.id === userId)
-                        contact.online = status === "join";
+                    if (contact.id === contact_id)
+                        contact.online = status === "online";
 
                     return contact;
                 }),
@@ -238,7 +271,7 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
             }).then(response => {
                 const { message, unread_messages } = response.data;
 
-                socket.emit("sendPrivateMessage", { message, unread_messages }, () => setMessage(""));
+                socket.emit("private-message", { message, unread_messages }, () => setMessage(""));
             });
         };
     };
@@ -247,7 +280,7 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
         e.preventDefault();
 
         if (message.length > 0) {
-            socket.emit("sendGroupMessage", { message, from: user?.id, to: currentGroup })
+            socket.emit("group-message", { message, from: user?.id, to: currentGroup })
         };
     };
 
@@ -276,6 +309,11 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
                 setShowScrollButton(false);
             };
         };
+    };
+
+    function changePosition<T extends any[]>(arr: T, from: number, to: number) {
+        arr?.splice(to, 0, arr?.splice(from, 1)[0]);
+        return arr;
     };
 
     return (
@@ -411,6 +449,7 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
                                 setUser={setUser}
                                 setCurrentContact={setCurrentContact}
                                 setCurrentContainer={setCurrentContainer}
+                                socket={socket}
                             />
                         ) :
                             currentContainer === "createGroup" ? (
