@@ -32,6 +32,7 @@ if (cluster.isMaster) {
 
     cluster.on("exit", (worker) => {
         console.log(`Process ${worker.process.pid} died`);
+        cluster.fork();
     });
 } else {
     io.on('connection', (socket: socketio.Socket) => {
@@ -54,22 +55,28 @@ if (cluster.isMaster) {
             console.log(`user connected: ${userId}`);
 
             contacts.forEach((contact: string) => {
-                socket.to(contact).emit("userJoinOrLeft", { userId, status: "join" });
+                socket.to(contact).emit("contact-status-change", { contact_id: userId, status: "online" });
             });
 
             callback(contactsOnline);
         });
 
-        socket.on("sendPrivateMessage", ({ message, unread_messages }, callback) => {
-            io.to(message.sender_id).to(message.contact.id).emit("privateMessage", { message, unread_messages });
+        socket.on("private-message", ({ message, unread_messages }, callback) => {
+            io.to(message.sender_id).to(message.contact.id).emit("private-message", { message, unread_messages });
 
             callback();
         });
 
-        socket.on("sendGroupMessage", ({ message, from, to }, callback) => {
-            io.to(to).emit("groupMessage", { message, from, to });
+        socket.on("group-message", ({ message, from, to }, callback) => {
+            io.to(to).emit("group-message", { message, from, to });
 
             callback();
+        });
+
+        socket.on("is-online", (contactId, callback) => {
+            const online = users.find(u => u.id === contactId) ? true : false;
+
+            callback(online);
         });
 
         socket.on("disconnect", () => {
@@ -79,7 +86,7 @@ if (cluster.isMaster) {
             console.log(`user disconnected: ${disconnectedUser?.id}`);
 
             disconnectedUser?.contacts.forEach(contact => {
-                socket.to(contact).emit("userJoinOrLeft", { userId: disconnectedUser.id, status: "left" });
+                socket.to(contact).emit("contact-status-change", { contact_id: disconnectedUser.id, status: "offline" });
             });
         });
     });
