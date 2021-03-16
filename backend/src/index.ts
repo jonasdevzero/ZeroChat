@@ -93,6 +93,7 @@ if (cluster.isMaster) {
 
     app.use(cors());
     app.use(express.json());
+    app.use(express.urlencoded({ extended: true }));
     app.use(routes);
 
     server.listen(PORT, () => console.log(`Running the server on port: ${PORT}, with the cluster worker: ${cluster.worker.id}`));
