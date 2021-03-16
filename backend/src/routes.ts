@@ -1,9 +1,14 @@
 import { Router } from "express";
+import multer from "multer";
+import multerConfig from "./config/multer";
+
 import UserController from "./controllers/UserController";
 import GroupController from "./controllers/GroupController";
 import ContactController from "./controllers/ContactController";
 
 const routes = Router();
+
+const upload = multer(multerConfig);
 
 routes.get("/", (req, res) => res.status(200).json("ok"));
 
@@ -31,5 +36,11 @@ routes.post("/contact", UserController.auth, ContactController.create);
 routes.post("/contact/message", UserController.auth ,ContactController.createMessage);
 
 routes.put("/contact/message", UserController.auth, ContactController.update);
+
+routes.post("/image/upload", upload.single("image"), (request, response) => {
+    console.log(request.file);
+
+    return response.status(201).json({ message: "ok" });
+});
 
 export default routes;
