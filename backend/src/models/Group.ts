@@ -15,6 +15,9 @@ export default class Group extends BaseEntity {
     @Column()
     image: string;
 
+    @Column()
+    image_key: string;
+
     @Column("uuid")
     created_by: string;
 

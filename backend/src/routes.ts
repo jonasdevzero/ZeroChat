@@ -23,10 +23,10 @@ routes.post("/user/forgot_password", UserController.forgotPassword);
 routes.delete("/user/:id", UserController.auth, UserController.delete);
 
 routes.put("/user/reset_password", UserController.resetPassword);
-routes.put("/user/:id", UserController.auth, UserController.update);
+routes.put("/user/:id", UserController.auth, upload.single("picture"), UserController.update);
 
 routes.get("/group", GroupController.index);
-routes.post("/group", UserController.auth, GroupController.create);
+routes.post("/group", UserController.auth, upload.single("image"), GroupController.create);
 
 routes.get("/contact", UserController.auth, ContactController.index);
 routes.get("/contact/messages", UserController.auth, ContactController.indexMessages);
@@ -36,11 +36,5 @@ routes.post("/contact", UserController.auth, ContactController.create);
 routes.post("/contact/message", UserController.auth ,ContactController.createMessage);
 
 routes.put("/contact/message", UserController.auth, ContactController.update);
-
-routes.post("/image/upload", upload.single("image"), (request, response) => {
-    console.log(request.file);
-
-    return response.status(201).json({ message: "ok" });
-});
 
 export default routes;

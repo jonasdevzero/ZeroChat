@@ -1,11 +1,17 @@
 import { Request, Response, NextFunction } from "express";
-import { getRepository, Like } from "typeorm";
+import { getRepository, Like, Not } from "typeorm";
 import User from "../models/User";
 import UserView from "../views/UserView";
 import { encryptPassword, generateToken, comparePasswords, authenticateToken } from "../utils/user";
 import * as Yup from "yup";
 import crypto from "crypto";
 import transporter from "../modules/mailer";
+import aws from "aws-sdk";
+import fs from "fs";
+import path from "path";
+import { promisify } from "util";
+
+const s3 = new aws.S3();
 
 export default {
     async index(request: Request, response: Response) {
@@ -101,22 +107,61 @@ export default {
     async update(request: Request, response: Response) {
         try {
             const id = request.params.id;
-            const { name, username, picture } = request.body;
+            const { updateEmail } = request.query;
+            const { name, username, email, password } = request.body;
 
             const userRepository = getRepository(User);
 
-            const existsUsername = await userRepository.findOne({ username });
+            const user = await userRepository.findOne(id);
+            if (!user)
+                return response.status(400).json({ message: "Incorrect Id" });
 
-            if (existsUsername && id !== existsUsername?.id)
+            if (Boolean(updateEmail)) {
+                const existsEmail = await userRepository.findOne({ where: { email, id: Not(id) } });
+
+                if (!existsEmail)
+                    return response.status(400).json({ message: "This email is already registred" });
+
+                if (!comparePasswords(password, user.password))
+                    return response.status(401).json({ message: "Incorrect password" });
+
+                await userRepository.update(user, { email });
+
+                return response.status(200).json({ message: "ok" });
+            };
+
+            const existsUsername = await userRepository.findOne({ where: { username, id: Not(id) } });
+
+            if (existsUsername)
                 return response.status(400).json({ error: "Username already exists" });
 
-            await userRepository.update(id, { name, username, picture });
-            const user = await userRepository.findOne(id);
+            let picture: string | undefined = user.picture;
+            let picture_key: string | undefined = user.picture_key;
+            if (request.file) {
+                // I'm changed the Express.Multer.File interface adding the location variable as string | undefined;   
+                const { location, filename } = request.file;
 
-            if (!user)
+                picture = process.env.STORAGE_TYPE === "s3" ? location : `${process.env.APP_URL}/files/${filename}`;
+                picture_key = filename;
+
+                if (user.picture) { // Removing the old image
+                    if (process.env.STORAGE_TYPE === "S3") {
+                        s3.deleteObject({ Bucket: "zero-chat", Key: user.picture_key }, (err, _data) => {
+                            if (err) console.log("error on [update.removing_image] {user}  ->", err);
+                        });
+                    } else {
+                        promisify(fs.unlink)(path.resolve(__dirname, "..", "..", "uploads", user.picture_key));
+                    };
+                };
+            };
+
+            await userRepository.update(id, { name, username, picture, picture_key });
+            const updatedUser = await userRepository.findOne(id);
+
+            if (!updatedUser)
                 return response.status(500).json({ error: "Unexpected error" });
 
-            return response.status(200).json({ user: UserView.render(user) });
+            return response.status(200).json({ user: UserView.render(updatedUser) });
         } catch (err) {
             console.log("error on [update] {user} -> ", err);
             return response.status(500).json({ error: "Internal server error" });
