@@ -1,5 +1,5 @@
 import { Request } from "express";
-import multer, { FileFilterCallback } from "multer";
+import multer, { FileFilterCallback, Options } from "multer";
 import multerS3 from "multer-s3";
 import aws from "aws-sdk";
 import path from "path";
@@ -56,4 +56,4 @@ export default {
             callback(new Error("Invalid form type!"));
         };
     },
-};
+} as Options;
