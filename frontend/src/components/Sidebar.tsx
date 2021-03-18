@@ -64,23 +64,48 @@ function Sidebar({
     useEffect(() => {
         if (currentRoomType === "contacts" && user?.contacts) {
             const fuse = new Fuse(user.contacts, { keys: ["username"] });
+
             const result = fuse.search(search).map(({ item }) => item);
             setSearchResult(result);
         } else if (currentRoomType === "groups" && user?.groups) {
             const fuse = new Fuse(user?.groups, { keys: ["name"] });
+
             const result = fuse.search(search).map(({ item }) => item);
             setSearchResult(result);
         };
     }, [search, user?.contacts, user?.groups]);
 
+    function changeContainer(option: "contacts" | "groups" | "profile" | "addContact" | "createGroup") {
+        setCurrentContact(undefined);
+        setCurrentGroup(undefined);
+
+        if (option === "contacts" || option === "groups") {
+            setCurrentRoomType(option);
+        };
+
+        setCurrentContainer(option);
+    };
+
+    function selectRoom(room: any, type: "contact" | "group") {
+        setSearch("");
+        setCurrentContainer(type === "contact" ? "contacts" : "groups");
+        setCurrentGroup(type === "contact" ? undefined : room);
+        setCurrentContact(type === "contact" ? room : undefined);
+    };
+
+    function toggleTheme() {
+        setTheme(theme === "dark" ? "light" : "dark");
+    };
+
+    function logOut() {
+        setToken("");
+        router.push("/");
+    };
+
     return (
         <Container>
             <Header>
-                <User onClick={() => {
-                    setCurrentContainer("profile")
-                    setCurrentContact(undefined);
-                    setCurrentGroup(undefined);
-                }}>
+                <User onClick={() => changeContainer("profile")}>
                     <Avatar src={user?.picture} />
                     <h2>{user?.username}</h2>
                 </User>
@@ -95,42 +120,28 @@ function Sidebar({
                     <div>
                         <OptionButton
                             className={`option ${currentRoomType === "contacts" && "selected"}`}
-                            onClick={() => {
-                                setCurrentContainer("contacts");
-                                setCurrentRoomType("contacts");
-                            }}
+                            onClick={() => changeContainer("contacts")}
                         >
                             <PersonIcon />
                         </OptionButton>
 
                         <OptionButton
                             className={`option ${currentRoomType === "groups" && "selected"}`}
-                            onClick={() => {
-                                setCurrentContainer("groups")
-                                setCurrentRoomType("groups");
-                            }}
+                            onClick={() => changeContainer("groups")}
                         >
                             <GroupIcon />
                         </OptionButton>
 
                         <OptionButton
                             className="option"
-                            onClick={() => {
-                                setCurrentContainer("addContact");
-                                setCurrentContact(undefined);
-                                setCurrentGroup(undefined);
-                            }}
+                            onClick={() => changeContainer("addContact")}
                         >
                             <PersonAddIcon />
                         </OptionButton>
 
                         <OptionButton
                             className="option"
-                            onClick={() => {
-                                setCurrentContainer("createGroup");
-                                setCurrentContact(undefined);
-                                setCurrentGroup(undefined);
-                            }}
+                            onClick={() => changeContainer("createGroup")}
                         >
                             <GroupAddIcon />
                         </OptionButton>
@@ -139,7 +150,7 @@ function Sidebar({
                     <div>
                         <OptionButton
                             className="theme"
-                            onClick={() => theme === "dark" ? setTheme("light") : setTheme("dark")}
+                            onClick={() => toggleTheme()}
                         >
                             {theme === "dark" ? (
                                 <Brightness3Icon />
@@ -150,10 +161,7 @@ function Sidebar({
 
                         <OptionButton
                             className="off"
-                            onClick={() => {
-                                setToken("");
-                                router.push("/");
-                            }}
+                            onClick={() => logOut()}
                         >
                             <PowerSettingsNewIcon />
                         </OptionButton>
@@ -164,7 +172,7 @@ function Sidebar({
                     <Search>
                         <SearchInput
                             type="text"
-                            placeholder={`Find a ${currentRoomType === "contacts" ? "contact" : "group"}`}
+                            placeholder={`Find a ${currentRoomType}`}
                             value={search}
                             onChange={e => setSearch(e.target.value)}
                         />
@@ -177,16 +185,11 @@ function Sidebar({
                     <Rooms>
                         {currentRoomType === "contacts" ? (
                             search.length > 0 ? (
-                                searchResult.map((contact, i) => {
+                                searchResult.map((contact: ContactI, i) => {
                                     return contact.active ? (
                                         <Room
                                             key={i}
-                                            onClick={() => {
-                                                setSearch("");
-                                                setCurrentContainer("contacts");
-                                                setCurrentGroup(undefined);
-                                                setCurrentContact(contact);
-                                            }}
+                                            onClick={() => selectRoom(contact, "contact")}
                                         >
                                             <Avatar src={contact.image} />
                                             <h3>{contact.username}</h3>
@@ -205,11 +208,7 @@ function Sidebar({
                                     return contact.active ? (
                                         <Room
                                             key={i}
-                                            onClick={() => {
-                                                setCurrentContainer("contacts");
-                                                setCurrentGroup(undefined);
-                                                setCurrentContact(contact);
-                                            }}
+                                            onClick={() => selectRoom(contact, "contact")}
                                         >
                                             <Avatar src={contact.image} />
                                             <h3>{contact.username}</h3>
@@ -230,12 +229,7 @@ function Sidebar({
                                     return (
                                         <Room
                                             key={i}
-                                            onClick={() => {
-                                                setSearch("");
-                                                setCurrentContainer("groups");
-                                                setCurrentContact(undefined);
-                                                setCurrentGroup(group);
-                                            }}
+                                            onClick={() => selectRoom(group, "group")}
                                         >
                                             <Avatar src={group.image} />
                                             <h3>{group.name}</h3>
@@ -247,11 +241,7 @@ function Sidebar({
                                     return (
                                         <Room
                                             key={i}
-                                            onClick={() => {
-                                                setCurrentContainer("groups");
-                                                setCurrentContact(undefined);
-                                                setCurrentGroup(group);
-                                            }}
+                                            onClick={() => selectRoom(group, "group")}
                                         >
                                             <Avatar src={group.image} />
                                             <h3>{group.name}</h3>
