@@ -25,8 +25,8 @@ import {
 interface AddContactI {
     user: UserI;
     setUser: Dispatch<React.SetStateAction<UserI>>;
-    setCurrentContact: Dispatch<React.SetStateAction<ContactI>>
-    setCurrentContainer: Dispatch<React.SetStateAction<"profile" | "contacts" | "groups" | "addContact" | "createGroup">>
+    setCurrentContact: Dispatch<React.SetStateAction<ContactI>>;
+    setCurrentContainer: Dispatch<React.SetStateAction<"profile" | "contacts" | "groups" | "addContact" | "createGroup">>;
     socket: any;
 };
 

@@ -166,8 +166,7 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
                             position = i
 
                             if (user?.id === receiver) {
-                                console.log(currentContact)
-                                if (currentContact && currentContact.id === sender) {
+                                if (currentContact.id === sender) {
                                     api.put(`/contact/message?access_token=${token}&only_unread_messages=true`, {
                                         unread_messages: 0,
                                         user_id: user?.id,
@@ -178,7 +177,6 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
                                 } else {
                                     contact.unread_messages = unread_messages;
                                 };
-
                             };
                         };
 
@@ -186,7 +184,7 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
                     }),
                 });
 
-                if (position !== 0) {
+                if (position > 0) {
                     setUser({
                         ...user,
                         contacts: changePosition(user?.contacts, position, 0),
@@ -194,13 +192,51 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
                 };
             };
 
-            if (currentContact?.id === receiver || currentContact?.id === sender) {
+            if (currentContact.id === receiver || currentContact.id === sender) {
                 scrollToBottom(true);
             };
         });
 
-        socket.on("group-message", ({ message, to }) => {
-            //...
+        socket.on("group-message", ({ message }) => {
+            const group_id = message.group_id;
+            // const sender = message.sender_id;
+
+            let position: number;
+
+            setUser({
+                ...user,
+                groups: user?.groups?.map((group, i) => {
+                    if (group.id === group_id) {
+                        const updatedMessages = group?.messages?.map(msg => msg?.id === message?.id ? null : msg);
+                        updatedMessages?.push(message);
+
+                        position = i;
+
+                        group.messages = updatedMessages;
+                    };
+
+                    // if (user?.id !== sender) {
+                    //     if (currentGroup.id === group_id) {
+                    //         api.put(`group/messages?access_token=${token}`)
+                    //     } else {
+
+                    //     };
+                    // };
+
+                    return group;
+                })
+            });
+
+            if (position > 0) {
+                setUser({
+                    ...user,
+                    groups: changePosition(user?.groups, position, 0),
+                });
+            };
+
+            if (currentGroup?.id === group_id) {
+                scrollToBottom(true);
+            };
         });
 
         socket.on("contact-status-change", ({ contact_id, status }: { contact_id: string, status: "online" | "offline" }) => {
@@ -255,6 +291,24 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
                 });
             });
         };
+
+        if (currentContainer === "groups" && currentGroup && !(currentGroup?.messages)) {
+            api.get(`/group/messages?access_token=${token}&group_id=${currentGroup?.id}`).then(response => {
+                const { messages } = response.data;
+
+                setUser({
+                    ...user,
+                    groups: user?.groups?.map(group => {
+                        if (group.id === currentGroup?.id)
+                            group.messages = messages;
+
+                        return group
+                    }),
+                });
+
+                scrollToBottom();
+            });
+        };
     }, [currentContact, currentGroup]);
 
     async function privateMessage(e: React.FormEvent<HTMLFormElement>) {
@@ -280,7 +334,15 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
         e.preventDefault();
 
         if (message.length > 0) {
-            socket.emit("group-message", { message, from: user?.id, to: currentGroup })
+            await api.post(`/group/message?access_token=${token}`, {
+                sender_id: user?.id,
+                group_id: currentGroup?.id,
+                message,
+            }).then(response => {
+                const { message } = response.data;
+
+                socket.emit("group-message", { message }, () => setMessage(""));
+            });
         };
     };
 
@@ -354,8 +416,8 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
                             <>
                                 <Header>
                                     <Room>
-                                        <Avatar src={currentGroup ? currentContact?.image : currentGroup?.image} />
-                                        <h2>{currentContact ? currentContact.username : currentGroup.name}</h2>
+                                        <Avatar src={currentContainer === "contacts" ? currentContact?.image : currentGroup?.image} />
+                                        <h2>{currentContainer === "contacts" ? currentContact?.username : currentGroup?.name}</h2>
                                     </Room>
 
                                     {currentContact ? (
@@ -455,6 +517,9 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
                             currentContainer === "createGroup" ? (
                                 <CreateGroup
                                     user={user}
+                                    setUser={setUser}
+                                    setCurrentGroup={setCurrentGroup}
+                                    setCurrentContainer={setCurrentContainer}
                                 />
                             ) : null
                 }

@@ -20,6 +20,7 @@ export interface ContactI {
 };
 
 export interface GroupMessagesI {
+    id: string;
     group_id: string;
     sender_id: string;
     message: string;
