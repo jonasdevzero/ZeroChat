@@ -3,7 +3,7 @@ import { GroupView } from "./";
 
 export default {
     renderUsers(users: GroupUsers[]) {
-        return users.map(groupUser => {
+        return users?.map(groupUser => {
             const user = groupUser.user
 
            return {
@@ -16,7 +16,7 @@ export default {
     },
 
     renderGroups(groups: GroupUsers[]) {
-        return groups.map(groupData => {
+        return groups?.map(groupData => {
             const group = groupData.group;
 
             return GroupView.render(group);

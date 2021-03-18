@@ -6,11 +6,9 @@ export default {
         return {
             id: group.id,
             name: group.name,
+            image: group.image,
             description: group.description,
             created_at: group.created_at,
-            last_message: group.lastMessage,
-            last_message_sender: group.lastMessageSender,
-            last_message_time: group.lastMessageTime,
             users: GroupUsersView.renderUsers(group.users) || [],
             messages: group.messages,
         };

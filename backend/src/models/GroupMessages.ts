@@ -1,8 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, BaseEntity } from "typeorm";
 import Group from "./Group";
 
 @Entity("group_messages")
-export default class GroupMessages {
+export default class GroupMessages extends BaseEntity {
     @PrimaryGeneratedColumn("increment")
     id: number;
 

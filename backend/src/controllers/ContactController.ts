@@ -197,7 +197,6 @@ export default {
             const id = receiverContact.id;
             await contactRepository.update(id, { unread_messages, active: true, last_message_time: posted_at });
 
-            // test
             await contactRepository
                 .createQueryBuilder("contact")
                 .leftJoin("contact.user", "user")

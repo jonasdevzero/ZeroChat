@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { getRepository } from "typeorm";
-import { Group, GroupUsers, User } from "../models";
+import { Group, GroupUsers, User, GroupMessages } from "../models";
 import { GroupView } from "../views";
 
 export default {
@@ -10,9 +10,9 @@ export default {
             const groupRepository = getRepository(Group);
 
             const groups = await groupRepository
-                .createQueryBuilder("groupUsers")
-                .orderBy("groupUsers.last_message_time", "DESC")
-                .leftJoinAndSelect("groupUsers.users", "users")
+                .createQueryBuilder("group")
+                .orderBy("group.last_message_time", "DESC")
+                .leftJoinAndSelect("group.users", "users")
                 .leftJoinAndSelect("users.user", "user")
                 .where("user.id = :id", { id })
                 .getMany();
@@ -48,25 +48,66 @@ export default {
                 image_key = filename;
             };
 
+            const now = new Date();
+
             const groupRepository = getRepository(Group);
-            const group = await groupRepository.create({ name, image: image, description, created_by: id, image_key }).save();
+            const group = await groupRepository.create({ name, image: image, description, created_by: id, image_key, last_message_time: now }).save();
 
             const groupUsersRepository = getRepository(GroupUsers);
             await groupUsersRepository.create({ user, group, role: "admim" }).save();
 
             await members?.forEach(async (member_id: string) => {
-                const user = await userRepository.findOne(member_id);
-
-                if (user) {
-                    const groupUsersRepository = getRepository(GroupUsers);
-                    await groupUsersRepository.create({ user, group, role: "user" }).save();
-                };
+                const groupUsersRepository = getRepository(GroupUsers);
+                await groupUsersRepository.create({ user: { id: member_id }, group, role: "user" }).save();
             });
 
-            return response.status(200).json({ group });
+            return response.status(200).json({ group: GroupView.render(group) });
         } catch (err) {
             console.log(err);
             return response.status(500).json({ message: "Internal server error!" });
+        };
+    },
+
+    async indexMessages(request: Request, response: Response) {
+        try {
+            const { group_id } = request.query;
+            const groupMessagesRepository = getRepository(GroupMessages);
+
+            const messages = await groupMessagesRepository.find({ group_id: String(group_id) });
+
+            return response.status(200).json({ messages });
+        } catch (err) {
+            console.log(err);
+            return response.status(500).json({ message: "Internal Server Error" });
+        };
+    },
+
+    async createMessage(request: Request, response: Response) {
+        try {
+            const {
+                sender_id,
+                group_id,
+                message,
+            } = request.body;
+
+            const groupRepository = getRepository(Group);
+            const groupMessagesRepository = getRepository(GroupMessages);
+
+            const posted_at = new Date();
+
+            const newMessage = await groupMessagesRepository.create({ sender_id, group_id, message, posted_at }).save();
+
+            await groupRepository
+                .createQueryBuilder()
+                .update()
+                .set({ last_message_time: posted_at })
+                .where({ id: group_id })
+                .execute();
+
+            return response.status(201).json({ message: newMessage });
+        } catch (err) {
+            console.log(err);
+            return response.status(500).json({ message: "Internal Server Error" });
         };
     },
 };

@@ -25,8 +25,11 @@ routes.delete("/user/:id", UserController.auth, UserController.delete);
 routes.put("/user/reset_password", UserController.resetPassword);
 routes.put("/user/:id", UserController.auth, upload.single("picture"), UserController.update);
 
-routes.get("/group", GroupController.index);
+routes.get("/group", UserController.auth, GroupController.index);
+routes.get("/group/messages", UserController.auth, GroupController.indexMessages);
+
 routes.post("/group", UserController.auth, upload.single("image"), GroupController.create);
+routes.post("/group/message", UserController.auth, GroupController.createMessage);
 
 routes.get("/contact", UserController.auth, ContactController.index);
 routes.get("/contact/messages", UserController.auth, ContactController.indexMessages);

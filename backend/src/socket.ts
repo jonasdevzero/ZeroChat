@@ -24,8 +24,8 @@ export default function socketConnection(io: Server) {
             callback();
         });
 
-        socket.on("group-message", ({ message, from, to }, callback) => {
-            io.to(to).emit("group-message", { message, from, to });
+        socket.on("group-message", ({ message }, callback) => {
+            io.to(message.group_id).emit("group-message", { message });
 
             callback();
         });
