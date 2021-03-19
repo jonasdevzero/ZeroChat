@@ -40,9 +40,7 @@ export default function AddContact({ user, setUser, setCurrentContact, setCurren
     };
 
     async function add(contact: UserI) {
-        const token = JSON.parse(localStorage.getItem("token"))
-
-        await api.post(`/contact?access_token=${token}`, {
+        await api.post(`/contact`, {
             id: user.id,
             contact_id: contact.id
         }).then(response => {

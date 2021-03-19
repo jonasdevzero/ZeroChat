@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { UserI } from "../types/user";
+import api from "../services/api";
 
 import {
     Info,
@@ -19,7 +20,11 @@ import {
     Container,
     Header,
     Inner,
-
+    Wrapper,
+    ImageWrapper,
+    ImageLabel,
+    ImageInput,
+    RemoveImage,
 } from "../styles/components/Container";
 import Warning from "./Warning";
 import { Avatar } from "@material-ui/core";
@@ -27,15 +32,19 @@ import {
     Visibility as VisibilityIcon,
     VisibilityOff as VisibilityOffIcon,
     Close as CloseIcon,
+    CloudUpload as CloudUploadIcon,
 } from '@material-ui/icons';
 
 interface ProfileI {
     user: UserI;
+    setUser: React.Dispatch<React.SetStateAction<UserI>>;
 };
 
-export default function Profile({ user }: ProfileI) {
+export default function Profile({ user, setUser }: ProfileI) {
     const [name, setName] = useState(user?.name);
     const [username, setUsername] = useState(user?.username);
+    const [picture, setPicture] = useState(user?.picture);
+    const [newPicture, setNewPicture] = useState<File>(undefined);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
@@ -46,20 +55,45 @@ export default function Profile({ user }: ProfileI) {
 
     const [deleteAccountScreen, setDeleteAccountScreen] = useState(false);
 
-    function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    const [warning, setWarning] = useState("");
+    const [showWarning, setShowWarning] = useState(false);
+
+    async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
 
-        //...
+        const data = new FormData();
+        data.append("name", name);
+        data.append("username", username);
+        data.append("picture", newPicture);
+
+        await api.put(`/user/${user?.id}?without_image=${picture?.length === 0}`, data).then(response => {
+            const { user: { name, username, picture } } = response.data;
+
+            setUser({
+                ...user,
+                name,
+                username,
+                picture,
+            });
+
+            setWarning("Updated with success!");
+            setShowWarning(true);
+            setTimeout(() => { setShowWarning(false) }, 2000);
+        });
     };
 
-    function changeEmail(e: React.FormEvent<HTMLFormElement>) {
+    async function changeEmail(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
 
-        //...
+        await api.put(`user/${user?.id}`, { email, password })
     };
 
-    function changePassword() {
-        //...
+    async function changePassword() {
+        await api.post("user/forgot_password", { email }).then(response => {
+            setWarning(response.data.message);
+            setShowWarning(true);
+            setTimeout(() => { setShowWarning(false) }, 2000);
+        });
     };
 
     function deleteAccount(e: React.FormEvent<HTMLFormElement>) {
@@ -76,15 +110,27 @@ export default function Profile({ user }: ProfileI) {
         }, 3000);
     };
 
-    function closeNewEmailScreen() {
+    function closeScreen() {
         setUpdateEmailScreen(false);
+        setDeleteAccountScreen(false);
         setEmail("");
         setPassword("");
     };
 
-    function closeDeleteAccountScreen() {
-        setDeleteAccountScreen(false);
-        setPassword("");
+    function handleSelectImage(e: React.ChangeEvent<HTMLInputElement>) {
+        if (!e.target.files) return;
+
+        const selectedImage = Array.from(e.target.files)[0];
+        setNewPicture(selectedImage);
+
+        const imagePreview = URL.createObjectURL(selectedImage);
+
+        setPicture(imagePreview);
+    };
+
+    function removeSelectedImage() {
+        setNewPicture(undefined);
+        setPicture("");
     };
 
     return (
@@ -95,12 +141,31 @@ export default function Profile({ user }: ProfileI) {
 
             <Inner>
                 <Info>
-                    <Avatar className="profile-picture" src={user?.picture} />
+                    <ImageWrapper>
+                        {!picture ? (
+                            <>
+                                <ImageLabel htmlFor="image">
+                                    <CloudUploadIcon fontSize="large" />
+                                </ImageLabel>
 
-                    <div>
-                        <h3>{user?.name}</h3>
-                        <p>@{user?.username}</p>
-                    </div>
+                                <ImageInput
+                                    id="image"
+                                    type="file"
+                                    onChange={handleSelectImage}
+                                />
+                            </>
+                        ) : (
+                            <RemoveImage type="button" onClick={() => removeSelectedImage()}>
+                                <CloseIcon fontSize="large" />
+                            </RemoveImage>
+                        )}
+                        <Avatar src={picture} />
+                    </ImageWrapper>
+
+                    <Wrapper>
+                        <h3>{name}</h3>
+                        <p>@{username}</p>
+                    </Wrapper>
                 </Info>
 
                 <Form onSubmit={onSubmit}>
@@ -130,7 +195,7 @@ export default function Profile({ user }: ProfileI) {
                         <InputContainer>
                             <div onClick={() => animateMessage()}>
                                 <Input
-                                    value={showEmail ? user?.email : `**************@${user?.email.split("@")[1]}`}
+                                    value={showEmail ? user?.email : `**************@${user?.email?.split("@")[1]}`}
                                     onChange={() => { }}
                                     disabled
                                 />
@@ -171,7 +236,7 @@ export default function Profile({ user }: ProfileI) {
                     <Screen>
                         <Close
                             type="button"
-                            onClick={() => closeNewEmailScreen()}
+                            onClick={() => closeScreen()}
                         >
                             <CloseIcon />
                         </Close>
@@ -193,9 +258,7 @@ export default function Profile({ user }: ProfileI) {
                         </Form>
                     </Screen>
 
-                    <Fill
-                        onClick={() => closeNewEmailScreen()}
-                    />
+                    <Fill onClick={() => closeScreen()} />
                 </WrapperScreen>
             ) : null}
 
@@ -204,7 +267,7 @@ export default function Profile({ user }: ProfileI) {
                     <Screen className="delete">
                         <Close
                             type="button"
-                            onClick={() => closeDeleteAccountScreen()}
+                            onClick={() => closeScreen()}
                         >
                             <CloseIcon />
                         </Close>
@@ -221,11 +284,13 @@ export default function Profile({ user }: ProfileI) {
                         </Form>
                     </Screen>
 
-                    <Fill
-                        onClick={() => closeDeleteAccountScreen()}
-                    />
+                    <Fill onClick={() => closeScreen()} />
                 </WrapperScreen>
             ) : null}
+
+            <Warning showWarning={showWarning}>
+                {warning}
+            </Warning>
         </Container>
     );
 };

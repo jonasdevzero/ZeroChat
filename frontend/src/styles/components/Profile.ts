@@ -7,8 +7,6 @@ export const Info = styled.div`
     margin-bottom: 5rem;
 
     div {
-        margin-left: 1rem;
-
         h3 {
             font-size: 3.5rem;
             font-weight: 600;
@@ -19,14 +17,6 @@ export const Info = styled.div`
             font-weight: 500;
             color: lightgray;
         };
-
-    };
-
-    .MuiAvatar-root {
-        width: 17rem;
-        height: 17rem;
-
-        margin: .5rem;
     };
 `;
 

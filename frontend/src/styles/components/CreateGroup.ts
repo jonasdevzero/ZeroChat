@@ -31,79 +31,6 @@ export const Wrapper = styled.div`
     margin-left: 1rem;
 `;
 
-export const ImageWrapper = styled.div`
-    position: relative;
-    min-width: 15rem;
-    max-width: 15rem;
-    height: 15rem;
-    border-radius: 50%;
-
-    .MuiAvatar-root {
-        width: 100%;
-        height: 100%;
-    };
-`;
-
-export const ImageLabel = styled.label`
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: absolute;
-
-    width: 15rem;
-    height: 15rem;
-
-    border-radius: 50%;
-    z-index: 1;
-    cursor: pointer;
-
-    .MuiSvgIcon-root {
-        font-size: 7rem;
-        color: rgba(0, 0, 0, .2);
-    };
-`;
-
-export const ImageInput = styled.input`
-    display: none;
-`;
-
-export const TextArea = styled.textarea`
-    background-color: #353535;
-    color: #fff;
-    font-size: 1.6rem;
-
-    min-height: 6rem;
-    max-height: 12rem;
-
-    padding: 1rem;
-    border: none;
-    outline: none;
-    resize: vertical;
-`;
-
-export const RemoveImage = styled.button`
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: absolute;
-    bottom: 1rem;
-    right: .8rem;
-
-    width: 2.5rem;
-    height: 2.5rem;
-    background-color: #222;
-
-    border: 0;
-    outline: none;
-    border-radius: 50%;
-    z-index: 1;
-    cursor: pointer;
-
-    .MuiSvgIcon-root {
-        color: #fff;
-    };
-`;
-
 export const Fieldset = styled.fieldset`
     width: 100%;
     border: none;
@@ -120,6 +47,20 @@ export const Legend = styled.legend`
     margin-bottom: 2rem;
     padding: 0 0 1rem 1.5rem;
     border-bottom: solid .1rem #777;
+`;
+
+export const TextArea = styled.textarea`
+    background-color: #353535;
+    color: #fff;
+    font-size: 1.6rem;
+
+    min-height: 6rem;
+    max-height: 12rem;
+
+    padding: 1rem;
+    border: none;
+    outline: none;
+    resize: vertical;
 `;
 
 export const SearchInput = styled.input`
@@ -152,6 +93,7 @@ export const FilteredContacts = styled.div`
 
     max-height: 20rem;
     overflow-y: scroll;
+    z-index: 1;
 `;
 
 export const FilteredContact = styled.div`
