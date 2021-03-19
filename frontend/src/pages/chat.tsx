@@ -75,12 +75,14 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
             router.push("/signin");
         };
 
-        api.post(`/user/auth?access_token=${token}&user_required=true`).then(response => { // auth and get user
+        api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
+        api.post(`/user/auth?user_required=true`).then(response => { // auth and get user
             const data = response.data;
 
             setToken(data.token);
 
-            api.get(`/group?access_token=${token}&id=${data.user.id}`).then(response => { // get groups by last messages time
+            api.get(`/group?id=${data.user.id}`).then(response => { // get groups by last messages time
                 const { groups } = response.data;
 
                 data.user.groups = groups;
@@ -89,7 +91,7 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
                 rooms.push(data.user.id);
                 groups.forEach(group => rooms.push(group.id));
 
-                api.get(`/contact?access_token=${token}&id=${data.user.id}`).then(response => { // get contacts by last messages time
+                api.get(`/contact?id=${data.user.id}`).then(response => { // get contacts by last messages time
                     const { contacts } = response.data;
 
                     data.user.contacts = contacts;
@@ -136,7 +138,7 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
             const existsContact = user?.contacts?.find(c => c.id === sender);
 
             if (!existsContact && user?.id === receiver) {
-                api.get(`/contact/${sender}?access_token=${token}&user_id=${user?.id}`)
+                api.get(`/contact/${sender}?user_id=${user?.id}`)
                     .then(response => {
                         const { contact } = response.data;
 
@@ -167,7 +169,7 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
 
                             if (user?.id === receiver) {
                                 if (currentContact.id === sender) {
-                                    api.put(`/contact/message?access_token=${token}&only_unread_messages=true`, {
+                                    api.put(`/contact/message?&only_unread_messages=true`, {
                                         unread_messages: 0,
                                         user_id: user?.id,
                                         contact_id: currentContact.id,
@@ -199,7 +201,6 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
 
         socket.on("group-message", ({ message }) => {
             const group_id = message.group_id;
-            // const sender = message.sender_id;
 
             let position: number;
 
@@ -214,14 +215,6 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
 
                         group.messages = updatedMessages;
                     };
-
-                    // if (user?.id !== sender) {
-                    //     if (currentGroup.id === group_id) {
-                    //         api.put(`group/messages?access_token=${token}`)
-                    //     } else {
-
-                    //     };
-                    // };
 
                     return group;
                 })
@@ -256,7 +249,7 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
         scrollToBottom();
 
         if (currentContainer === "contacts" && currentContact && !(currentContact?.messages)) {
-            api.get(`/contact/messages?access_token=${token}&id=${user?.id}&contact_id=${currentContact?.id}`)
+            api.get(`/contact/messages?id=${user?.id}&contact_id=${currentContact?.id}`)
                 .then(response => {
                     const data = response.data;
 
@@ -275,7 +268,7 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
         };
 
         if (currentContainer === "contacts" && currentContact && currentContact?.unread_messages > 0) {
-            api.put(`/contact/message?access_token=${token}&only_unread_messages=true`, {
+            api.put(`/contact/message?only_unread_messages=true`, {
                 unread_messages: 0,
                 user_id: user?.id,
                 contact_id: currentContact.id,
@@ -293,7 +286,7 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
         };
 
         if (currentContainer === "groups" && currentGroup && !(currentGroup?.messages)) {
-            api.get(`/group/messages?access_token=${token}&group_id=${currentGroup?.id}`).then(response => {
+            api.get(`/group/messages?group_id=${currentGroup?.id}`).then(response => {
                 const { messages } = response.data;
 
                 setUser({
@@ -317,7 +310,7 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
         setShowEmojiPicker(false);
 
         if (message.length > 0) {
-            await api.post(`/contact/message?access_token=${token}`, {
+            await api.post(`/contact/message`, {
                 message,
                 sender_id: user?.id,
                 receiver_id: currentContact?.id,
@@ -334,7 +327,7 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
         e.preventDefault();
 
         if (message.length > 0) {
-            await api.post(`/group/message?access_token=${token}`, {
+            await api.post(`/group/message`, {
                 sender_id: user?.id,
                 group_id: currentGroup?.id,
                 message,
@@ -401,6 +394,7 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
                 {currentContainer === "profile" ? (
                     <Profile
                         user={user}
+                        setUser={setUser}
                     />
                 ) :
                     currentContainer === "contacts" || currentContainer === "groups" ? (

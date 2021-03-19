@@ -38,9 +38,7 @@ export default function SignIn({ setToken, theme }) {
         const token = JSON.parse(localStorage.getItem("token"));
 
         if (token) {
-            api.post(`/user/auth?access_token=${token}&signin_auth=true`).then(response => {
-                setToken(response.data.token);
-
+            api.post(`/user/auth?signin_auth=true`, {}, { headers: { Authorization: `Bearer ${token}` } }).then(_ => {
                 return router.push("/chat");
             }).catch(() => {});
         };
