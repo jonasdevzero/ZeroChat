@@ -2,16 +2,10 @@ import { Request, Response, NextFunction } from "express";
 import { getRepository, Like, Not } from "typeorm";
 import User from "../models/User";
 import UserView from "../views/UserView";
-import { encryptPassword, generateToken, comparePasswords, authenticateToken } from "../utils/user";
+import { encryptPassword, generateToken, comparePasswords, authenticateToken, removePicture } from "../utils/user";
 import * as Yup from "yup";
 import crypto from "crypto";
 import transporter from "../modules/mailer";
-import aws from "aws-sdk";
-import fs from "fs";
-import path from "path";
-import { promisify } from "util";
-
-const s3 = new aws.S3();
 
 export default {
     async index(request: Request, response: Response) {
@@ -107,7 +101,7 @@ export default {
     async update(request: Request, response: Response) {
         try {
             const id = request.params.id;
-            const { updateEmail } = request.query;
+            const { updateEmail, without_image } = request.query;
             const { name, username, email, password } = request.body;
 
             const userRepository = getRepository(User);
@@ -145,13 +139,14 @@ export default {
                 picture_key = filename;
 
                 if (user.picture) { // Removing the old image
-                    if (process.env.STORAGE_TYPE === "S3") {
-                        s3.deleteObject({ Bucket: "zero-chat", Key: user.picture_key }, (err, _data) => {
-                            if (err) console.log("error on [update.removing_image] {user}  ->", err);
-                        });
-                    } else {
-                        promisify(fs.unlink)(path.resolve(__dirname, "..", "..", "uploads", user.picture_key));
-                    };
+                    removePicture(user.picture_key);
+                };
+            } else if (!request.file && Boolean(without_image)) {
+                picture = undefined;
+                picture_key = undefined;
+
+                if (user.picture) { // Removing the old image
+                    removePicture(user.picture_key);
                 };
             };
 
@@ -194,14 +189,17 @@ export default {
 
     async auth(request: Request, response: Response, next: NextFunction) {
         try {
-            const { access_token, user_required, signin_auth } = request.query;
+            const { user_required, signin_auth } = request.query;
 
-            if (!access_token)
+            const bearer = request.headers["authorization"]?.split(" ") || [];
+            const token = bearer[1];
+
+            if (!token)
                 return response.status(401).json({ error: "The access token is undefined" });
 
-            const userVerified = authenticateToken(access_token.toString());
+            const userVerified = authenticateToken(token);
 
-            if (Boolean(user_required) || Boolean(signin_auth)) {
+            if (Boolean(user_required)) {
                 request.body.user = userVerified;
                 const { id } = request.body.user;
 
@@ -222,6 +220,8 @@ export default {
                 } catch (err) {
                     console.log(err)
                 };
+            } else if (Boolean(signin_auth)) {
+                return response.status(200).json({ message: "ok" });
             };
 
             next()
