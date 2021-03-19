@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
-import { UserI, ContactI } from "../types/user";
+import React, { useState, useEffect } from "react";
+import { UserI, ContactI, GroupI } from "../types/user";
 import Fuse from "fuse.js";
+import api from "../services/api";
 
 import {
     Container,
@@ -10,17 +11,17 @@ import {
     InputWrapper,
     Label,
     Input,
-    Button
+    ImageWrapper,
+    ImageLabel,
+    ImageInput,
+    RemoveImage,
+    Button,
 } from "../styles/components/Container";
 import {
     InputContainer,
     SearchOrCloseButton,
     Wrapper,
-    ImageWrapper,
-    ImageLabel,
-    ImageInput,
     TextArea,
-    RemoveImage,
     Fieldset,
     Legend,
     SearchInput,
@@ -41,9 +42,12 @@ import {
 
 interface CreateGroupI {
     user: UserI;
+    setUser: React.Dispatch<React.SetStateAction<UserI>>;
+    setCurrentGroup: React.Dispatch<React.SetStateAction<GroupI>>;
+    setCurrentContainer: React.Dispatch<React.SetStateAction<"profile" | "contacts" | "groups" | "addContact" | "createGroup">>;
 };
 
-export default function CreateGroup({ user }: CreateGroupI) {
+export default function CreateGroup({ user, setUser, setCurrentGroup, setCurrentContainer }: CreateGroupI) {
     const [name, setName] = useState("");
     const [image, setImage] = useState<File>(undefined);
     const [description, setDescription] = useState("");
@@ -56,10 +60,32 @@ export default function CreateGroup({ user }: CreateGroupI) {
 
     const [imagePreview, setImagePreview] = useState("");
 
-    function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
 
-        //...
+        const data = new FormData();
+        data.append("id", user?.id);
+        data.append("name", name);
+        data.append("image", image);
+        data.append("description", description);
+
+        members.forEach(member => data.append("members", member));
+
+        await api.post(`/group`, data)
+            .then(response => {
+                const { group } = response.data;
+                const updatedGroups: GroupI[] = [group]
+
+                user?.groups?.forEach(group => updatedGroups.push(group));
+
+                setUser({
+                    ...user,
+                    groups: updatedGroups,
+                });
+
+                setCurrentGroup(group);
+                setCurrentContainer("groups");
+            });
     };
 
     function handleSelectImage(e: React.ChangeEvent<HTMLInputElement>) {
@@ -91,15 +117,17 @@ export default function CreateGroup({ user }: CreateGroupI) {
     };
 
     useEffect(() => {
-        const fuse = new Fuse(user?.contacts, { keys: ["username"] });
-        let results: ContactI[] = [];
-        fuse.search(search).map(({ item }) => item).forEach(contact => {
-            if (!(selectedContacts?.find(c => c.id === contact.id))) {
-                results.push(contact);
-            };
-        });
+        if (user?.contacts) {
+            const fuse = new Fuse(user.contacts, { keys: ["username"] });
+            let results: ContactI[] = [];
+            fuse.search(search).map(({ item }) => item).forEach(contact => {
+                if (!(selectedContacts?.find(c => c.id === contact.id))) {
+                    results.push(contact);
+                };
+            });
 
-        setSearchResult(results);
+            setSearchResult(results);
+        };
     }, [search, user?.contacts])
 
     return (
