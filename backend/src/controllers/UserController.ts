@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { getRepository, Like, Not } from "typeorm";
+import { getRepository, ILike, Not } from "typeorm";
 import User from "../models/User";
 import UserView from "../views/UserView";
 import { encryptPassword, generateToken, comparePasswords, authenticateToken, removePicture } from "../utils/user";
@@ -16,7 +16,7 @@ export default {
             let users: User[] = [];
 
             if (username) {
-                users = await userRepository.find({ where: { username: Like(`%${username}%`) } });
+                users = await userRepository.find({ where: { username: ILike(`%${username}%`) } });
             } else {
                 users = await userRepository.find();
             };
@@ -75,7 +75,7 @@ export default {
 
             const schema = Yup.object().shape({
                 name: Yup.string().required(),
-                username: Yup.string().trim().lowercase().required(),
+                username: Yup.string().min(1).required(),
                 email: Yup.string().trim().lowercase().required(),
                 password: Yup.string().min(6).required(),
             });
@@ -100,8 +100,8 @@ export default {
 
     async update(request: Request, response: Response) {
         try {
-            const id = request.params.id;
-            const { updateEmail, without_image } = request.query;
+            const id = response.locals.user.id; // from auth route
+            const { update_email, without_image } = request.query;
             const { name, username, email, password } = request.body;
 
             const userRepository = getRepository(User);
@@ -110,10 +110,10 @@ export default {
             if (!user)
                 return response.status(400).json({ message: "Incorrect Id" });
 
-            if (Boolean(updateEmail)) {
+            if (update_email === "true") {
                 const existsEmail = await userRepository.findOne({ where: { email, id: Not(id) } });
 
-                if (!existsEmail)
+                if (existsEmail)
                     return response.status(400).json({ message: "This email is already registred" });
 
                 if (!comparePasswords(password, user.password))
@@ -121,13 +121,13 @@ export default {
 
                 await userRepository.update(user, { email });
 
-                return response.status(200).json({ message: "ok" });
+                return response.status(200).json({ email });
             };
 
             const existsUsername = await userRepository.findOne({ where: { username, id: Not(id) } });
 
             if (existsUsername)
-                return response.status(400).json({ error: "Username already exists" });
+                return response.status(400).json({ message: "Username already in use" });
 
             let picture: string | undefined = user.picture;
             let picture_key: string | undefined = user.picture_key;
@@ -141,7 +141,7 @@ export default {
                 if (user.picture) { // Removing the old image
                     removePicture(user.picture_key);
                 };
-            } else if (!request.file && Boolean(without_image)) {
+            } else if (!request.file && without_image === "true") {
                 picture = undefined;
                 picture_key = undefined;
 
@@ -165,7 +165,7 @@ export default {
 
     async delete(request: Request, response: Response) {
         try {
-            const id = request.params.id;
+            const id = response.locals.user.id; // from auth route
             const { password } = request.body;
 
             const userRepository = getRepository(User);
@@ -173,10 +173,10 @@ export default {
             const user = await userRepository.findOne(id);
 
             if (!user)
-                return response.status(404).json({ error: "User not found" });
+                return response.status(404).json({ message: "User not found" });
 
             if (!comparePasswords(password, user.password))
-                return response.status(400).json({ error: "Invalid password" });
+                return response.status(400).json({ message: "Invalid password" });
 
             await userRepository.delete(id);
 
@@ -195,13 +195,13 @@ export default {
             const token = bearer[1];
 
             if (!token)
-                return response.status(401).json({ error: "The access token is undefined" });
+                return response.status(401).json({ message: "The access token is undefined" });
 
             const userVerified = authenticateToken(token);
+            response.locals.user = userVerified;
 
-            if (Boolean(user_required)) {
-                request.body.user = userVerified;
-                const { id } = request.body.user;
+            if (user_required === "true") {
+                const { id } = response.locals.user;
 
                 try {
                     const userRepository = getRepository(User);
@@ -211,7 +211,7 @@ export default {
                     });
 
                     if (!user)
-                        return response.status(500).json({ error: "Unexpected error" });
+                        return response.status(500).json({ message: "Unexpected error" });
 
                     return response.status(200).json({
                         token: generateToken({ id: user.id }),
@@ -220,13 +220,13 @@ export default {
                 } catch (err) {
                     console.log(err)
                 };
-            } else if (Boolean(signin_auth)) {
+            } else if (signin_auth === "true") {
                 return response.status(200).json({ message: "ok" });
             };
 
             next()
         } catch (err) {
-            return response.status(401).json({ error: "Access denied" });
+            return response.status(401).json({ message: "Access denied" });
         };
     },
 
