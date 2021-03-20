@@ -6,7 +6,7 @@ import { GroupView } from "../views";
 export default {
     async index(request: Request, response: Response) {
         try {
-            const { id } = request.query;
+            const id = response.locals.user.id; // from auth route
             const groupRepository = getRepository(Group);
 
             const groups = await groupRepository
@@ -26,12 +26,8 @@ export default {
 
     async create(request: Request, response: Response) {
         try {
-            const {
-                id,
-                name,
-                description,
-                members,
-            } = request.body;
+            const id = response.locals.user.id;
+            const { name, description, members } = request.body;
 
             const userRepository = getRepository(User);
             const user = await userRepository.findOne(id);
@@ -56,10 +52,14 @@ export default {
             const groupUsersRepository = getRepository(GroupUsers);
             await groupUsersRepository.create({ user, group, role: "admim" }).save();
 
-            await members?.forEach(async (member_id: string) => {
+            if (members) {
+                const membersArray = Array.isArray(members) ? members : [members];
                 const groupUsersRepository = getRepository(GroupUsers);
-                await groupUsersRepository.create({ user: { id: member_id }, group, role: "user" }).save();
-            });
+
+                membersArray.forEach(async (member_id: string) => {
+                    await groupUsersRepository.create({ user: { id: member_id }, group, role: "user" }).save();
+                });
+            };
 
             return response.status(200).json({ group: GroupView.render(group) });
         } catch (err) {
@@ -68,12 +68,37 @@ export default {
         };
     },
 
+    async update(request: Request, response: Response) {
+        try {
+            const { id } = request.params;
+            const user_id = response.locals.user.id; // from auth route
+            const { only_unread_messages } = request.query;
+
+            const groupUsersRepository = getRepository(GroupUsers);
+
+            if (only_unread_messages === "true") {
+                await groupUsersRepository
+                    .createQueryBuilder("groupUsers")
+                    .leftJoin("groupUsers.user", "user")
+                    .leftJoin("groupUsers.group", "group")
+                    .update()
+                    .set({ unread_messages: undefined })
+                    .where("group.id := group_id", { group_id: id })
+                    .andWhere("user.id := user_id", { user_id })
+                    .execute()
+                    .then(() => response.status(200).json({ message: "ok" }));
+            };
+        } catch (err) {
+            console.log(err);
+        };
+    },
+
     async indexMessages(request: Request, response: Response) {
         try {
-            const { group_id } = request.query;
-            const groupMessagesRepository = getRepository(GroupMessages);
+            const group_id = request.query.group_id?.toString();
 
-            const messages = await groupMessagesRepository.find({ group_id: String(group_id) });
+            const groupMessagesRepository = getRepository(GroupMessages);
+            const messages = await groupMessagesRepository.find({ group_id });
 
             return response.status(200).json({ messages });
         } catch (err) {
@@ -84,25 +109,36 @@ export default {
 
     async createMessage(request: Request, response: Response) {
         try {
-            const {
-                sender_id,
-                group_id,
-                message,
-            } = request.body;
+            const sender_id = response.locals.user.id; // from auth route
+            const { group_id, message } = request.body;
 
             const groupRepository = getRepository(Group);
             const groupMessagesRepository = getRepository(GroupMessages);
 
             const posted_at = new Date();
 
-            const newMessage = await groupMessagesRepository.create({ sender_id, group_id, message, posted_at }).save();
+            const messageData = await groupMessagesRepository.create({ sender_id, group_id, message, posted_at }).save();
 
-            await groupRepository
-                .createQueryBuilder()
-                .update()
-                .set({ last_message_time: posted_at })
-                .where({ id: group_id })
-                .execute();
+            let group = await groupRepository.findOne({
+                where: { id: group_id },
+                relations: ["users", "users.user"],
+            });
+
+            if (!group)
+                return response.status(500).json({ message: "Internal Server Error" });
+
+            group.last_message_time = posted_at;
+            const updatedUsers = group.users.map(u => {
+                u.unread_messages = typeof u.unread_messages === "number" ? ++u.unread_messages : 1;
+                return u;
+            });
+            const id = group_id
+            await groupRepository.update(id, { last_message_time: posted_at, users: updatedUsers });
+
+            const newMessage = {
+                ...messageData,
+                users: updatedUsers,
+            };
 
             return response.status(201).json({ message: newMessage });
         } catch (err) {
