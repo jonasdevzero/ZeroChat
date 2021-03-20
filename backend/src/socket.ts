@@ -1,6 +1,18 @@
 import { Server, Socket } from "socket.io";
 import SessionUser from "./session/users";
 
+interface OnGroupI {
+    groupId?: string;
+    event: "new" | "update" | "join";
+    data: { [key: string]: any };
+};
+
+interface OnUserI {
+    contactId?: string;
+    event: "update" | "addContact";
+    data: { [key: string]: any };
+};
+
 export default function socketConnection(io: Server) {
     io.on("connection", (socket: Socket) => {
         socket.on("join", ({ rooms, contacts }, callback) => {
@@ -12,8 +24,7 @@ export default function socketConnection(io: Server) {
 
             console.log(`user connected: ${userId}`);
 
-            contactsOnline
-                .forEach(contact => socket.to(contact).emit("contact-status-change", { contact_id: userId, status: "online" }) );
+            contactsOnline.forEach(contact => socket.to(contact).emit("user", { event: "status", contact_id: userId, status: "online" }) );
 
             callback(contactsOnline);
         });
@@ -30,10 +41,34 @@ export default function socketConnection(io: Server) {
             callback();
         });
 
-        socket.on("is-online", (contactId, callback) => {
-            const online = Boolean(SessionUser.findOne(contactId));
+        socket.on("user", ({ contactId, event, data }: OnUserI, callback) => {
+            const contacts = SessionUser.findOne(socket.id)?.contacts || []
+            const contactsOnline = SessionUser.getContactsOnline(contacts);
 
-            callback(online);
+            switch (event) {
+                case "addContact":
+                    if (contactId) {
+                        SessionUser.pushNewContact(socket?.id, contactId);
+                        callback(SessionUser.findOne(contactId) ? true : false);
+                    };
+                    break;
+                case "update":
+                    contactsOnline.forEach(c => socket.to(c).emit("user", data));
+                    break;
+            };
+        });
+
+        socket.on("group", ({ groupId, event, data }: OnGroupI, callback) => {
+            switch (event) {
+                case "new":             
+                    data.members.forEach((c: string) => socket.to(c).emit("group", data));
+                    break;
+                case "join":
+                    if (groupId) socket.join(groupId);
+                    break;
+            };
+            
+            callback();
         });
 
         socket.on("disconnect", () => {
@@ -45,8 +80,9 @@ export default function socketConnection(io: Server) {
 
                 console.log(`user disconnected: ${id}`);
 
-                SessionUser.getContactsOnline(contacts)
-                    .forEach(contact => socket.to(contact).emit("contact-status-change", { contact_id: id, status: "offline" }) );
+                const contactsOnline = SessionUser.getContactsOnline(contacts)
+
+                contactsOnline.forEach(contact => socket.to(contact).emit("user", { event: "status", contact_id: id, status: "offline" }) );
             };
         });
     });
