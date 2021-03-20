@@ -30,6 +30,7 @@ export interface GroupMessagesI {
 export interface GroupUsersI {
     id: string;
     username: string;
+    unread_messages: number | undefined;
     image: string | undefined;
     role: "user" | "admim";
 };
@@ -40,6 +41,7 @@ export interface GroupI {
     description: string;
     image: string;
     created_at: Date;
+    unread_messages: number | undefined;
     messages: GroupMessagesI[];
     users: GroupUsersI[];
 };
