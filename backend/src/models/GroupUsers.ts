@@ -9,6 +9,9 @@ export default class GroupUsers extends BaseEntity {
     @Column()
     role: string;
 
+    @Column()
+    unread_messages: number;
+
     @ManyToOne(_ => Group, group => group.users)
     @JoinColumn({ name: "group_id" })
     group: Group;

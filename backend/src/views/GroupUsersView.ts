@@ -11,6 +11,7 @@ export default {
                username: user.username,
                image: user.picture,
                role: groupUser.role,
+               unread_messages: groupUser.unread_messages,
            };
         });
     },

@@ -20,6 +20,11 @@ export class createGroupUsers1614446500844 implements MigrationInterface {
                     type: "uuid",
                 },
                 {
+                    name: "unread_messages",
+                    type: "integer",
+                    isNullable: true,
+                },
+                {
                     name: "user_id",
                     type: "uuid",
                 },
