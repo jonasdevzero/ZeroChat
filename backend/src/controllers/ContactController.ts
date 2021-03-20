@@ -7,7 +7,7 @@ import { ContactView } from "../views";
 export default {
     async index(request: Request, response: Response) {
         try {
-            const { id } = request.query;
+            const id = response.locals.user.id; // from auth route
             const contactRepository = getRepository(Contact);
 
             const contacts = await contactRepository
@@ -28,15 +28,15 @@ export default {
     async show(request: Request, response: Response) {
         try {
             const { id } = request.params;
-            const { user_id } = request.query;
+            const user_id = response.locals.user.id; // from auth route
 
-            if (!user_id || !id)
-                return response.status(400).json({ message: "user_id or contact_id is empty!" });
+            if (!id)
+                return response.status(400).json({ message: "contact_id is empty!" });
 
             const contactRepository = getRepository(Contact);
 
             const contact = await contactRepository.findOne({ 
-                where: { user: { id: String(user_id) }, contact: { id } },
+                where: { user: { id: user_id }, contact: { id } },
                 relations: ["contact", "messages"],     
             });
 
@@ -52,10 +52,8 @@ export default {
 
     async create(request: Request, response: Response) {
         try {
-            const {
-                id,
-                contact_id,
-            } = request.body;
+            const id = response.locals.user.id; // from auth route
+            const { contact_id } = request.body;
 
             const userRepository = getRepository(User);
 
@@ -102,25 +100,29 @@ export default {
 
     async update(request: Request, response: Response) {
         try {
-            const {
-                user_id,
-                contact_id,
-                unread_messages
-            } = request.body;
+            const contact_id = request.params.id.toString();
+            const user_id = response.locals.user.id; // from auth route
             const { only_unread_messages } = request.query;
 
             const contactRepository = getRepository(Contact);
+
+            if (only_unread_messages === "true") {
+                await contactRepository
+                    .createQueryBuilder("contact")
+                    .leftJoin("contact.contact", "c")
+                    .leftJoin("contact.user", "user")
+                    .update()
+                    .set({ unread_messages: undefined })
+                    .where("user.id = :user_id", { user_id })
+                    .andWhere("c.id = :contact_id", { contact_id })
+                    .execute()
+                    .then(() => response.status(201).json({ message: "ok" }));
+            };
+            
             const contact = await contactRepository.findOne({ user: { id: user_id }, contact: { id: contact_id } });
 
             if (!contact)
-                return response.status(400).json({ message: "id or contact_id is invalid" });
-
-            const id = contact.id;
-
-            if (Boolean(only_unread_messages)) {
-                await contactRepository.update(id, { unread_messages: unread_messages == 0 ? null : unread_messages });
-                return response.status(201).json({ message: "ok" });
-            };
+                return response.status(400).json({ message: "id or contact_id is invalid" });            
 
             //...
         } catch (err) {
@@ -131,7 +133,8 @@ export default {
 
     async indexMessages(request: Request, response: Response) {
         try {
-            const { id, contact_id } = request.query;
+            const id = response.locals.user.id; // from auth route
+            const { contact_id } = request.query;
 
             const contactRepository = getRepository(Contact);
 
@@ -152,12 +155,8 @@ export default {
 
     async createMessage(request: Request, response: Response) {
         try {
-            const {
-                message,
-                sender_id,
-                receiver_id,
-                id_contact,
-            } = request.body;
+            const sender_id = response.locals.user.id; // from auth route
+            const { message, receiver_id, id_contact } = request.body;
 
             const contactRepository = getRepository(Contact);
             let receiverContact = await contactRepository.findOne({ user: { id: receiver_id }, contact: { id: sender_id } });
