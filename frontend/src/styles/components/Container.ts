@@ -49,6 +49,10 @@ export const Form = styled.form`
 
     background-color: #2f2f2f;
     border-radius: 1rem;
+
+    .button-wrapper {
+        display: flex;
+    };
 `;
 
 export const Wrapper = styled.div`
@@ -116,7 +120,7 @@ export const Button = styled.button`
     cursor: pointer;
 
     &.cancel {
-        background-color: #333;
+        background-color: #3b3b3b;
     };
     &.password {
         margin: 0;
@@ -124,6 +128,11 @@ export const Button = styled.button`
     &.delete {
         background-color: red;
         font-weight: 700;
+    };
+
+    & > img {
+        width: 3rem;
+        height: 3rem;
     };
 `;
 
@@ -183,5 +192,22 @@ export const RemoveImage = styled.button`
 
     .MuiSvgIcon-root {
         color: #fff;
+    };
+`;
+
+export const ErrorMessage = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    height: 4rem;
+    width: 100%;
+
+    background-color: red;
+    margin-bottom: 2rem;
+    border-radius: .7rem;
+
+    strong {
+        font-size: 1.5rem;
     };
 `;

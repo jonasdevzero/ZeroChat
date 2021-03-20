@@ -162,7 +162,7 @@ export const Submit = styled.button`
 
     img {
         width: 3rem;
-        height: 3rem
+        height: 3rem;
     };
 `;
 

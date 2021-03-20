@@ -10,7 +10,7 @@ export const Container = styled.div<ContainerI>`
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    position: absolute;
+    position: fixed;
     top: ${({ show }) => show ? "2rem" : "-12rem"};
     right: 5rem;
 
@@ -19,7 +19,7 @@ export const Container = styled.div<ContainerI>`
     width: 25rem;
     height: 12rem;
 
-    background-color: #000;
+    background-color: #1f1f1f;
     color: #fff;
 
     border-radius: .3rem;

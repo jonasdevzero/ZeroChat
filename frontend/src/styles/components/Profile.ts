@@ -20,56 +20,6 @@ export const Info = styled.div`
     };
 `;
 
-export const Form = styled.form`
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-
-    margin-bottom: 3rem;
-    padding: 3rem;
-    padding-bottom: 2rem;
-
-    background-color: #2f2f2f;
-    border-radius: 1rem;
-`;
-
-export const InputWrapper = styled.div`
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-
-    margin-bottom: 2rem;
-`;
-
-export const Label = styled.label`
-    display: flex;
-    align-items: center;
-
-    color: lightgray;
-    font-size: 1.4rem;
-    margin-bottom: .5rem;
-
-    .MuiSvgIcon-root {
-        margin-left: .5rem;
-        cursor: pointer;
-    };
-`;
-
-export const Input = styled.input`
-    height: 4rem;
-    width: 100%;
-
-    border: none;
-    border-radius: .7rem;
-    outline: none;
-
-    padding: 0 .7rem;
-
-    font-size: 1.7rem;
-    color: #fff;
-    background-color: #353535;
-`;
-
 export const InputContainer = styled.div`
     display: flex;
     position: relative;
@@ -85,29 +35,6 @@ export const InputContainer = styled.div`
         100% {
             top: -3.5rem;
         };
-    };
-`;
-
-export const Button = styled.button`
-    height: 4rem;
-
-    color: #fff;
-    font-size: 1.4rem;
-    background-color: #222;
-
-    margin-left: 1rem;
-    padding: .5rem 2rem;
-    border: none;
-    border-radius: .7rem;
-    outline: none;
-    cursor: pointer;
-
-    &.password {
-        margin: 0;
-    };
-    &.delete {
-        background-color: red;
-        font-weight: 700;
     };
 `;
 
