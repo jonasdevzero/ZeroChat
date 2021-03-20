@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { UserI, ContactI, GroupI } from "../types/user";
 import Fuse from "fuse.js";
 import api from "../services/api";
+import { SocketIOClient } from "../types/socket";
 
 import {
     Container,
@@ -45,9 +46,10 @@ interface CreateGroupI {
     setUser: React.Dispatch<React.SetStateAction<UserI>>;
     setCurrentGroup: React.Dispatch<React.SetStateAction<GroupI>>;
     setCurrentContainer: React.Dispatch<React.SetStateAction<"profile" | "contacts" | "groups" | "addContact" | "createGroup">>;
+    socket: SocketIOClient.Socket;
 };
 
-export default function CreateGroup({ user, setUser, setCurrentGroup, setCurrentContainer }: CreateGroupI) {
+export default function CreateGroup({ user, setUser, setCurrentGroup, setCurrentContainer, socket }: CreateGroupI) {
     const [name, setName] = useState("");
     const [image, setImage] = useState<File>(undefined);
     const [description, setDescription] = useState("");
@@ -64,7 +66,6 @@ export default function CreateGroup({ user, setUser, setCurrentGroup, setCurrent
         e.preventDefault();
 
         const data = new FormData();
-        data.append("id", user?.id);
         data.append("name", name);
         data.append("image", image);
         data.append("description", description);
@@ -73,8 +74,8 @@ export default function CreateGroup({ user, setUser, setCurrentGroup, setCurrent
 
         await api.post(`/group`, data)
             .then(response => {
-                const { group } = response.data;
-                const updatedGroups: GroupI[] = [group]
+                const group: GroupI = response.data.group;
+                const updatedGroups: GroupI[] = [group];
 
                 user?.groups?.forEach(group => updatedGroups.push(group));
 
@@ -83,8 +84,10 @@ export default function CreateGroup({ user, setUser, setCurrentGroup, setCurrent
                     groups: updatedGroups,
                 });
 
-                setCurrentGroup(group);
-                setCurrentContainer("groups");
+                socket.emit("group", { event: "new", data: { event: "new", group, members } }, () => {
+                    setCurrentGroup(group);
+                    setCurrentContainer("groups");
+                });
             });
     };
 
@@ -208,10 +211,10 @@ export default function CreateGroup({ user, setUser, setCurrentGroup, setCurrent
 
                             {searchResult?.length > 0 ? (
                                 <FilteredContacts>
-                                    {searchResult.map((contact, i) => {
+                                    {searchResult.map(contact => {
                                         return (
-                                            <FilteredContact key={i} onClick={() => selectContact(contact)}>
-                                                <Avatar src={contact.image} />
+                                            <FilteredContact key={contact.id} onClick={() => selectContact(contact)}>
+                                                <Avatar src={contact?.image} />
                                                 <p>{contact.username}</p>
                                             </FilteredContact>
                                         );
@@ -225,19 +228,17 @@ export default function CreateGroup({ user, setUser, setCurrentGroup, setCurrent
                                 <>
                                     {selectedContacts.map((selectedContact, i) => {
                                         return (
-                                            <>
-                                                <SelectedContact key={i}>
-                                                    <Avatar src={selectedContact.username} />
-                                                    <span>{selectedContact.username}</span>
+                                            <SelectedContact key={i}>
+                                                <Avatar src={selectedContact.username} />
+                                                <span>{selectedContact.username}</span>
 
-                                                    <RemoveSelectedContact
-                                                        type="button"
-                                                        onClick={() => removeSelectedContact(selectedContact)}
-                                                    >
-                                                        <CloseIcon />
-                                                    </RemoveSelectedContact>
-                                                </SelectedContact>
-                                            </>
+                                                <RemoveSelectedContact
+                                                    type="button"
+                                                    onClick={() => removeSelectedContact(selectedContact)}
+                                                >
+                                                    <CloseIcon />
+                                                </RemoveSelectedContact>
+                                            </SelectedContact>
                                         );
                                     })}
                                 </>

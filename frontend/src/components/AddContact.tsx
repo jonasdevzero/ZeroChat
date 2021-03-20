@@ -1,6 +1,7 @@
 import { useState, useEffect, Dispatch } from "react";
 import { UserI, ContactI } from "../types/user";
 import api from "../services/api";
+import { SocketIOClient } from "../types/socket";
 
 import {
     Container,
@@ -27,7 +28,7 @@ interface AddContactI {
     setUser: Dispatch<React.SetStateAction<UserI>>;
     setCurrentContact: Dispatch<React.SetStateAction<ContactI>>;
     setCurrentContainer: Dispatch<React.SetStateAction<"profile" | "contacts" | "groups" | "addContact" | "createGroup">>;
-    socket: any;
+    socket: SocketIOClient.Socket;
 };
 
 export default function AddContact({ user, setUser, setCurrentContact, setCurrentContainer, socket }: AddContactI) {
@@ -40,22 +41,19 @@ export default function AddContact({ user, setUser, setCurrentContact, setCurren
     };
 
     async function add(contact: UserI) {
-        await api.post(`/contact`, {
-            id: user.id,
-            contact_id: contact.id
-        }).then(response => {
+        await api.post(`/contact`, { contact_id: contact.id }).then(response => {
             const newContact: ContactI = response.data.contact;
             newContact.messages = [];
 
-            socket?.emit("is-online", newContact.id, (online: boolean) => {
-                newContact.online = online;
+            socket.emit("user", { contactId: newContact.id, event: "newContact" }, (isOnline: boolean) => {
+                newContact.online = isOnline;
 
                 const updatedContacts: ContactI[] = [newContact];
-                user.contacts.forEach(contact => updatedContacts.push(contact))
+                user.contacts.forEach(contact => updatedContacts.push(contact));
 
                 setUser({
                     ...user,
-                    contacts: updatedContacts
+                    contacts: updatedContacts,
                 });
 
                 setCurrentContact(newContact);
