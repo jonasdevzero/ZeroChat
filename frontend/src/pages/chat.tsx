@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import { useState, useEffect, useRef } from 'react';
 import io from 'socket.io-client';
 import api from "../services/api";
-import { UserI, ContactI, GroupI } from "../types/user";
+import { UserI, ContactI, GroupI, GroupUsersI } from "../types/user";
 
 import {
     Container,
@@ -44,13 +44,12 @@ let socket = io.Socket;
 const ENDPOINT = "ws://localhost:3001";
 
 interface ChatI {
-    token: string;
     setToken: React.Dispatch<React.SetStateAction<string>>;
     theme: "light" | "dark";
     setTheme: React.Dispatch<React.SetStateAction<"light" | "dark">>
 };
 
-export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
+export default function Chat({ setToken, theme, setTheme }: ChatI) {
     const [user, setUser] = useState<UserI>();
 
     const [currentContainer, setCurrentContainer] = useState<"profile" | "contacts" | "groups" | "addContact" | "createGroup">("contacts");
@@ -82,16 +81,21 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
 
             setToken(data.token);
 
-            api.get(`/group?id=${data.user.id}`).then(response => { // get groups by last messages time
-                const { groups } = response.data;
+            api.get(`/group`).then(response => { // get groups by last messages time
+                const groups: Array<{ [key: string]: any }> = response.data.groups;
 
-                data.user.groups = groups;
+                data.user.groups = groups.map(g => {
+                    const user = g.users.find((u: GroupUsersI) => u?.id === data.user.id);
+                    g.unread_messages = user.unread_messages;
+
+                    return g;
+                });
 
                 const rooms: string[] = [];
                 rooms.push(data.user.id);
                 groups.forEach(group => rooms.push(group.id));
 
-                api.get(`/contact?id=${data.user.id}`).then(response => { // get contacts by last messages time
+                api.get(`/contact`).then(response => { // get contacts by last messages time
                     const { contacts } = response.data;
 
                     data.user.contacts = contacts;
@@ -117,6 +121,7 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
                 });
             });
         }).catch(() => {
+            setToken("");
             router.push("/signin");
         });
 
@@ -124,8 +129,8 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
             socket.disconnect();
             socket.off("private-message");
             socket.off("group-message");
-            socket.off("contact-status-change");
-            socket.off("is-online");
+            socket.off("user");
+            socket.off("group");
         };
     }, []);
 
@@ -135,24 +140,24 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
             const receiver = message.contact.id;
             const unread_messages = message.contact.unread_messages;
 
-            const existsContact = user?.contacts?.find(c => c.id === sender);
+            const existsContact = user?.contacts?.find(c => c?.id === sender);
 
             if (!existsContact && user?.id === receiver) {
-                api.get(`/contact/${sender}?user_id=${user?.id}`)
-                    .then(response => {
-                        const { contact } = response.data;
+                api.get(`/contact/${sender}`).then(response => {
+                    const contact: ContactI = response.data.contact;
 
-                        socket.emit("is-online", contact.id, (online: boolean) => {
-                            contact.online = online;
+                    socket.emit("user", { contactId: contact.id, event: "newContact" }, (isOnline: boolean) => {
+                        contact.online = isOnline;
 
-                            const updatedContacts: ContactI[] = [contact];
-                            user?.contacts?.forEach(c => updatedContacts.push(c))
-                            setUser({
-                                ...user,
-                                contacts: updatedContacts,
-                            })
-                        });
+                        const updatedContacts: ContactI[] = [contact];
+                        user?.contacts?.forEach(c => updatedContacts.push(c));
+
+                        setUser({
+                            ...user,
+                            contacts: updatedContacts,
+                        })
                     });
+                });
             } else {
                 let position: number;
 
@@ -168,14 +173,10 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
                             position = i
 
                             if (user?.id === receiver) {
-                                if (currentContact.id === sender) {
-                                    api.put(`/contact/message?&only_unread_messages=true`, {
-                                        unread_messages: 0,
-                                        user_id: user?.id,
-                                        contact_id: currentContact.id,
+                                if (currentContact?.id === sender) {
+                                    api.put(`/contact/${currentContact?.id}?&only_unread_messages=true`).then(() => {
+                                        contact.unread_messages = undefined;
                                     });
-
-                                    contact.unread_messages = undefined;
                                 } else {
                                     contact.unread_messages = unread_messages;
                                 };
@@ -194,13 +195,14 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
                 };
             };
 
-            if (currentContact.id === receiver || currentContact.id === sender) {
+            if (currentContact?.id === receiver || currentContact?.id === sender) {
                 scrollToBottom(true);
             };
         });
 
         socket.on("group-message", ({ message }) => {
             const group_id = message.group_id;
+            const users: GroupUsersI[] = message.users;
 
             let position: number;
 
@@ -212,6 +214,14 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
                         updatedMessages?.push(message);
 
                         position = i;
+
+                        if (currentGroup?.id === group_id) {
+                            api.put(`/group/${currentGroup?.id}?only_unread_messages=true`).then(() => {
+                                currentGroup.unread_messages = undefined;
+                            });
+                        } else {
+                            group.unread_messages = users.find(u => u.id === user?.id).unread_messages;
+                        };
 
                         group.messages = updatedMessages;
                     };
@@ -232,16 +242,37 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
             };
         });
 
-        socket.on("contact-status-change", ({ contact_id, status }: { contact_id: string, status: "online" | "offline" }) => {
+        socket.on("user", ({ event, contact_id, username, picture, status }) => {
             setUser({
                 ...user,
                 contacts: user?.contacts?.map(contact => {
-                    if (contact.id === contact_id)
-                        contact.online = status === "online";
+                    if (contact?.id === contact_id) {
+                        switch (event) {
+                            case "status":
+                                contact.online = status === "online";
+                                break;
+                            case "update":
+                                contact.username = username;
+                                contact.image = picture;
+                                break;
+                        };
+                    };
 
                     return contact;
-                }),
-            });
+                })
+            })
+        });
+
+        socket.on("group", ({ event, group }) => {
+            if (event === "new") {
+                const updatedGroups: GroupI[] = [group];
+                user?.groups?.forEach(g => updatedGroups.push(g));
+
+                setUser({
+                    ...user,
+                    groups: updatedGroups,
+                });
+            };
         });
     }, [user, currentContact, currentGroup]);
 
@@ -249,30 +280,25 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
         scrollToBottom();
 
         if (currentContainer === "contacts" && currentContact && !(currentContact?.messages)) {
-            api.get(`/contact/messages?id=${user?.id}&contact_id=${currentContact?.id}`)
-                .then(response => {
-                    const data = response.data;
+            api.get(`/contact/messages?contact_id=${currentContact?.id}`).then(response => {
+                const data = response.data;
 
-                    setUser({
-                        ...user,
-                        contacts: user?.contacts?.map(contact => {
-                            if (data.contact.contact_id === contact.id)
-                                contact.messages = data.contact.messages;
+                setUser({
+                    ...user,
+                    contacts: user?.contacts?.map(contact => {
+                        if (data.contact.contact_id === contact.id)
+                            contact.messages = data.contact.messages;
 
-                            return contact;
-                        }),
-                    });
-
-                    scrollToBottom();
+                        return contact;
+                    }),
                 });
+
+                scrollToBottom();
+            });
         };
 
         if (currentContainer === "contacts" && currentContact && currentContact?.unread_messages > 0) {
-            api.put(`/contact/message?only_unread_messages=true`, {
-                unread_messages: 0,
-                user_id: user?.id,
-                contact_id: currentContact.id,
-            }).then(() => {
+            api.put(`/contact/${currentContact?.id}?only_unread_messages=true`).then(() => {
                 setUser({
                     ...user,
                     contacts: user?.contacts?.map(contact => {
@@ -395,6 +421,9 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
                     <Profile
                         user={user}
                         setUser={setUser}
+                        theme={theme}
+                        setToken={setToken}
+                        socket={socket}
                     />
                 ) :
                     currentContainer === "contacts" || currentContainer === "groups" ? (
@@ -514,6 +543,7 @@ export default function Chat({ token, setToken, theme, setTheme }: ChatI) {
                                     setUser={setUser}
                                     setCurrentGroup={setCurrentGroup}
                                     setCurrentContainer={setCurrentContainer}
+                                    socket={socket}
                                 />
                             ) : null
                 }
