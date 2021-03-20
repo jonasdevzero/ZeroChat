@@ -24,6 +24,24 @@ export default {
         users.push(data);
     },
 
+    pushNewContact(userSocketId: string, contactId: string) {
+        users = users.map(user => {
+            if (user.socketId === userSocketId) {
+                user.contacts.push(contactId);
+            };
+            
+            return user;
+        });
+    },
+
+    isOnline(contactId: string) {
+        if (this.findOne(contactId)) {
+            return true;
+        };
+
+        return false;
+    },
+
     getContactsOnline(contacts: string[]) {
         let contactsOnline: string[] = [];
 
