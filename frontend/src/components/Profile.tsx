@@ -1,15 +1,13 @@
-import { useState } from "react";
+import React, { useState } from "react";
+import { useRouter } from "next/router";
 import { UserI } from "../types/user";
 import api from "../services/api";
+import { AxiosError } from "axios";
+import { SocketIOClient } from "../types/socket";
 
 import {
     Info,
-    Form,
-    InputWrapper,
-    Label,
-    Input,
     InputContainer,
-    Button,
     Message,
     WrapperScreen,
     Screen,
@@ -20,11 +18,17 @@ import {
     Container,
     Header,
     Inner,
+    Form,
+    InputWrapper,
+    Label,
+    Input,
+    Button,
     Wrapper,
     ImageWrapper,
     ImageLabel,
     ImageInput,
     RemoveImage,
+    ErrorMessage,
 } from "../styles/components/Container";
 import Warning from "./Warning";
 import { Avatar } from "@material-ui/core";
@@ -38,25 +42,33 @@ import {
 interface ProfileI {
     user: UserI;
     setUser: React.Dispatch<React.SetStateAction<UserI>>;
+    theme: "light" | "dark";
+    setToken: React.Dispatch<React.SetStateAction<string>>;
+    socket: SocketIOClient.Socket;
 };
 
-export default function Profile({ user, setUser }: ProfileI) {
+export default function Profile({ user, setUser, theme, setToken, socket }: ProfileI) {
     const [name, setName] = useState(user?.name);
     const [username, setUsername] = useState(user?.username);
     const [picture, setPicture] = useState(user?.picture);
     const [newPicture, setNewPicture] = useState<File>(undefined);
+
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-
     const [showEmail, setShowEmail] = useState(false);
-    const [updateEmailScreen, setUpdateEmailScreen] = useState(false);
 
     const [showMessage, setShowMessage] = useState(false);
 
+    const [updateEmailScreen, setUpdateEmailScreen] = useState(false);
     const [deleteAccountScreen, setDeleteAccountScreen] = useState(false);
 
     const [warning, setWarning] = useState("");
-    const [showWarning, setShowWarning] = useState(false);
+
+    const [error, setError] = useState("");
+    const [loadingRequest, setLoadingRequest] = useState(false);
+    const [currentRequest, setCurrentRequest] = useState<"data" | "email" | "password" | "delete">("data");
+
+    const router = useRouter();
 
     async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -66,40 +78,97 @@ export default function Profile({ user, setUser }: ProfileI) {
         data.append("username", username);
         data.append("picture", newPicture);
 
-        await api.put(`/user/${user?.id}?without_image=${picture?.length === 0}`, data).then(response => {
-            const { user: { name, username, picture } } = response.data;
+        if (name !== user?.name || username !== user?.username || picture !== user?.picture) {
+            setCurrentRequest("data");
+            setLoadingRequest(true);
+            setError("");
 
-            setUser({
-                ...user,
-                name,
-                username,
-                picture,
+            await api.put(`/user?without_image=${picture?.length === 0}`, data).then(response => {
+                const { user: { name, username, picture } } = response.data;
+
+                setUser({
+                    ...user,
+                    name,
+                    username,
+                    picture,
+                });
+                setName(name);
+                setUsername(username);
+
+                setWarning("Updated with success!");
+
+                socket.emit("user", { event: "update", data: { event: "update", contact_id: user?.id, username, picture } }, () => {});
+            }).catch((error: AxiosError) => {
+                const { message } = error.response.data;
+
+                setError(message);
             });
 
-            setWarning("Updated with success!");
-            setShowWarning(true);
-            setTimeout(() => { setShowWarning(false) }, 2000);
-        });
+            setTimeout(() => { setWarning("") }, 2000);
+
+            setLoadingRequest(false);
+        };
     };
 
     async function changeEmail(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
 
-        await api.put(`user/${user?.id}`, { email, password })
+        setCurrentRequest("email");
+        setLoadingRequest(true);
+        setError("");
+
+        await api.put(`/user?update_email=true`, { email, password }).then(response => {
+            setUser({
+                ...user,
+                email: response.data.email,
+            });
+
+            closeScreen();
+            setWarning("Updated with success");
+            setTimeout(() => { setWarning("") }, 2000);
+        }).catch((error: AxiosError) => {
+            const { message } = error?.response?.data;
+
+            setError(message);
+        });
+
+        setLoadingRequest(false);
     };
 
     async function changePassword() {
+        setLoadingRequest(true);
+        setCurrentRequest("password");
+
         await api.post("user/forgot_password", { email }).then(response => {
+            setLoadingRequest(false);
+
             setWarning(response.data.message);
-            setShowWarning(true);
-            setTimeout(() => { setShowWarning(false) }, 2000);
+            setTimeout(() => { setWarning("") }, 2000);
         });
     };
 
-    function deleteAccount(e: React.FormEvent<HTMLFormElement>) {
+    async function deleteAccount(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
 
-        //...
+        setCurrentRequest("delete");
+        setLoadingRequest(true);
+        setError("");
+
+        await api.post(`/user/delete`, { password }).then(_ => {
+            setWarning("Deleted with success, redirecting...");
+            setToken("");
+            closeScreen();
+
+            setTimeout(() => {
+                router.push("/");
+            }, 2000);
+        }).catch((error: AxiosError) => {
+            const { message } = error?.response?.data;
+
+            setError(message);
+        });
+
+        setLoadingRequest(false);
     };
 
     function animateMessage() {
@@ -115,6 +184,7 @@ export default function Profile({ user, setUser }: ProfileI) {
         setDeleteAccountScreen(false);
         setEmail("");
         setPassword("");
+        setError("");
     };
 
     function handleSelectImage(e: React.ChangeEvent<HTMLInputElement>) {
@@ -131,6 +201,12 @@ export default function Profile({ user, setUser }: ProfileI) {
     function removeSelectedImage() {
         setNewPicture(undefined);
         setPicture("");
+    };
+
+    function resentInputs() {
+        setName(user?.name);
+        setUsername(user?.username);
+        setPicture(user?.picture);
     };
 
     return (
@@ -169,6 +245,12 @@ export default function Profile({ user, setUser }: ProfileI) {
                 </Info>
 
                 <Form onSubmit={onSubmit}>
+                    {error?.length > 0 && currentRequest === "data" ? (
+                        <ErrorMessage>
+                            <strong>{error}</strong>
+                        </ErrorMessage>
+                    ) : null}
+
                     <InputWrapper>
                         <Label>Name</Label>
                         <Input value={name} onChange={e => setName(e.target.value)} />
@@ -178,7 +260,25 @@ export default function Profile({ user, setUser }: ProfileI) {
                         <Input value={username} onChange={e => setUsername(e.target.value)} />
                     </InputWrapper>
 
-                    <Button>Update</Button>
+                    <div className="button-wrapper">
+                        <Button
+                            className="cancel"
+                            type="button"
+                            onClick={() => resentInputs()}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="submit"
+                        >
+                            {loadingRequest && currentRequest === "data" ? (
+                                <img
+                                    src={`/loading-${theme === "dark" ? "light" : "dark"}.svg`}
+                                    alt="loading"
+                                />
+                            ) : "Update"}
+                        </Button>
+                    </div>
                 </Form>
 
                 <Form>
@@ -244,6 +344,12 @@ export default function Profile({ user, setUser }: ProfileI) {
                         <Form onSubmit={changeEmail}>
                             <h1>Write an e-mail</h1>
 
+                            {error?.length > 0 && currentRequest === "email" ? (
+                                <ErrorMessage>
+                                    <strong>{error}</strong>
+                                </ErrorMessage>
+                            ) : null}
+
                             <InputWrapper>
                                 <Label>New e-mail</Label>
                                 <Input value={email} onChange={e => setEmail(e.target.value)} />
@@ -254,7 +360,19 @@ export default function Profile({ user, setUser }: ProfileI) {
                                 <Input type="password" value={password} onChange={e => setPassword(e.target.value)} />
                             </InputWrapper>
 
-                            <Button type="submit">Update</Button>
+                            <div className="button-wrapper">
+                                <Button className="cancel" type="button" onClick={() => closeScreen()}>
+                                    Cancel
+                                </Button>
+                                <Button type="submit">
+                                    {loadingRequest && currentRequest === "email" ? (
+                                        <img
+                                            src={`/loading-${theme === "dark" ? "light" : "dark"}.svg`}
+                                            alt="loading"
+                                        />
+                                    ) : "Update"}
+                                </Button>
+                            </div>
                         </Form>
                     </Screen>
 
@@ -280,7 +398,17 @@ export default function Profile({ user, setUser }: ProfileI) {
                                 <Input type="password" value={password} onChange={e => setPassword(e.target.value)} />
                             </InputWrapper>
 
-                            <Button type="submit">Delete</Button>
+                            <div className="button-wrapper">
+                                <Button type="button" className="cancel" onClick={() => closeScreen()}>Cancel</Button>
+                                <Button type="submit">
+                                    {loadingRequest && currentRequest === "delete" ? (
+                                        <img
+                                            src={`/loading-${theme === "dark" ? "light" : "dark"}.svg`}
+                                            alt="loading"
+                                        />
+                                    ) : "Delete"}
+                                </Button>
+                            </div>
                         </Form>
                     </Screen>
 
@@ -288,7 +416,7 @@ export default function Profile({ user, setUser }: ProfileI) {
                 </WrapperScreen>
             ) : null}
 
-            <Warning showWarning={showWarning}>
+            <Warning showWarning={warning?.length > 0}>
                 {warning}
             </Warning>
         </Container>
