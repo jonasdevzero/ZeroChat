@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { UserI } from "../types/user";
 import api from "../services/api";
 import { AxiosError } from "axios";
 import { SocketIOClient } from "../types/socket";
+import { SetUserMasterI } from "../types/useSetUserMaster";
 
 import {
     Info,
@@ -41,13 +42,13 @@ import {
 
 interface ProfileI {
     user: UserI;
-    setUser: React.Dispatch<React.SetStateAction<UserI>>;
+    setUserMaster: SetUserMasterI;
     theme: "light" | "dark";
     setToken: React.Dispatch<React.SetStateAction<string>>;
     socket: SocketIOClient.Socket;
 };
 
-export default function Profile({ user, setUser, theme, setToken, socket }: ProfileI) {
+export default function Profile({ user, setUserMaster, theme, setToken, socket }: ProfileI) {
     const [name, setName] = useState(user?.name);
     const [username, setUsername] = useState(user?.username);
     const [picture, setPicture] = useState(user?.picture);
@@ -86,25 +87,14 @@ export default function Profile({ user, setUser, theme, setToken, socket }: Prof
             await api.put(`/user?without_image=${picture?.length === 0}`, data).then(response => {
                 const { user: { name, username, picture } } = response.data;
 
-                setUser({
-                    ...user,
-                    name,
-                    username,
-                    picture,
-                });
-                setName(name);
-                setUsername(username);
-
+                setUserMaster.update({ name, username, picture });
                 setWarning("Updated with success!");
 
                 socket.emit("user", { event: "update", data: { event: "update", contact_id: user?.id, username, picture } }, () => {});
             }).catch((error: AxiosError) => {
                 const { message } = error.response.data;
-
                 setError(message);
             });
-
-            setTimeout(() => { setWarning("") }, 2000);
 
             setLoadingRequest(false);
         };
@@ -118,17 +108,12 @@ export default function Profile({ user, setUser, theme, setToken, socket }: Prof
         setError("");
 
         await api.put(`/user?update_email=true`, { email, password }).then(response => {
-            setUser({
-                ...user,
-                email: response.data.email,
-            });
+            setUserMaster.update({ email });
 
             closeScreen();
             setWarning("Updated with success");
-            setTimeout(() => { setWarning("") }, 2000);
         }).catch((error: AxiosError) => {
             const { message } = error?.response?.data;
-
             setError(message);
         });
 
@@ -141,9 +126,7 @@ export default function Profile({ user, setUser, theme, setToken, socket }: Prof
 
         await api.post("user/forgot_password", { email }).then(response => {
             setLoadingRequest(false);
-
             setWarning(response.data.message);
-            setTimeout(() => { setWarning("") }, 2000);
         });
     };
 
@@ -159,24 +142,13 @@ export default function Profile({ user, setUser, theme, setToken, socket }: Prof
             setToken("");
             closeScreen();
 
-            setTimeout(() => {
-                router.push("/");
-            }, 2000);
+            setTimeout(() => router.push("/"), 2000);
         }).catch((error: AxiosError) => {
             const { message } = error?.response?.data;
-
             setError(message);
         });
 
         setLoadingRequest(false);
-    };
-
-    function animateMessage() {
-        setShowMessage(true);
-
-        setTimeout(() => {
-            setShowMessage(false);
-        }, 3000);
     };
 
     function closeScreen() {
@@ -208,6 +180,22 @@ export default function Profile({ user, setUser, theme, setToken, socket }: Prof
         setUsername(user?.username);
         setPicture(user?.picture);
     };
+
+    useEffect(() => {
+        let timeout: NodeJS.Timeout;
+
+        if (warning.length > 0) {
+            setTimeout(() => setWarning(""), 2000);
+        };
+
+        if (showMessage) {
+            timeout = setTimeout(() => setShowMessage(false), 3000);
+        };
+
+        return () => {
+            clearTimeout(timeout);
+        }
+    }, [warning, showMessage]);
 
     return (
         <Container>
@@ -293,7 +281,7 @@ export default function Profile({ user, setUser, theme, setToken, socket }: Prof
                             )}
                         </Label>
                         <InputContainer>
-                            <div onClick={() => animateMessage()}>
+                            <div onClick={() => setShowMessage(true)}>
                                 <Input
                                     value={showEmail ? user?.email : `**************@${user?.email?.split("@")[1]}`}
                                     onChange={() => { }}

@@ -3,6 +3,7 @@ import { UserI, ContactI, GroupI } from "../types/user";
 import Fuse from "fuse.js";
 import api from "../services/api";
 import { SocketIOClient } from "../types/socket";
+import { SetUserMasterI } from "../types/useSetUserMaster";
 
 import {
     Container,
@@ -43,13 +44,13 @@ import {
 
 interface CreateGroupI {
     user: UserI;
-    setUser: React.Dispatch<React.SetStateAction<UserI>>;
+    setUserMaster: SetUserMasterI;
     setCurrentGroup: React.Dispatch<React.SetStateAction<GroupI>>;
     setCurrentContainer: React.Dispatch<React.SetStateAction<"profile" | "contacts" | "groups" | "addContact" | "createGroup">>;
     socket: SocketIOClient.Socket;
 };
 
-export default function CreateGroup({ user, setUser, setCurrentGroup, setCurrentContainer, socket }: CreateGroupI) {
+export default function CreateGroup({ user, setUserMaster, setCurrentGroup, setCurrentContainer, socket }: CreateGroupI) {
     const [name, setName] = useState("");
     const [image, setImage] = useState<File>(undefined);
     const [description, setDescription] = useState("");
@@ -75,16 +76,10 @@ export default function CreateGroup({ user, setUser, setCurrentGroup, setCurrent
         await api.post(`/group`, data)
             .then(response => {
                 const group: GroupI = response.data.group;
-                const updatedGroups: GroupI[] = [group];
-
-                user?.groups?.forEach(group => updatedGroups.push(group));
-
-                setUser({
-                    ...user,
-                    groups: updatedGroups,
-                });
+                group.messages = [];
 
                 socket.emit("group", { event: "new", data: { event: "new", group, members } }, () => {
+                    setUserMaster.groups.push(group);
                     setCurrentGroup(group);
                     setCurrentContainer("groups");
                 });

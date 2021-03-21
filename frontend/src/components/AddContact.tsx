@@ -2,6 +2,7 @@ import { useState, useEffect, Dispatch } from "react";
 import { UserI, ContactI } from "../types/user";
 import api from "../services/api";
 import { SocketIOClient } from "../types/socket";
+import { SetUserMasterI } from "../types/useSetUserMaster";
 
 import {
     Container,
@@ -25,13 +26,13 @@ import {
 
 interface AddContactI {
     user: UserI;
-    setUser: Dispatch<React.SetStateAction<UserI>>;
+    setUserMaster: SetUserMasterI;
     setCurrentContact: Dispatch<React.SetStateAction<ContactI>>;
     setCurrentContainer: Dispatch<React.SetStateAction<"profile" | "contacts" | "groups" | "addContact" | "createGroup">>;
     socket: SocketIOClient.Socket;
 };
 
-export default function AddContact({ user, setUser, setCurrentContact, setCurrentContainer, socket }: AddContactI) {
+export default function AddContact({ user, setUserMaster, setCurrentContact, setCurrentContainer, socket }: AddContactI) {
     const [username, setUsername] = useState("");
 
     const [contacts, setContacts] = useState<UserI[]>();
@@ -45,19 +46,15 @@ export default function AddContact({ user, setUser, setCurrentContact, setCurren
             const newContact: ContactI = response.data.contact;
             newContact.messages = [];
 
-            socket.emit("user", { contactId: newContact.id, event: "newContact" }, (isOnline: boolean) => {
+            console.log(newContact);
+
+            socket.emit("user", { contactId: newContact.id, event: "addContact" }, (isOnline: boolean) => {
                 newContact.online = isOnline;
-
-                const updatedContacts: ContactI[] = [newContact];
-                user.contacts.forEach(contact => updatedContacts.push(contact));
-
-                setUser({
-                    ...user,
-                    contacts: updatedContacts,
+                setUserMaster.contacts.push(newContact).then(() => {
+                    console.log(newContact)
+                    setCurrentContact(newContact);
+                    setCurrentContainer("contacts");
                 });
-
-                setCurrentContact(newContact);
-                setCurrentContainer("contacts");
             });
         });
     };
