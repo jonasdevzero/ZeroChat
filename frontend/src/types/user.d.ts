@@ -1,4 +1,4 @@
-export interface ContactMessagesI {
+export interface ContactMessageI {
     id: number;
     sender_id: string;
     message: string;
@@ -12,14 +12,14 @@ export interface ContactI {
     id: string;
     username: string;
     image: string;
-    messages: ContactMessagesI[] | [];
+    messages: ContactMessageI[] | [];
     online: true | false;
     unread_messages: number | null;
     active: true | false;
     blocked: true | false;
 };
 
-export interface GroupMessagesI {
+export interface GroupMessageI {
     id: string;
     group_id: string;
     sender_id: string;
@@ -27,7 +27,7 @@ export interface GroupMessagesI {
     posted_at: Date
 };
 
-export interface GroupUsersI {
+export interface GroupUserI {
     id: string;
     username: string;
     unread_messages: number | undefined;
@@ -42,8 +42,8 @@ export interface GroupI {
     image: string;
     created_at: Date;
     unread_messages: number | undefined;
-    messages: GroupMessagesI[];
-    users: GroupUsersI[];
+    messages: GroupMessageI[];
+    users: GroupUserI[];
 };
 
 export interface UserI {
