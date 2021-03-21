@@ -102,28 +102,18 @@ export default {
         try {
             const contact_id = request.params.id.toString();
             const user_id = response.locals.user.id; // from auth route
-            const { only_unread_messages } = request.query;
+            const { unread_messages } = request.query;
 
             const contactRepository = getRepository(Contact);
-
-            if (only_unread_messages === "true") {
-                await contactRepository
-                    .createQueryBuilder("contact")
-                    .leftJoin("contact.contact", "c")
-                    .leftJoin("contact.user", "user")
-                    .update()
-                    .set({ unread_messages: undefined })
-                    .where("user.id = :user_id", { user_id })
-                    .andWhere("c.id = :contact_id", { contact_id })
-                    .execute()
-                    .then(() => response.status(201).json({ message: "ok" }));
-            };
-            
             const contact = await contactRepository.findOne({ user: { id: user_id }, contact: { id: contact_id } });
 
             if (!contact)
-                return response.status(400).json({ message: "id or contact_id is invalid" });            
+                return response.status(400).json({ message: "id or contact_id is invalid" });
 
+            if (unread_messages === "true") {
+                await contactRepository.update(contact, { unread_messages: undefined });
+                return response.status(200).json({ message: "ok" });
+            };                
             //...
         } catch (err) {
             console.log(err);

@@ -72,21 +72,17 @@ export default {
         try {
             const { id } = request.params;
             const user_id = response.locals.user.id; // from auth route
-            const { only_unread_messages } = request.query;
+            const { unread_messages } = request.query;
 
             const groupUsersRepository = getRepository(GroupUsers);
+            const group = await groupUsersRepository.findOne({ where: { user: { id: user_id }, group: { id } } })
 
-            if (only_unread_messages === "true") {
-                await groupUsersRepository
-                    .createQueryBuilder("groupUsers")
-                    .leftJoin("groupUsers.user", "user")
-                    .leftJoin("groupUsers.group", "group")
-                    .update()
-                    .set({ unread_messages: undefined })
-                    .where("group.id := group_id", { group_id: id })
-                    .andWhere("user.id := user_id", { user_id })
-                    .execute()
-                    .then(() => response.status(200).json({ message: "ok" }));
+            if (!group)
+                return response.status(400).json({ message: "Incorrect group Id" });
+
+            if (unread_messages === "true") {
+                await groupUsersRepository.update(group, { unread_messages: undefined });
+                return response.status(200).json({ message: "ok" });
             };
         } catch (err) {
             console.log(err);
