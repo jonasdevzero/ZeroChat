@@ -3,7 +3,6 @@ import { useRouter } from "next/router";
 import { UserI } from "../types/user";
 import api from "../services/api";
 import { AxiosError } from "axios";
-import { SocketIOClient } from "../types/socket";
 import { SetUserMasterI } from "../types/useSetUserMaster";
 
 import {
@@ -90,7 +89,7 @@ export default function Profile({ user, setUserMaster, theme, setToken, socket }
                 setUserMaster.update({ name, username, picture });
                 setWarning("Updated with success!");
 
-                socket.emit("user", { event: "update", data: { event: "update", contact_id: user?.id, username, picture } }, () => {});
+                socket.emit("user", { event: "update", data: { where: user?.id, set: { username, image: picture } } }, () => {});
             }).catch((error: AxiosError) => {
                 const { message } = error.response.data;
                 setError(message);

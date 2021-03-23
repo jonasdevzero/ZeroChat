@@ -9,39 +9,18 @@ import useSetUserMaster from "../hooks/useSetUserMaster";
 import {
     Container,
     Inner,
-    Header,
-    Room,
     ContainerWithoutChat,
-    MessagesContainer,
-    Message,
-    MessageSender,
-    FormContainer,
-    Form,
-    Input,
-    Submit,
-    IconButton,
-    ScrollToBottom,
-    EmojiPickerContainer,
 } from '../styles/pages/chat';
 import {
     Sidebar,
+    Messages,
     Profile,
     AddContact,
     CreateGroup,
+    Loading,
 } from "../components"
-import { Avatar, IconButton as IButton } from "@material-ui/core";
-import {
-    Send as SendIcon,
-    KeyboardArrowDown as KeyboardArrowDownIcon,
-    InsertEmoticon as InsertEmoticonIcon,
-    MoreVert as MoreVertIcon,
-    Call as CallIcon,
-    Videocam as VideocamIcon,
-} from "@material-ui/icons";
-import "emoji-mart/css/emoji-mart.css";
-import { Picker, BaseEmoji } from "emoji-mart";
 
-let socket = io.Socket;
+let socket: SocketIOClient.Socket = undefined;
 const ENDPOINT = "ws://localhost:3001";
 
 interface ChatI {
@@ -55,51 +34,43 @@ export default function Chat({ setToken, theme, setTheme }: ChatI) {
     const setUserMaster = useSetUserMaster(user, setUser);
 
     const [currentContainer, setCurrentContainer] = useState<"profile" | "contacts" | "groups" | "addContact" | "createGroup">("contacts");
-
     const [currentContact, setCurrentContact] = useState<ContactI>();
     const [currentGroup, setCurrentGroup] = useState<GroupI>();
 
-    const [message, setMessage] = useState("");
+    const messagesContainerRef = useRef(null);
 
     const router = useRouter();
 
-    const messagesContainerRef = useRef(null);
-    const [showScrollButton, setShowScrollButton] = useState(false);
-
-    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         socket = io(ENDPOINT, { transports: ["websocket"] });
-        const token = JSON.parse(localStorage.getItem("token"));
 
+        const token = JSON.parse(localStorage.getItem("token"));
         if (!token) {
             router.push("/signin");
         };
 
         api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
-        api.post(`/user/auth?user_required=true`).then(response => { // auth and get user
+        api.post(`/user/auth?user_required=true`).then(response => {
             const data = response.data;
-
             setToken(data.token);
 
-            api.get(`/group`).then(response => { // get groups by last messages time
-                const groups: Array<{ [key: string]: any }> = response.data.groups || [];
+            api.get(`/group`).then(response => {
+                const { groups } = response.data;
 
-                data.user.groups = groups.map(g => {
-                    const user = g.users.find((u: GroupUserI) => u?.id === data.user.id);
-                    g.unread_messages = user.unread_messages;
-
-                    return g;
+                data.user.groups = groups.map(group => {
+                    group.unread_messages = group.users.find((u: GroupUserI) => u?.id === data.user.id).unread_messages;
+                    return group;
                 });
 
-                const rooms: string[] = [];
-                rooms.push(data.user.id);
+                const rooms: string[] = [data.user.id];
                 groups.forEach(group => rooms.push(group.id));
 
-                api.get(`/contact`).then(response => { // get contacts by last messages time
+                api.get(`/contact`).then(response => {
                     const { contacts } = response.data;
-                    data.user.contacts = contacts || [];
+                    data.user.contacts = contacts;
 
                     const contactsId: string[] = [];
                     contacts.forEach(contact => contactsId.push(contact.id));
@@ -107,14 +78,13 @@ export default function Chat({ setToken, theme, setTheme }: ChatI) {
                     socket.emit("join", { rooms, contacts: contactsId }, (contactsOnline: string[]) => {
                         data.user?.contacts?.map((contact: ContactI) => {
                             contact.online = false;
-
                             if (contactsOnline.includes(contact.id))
                                 contact.online = true;
 
                             return contact;
                         });
-
                         setUser(data.user);
+                        setLoading(false);
                     });
                 });
             });
@@ -133,6 +103,8 @@ export default function Chat({ setToken, theme, setTheme }: ChatI) {
     }, []);
 
     useEffect(() => {
+        socket.removeAllListeners();
+
         socket.on("private-message", ({ message }) => {
             const sender = message.sender_id, receiver = message.contact.id;
 
@@ -141,14 +113,13 @@ export default function Chat({ setToken, theme, setTheme }: ChatI) {
                 api.get(`/contact/${sender}`).then(response => {
                     const contact: ContactI = response.data.contact;
 
-                    socket.emit("user", { contactId: contact.id, event: "addContact" }, (isOnline: boolean) => {
+                    socket.emit("user", { event: "addContact", contactId: contact.id }, (isOnline: boolean) => {
                         contact.online = isOnline;
                         setUserMaster.contacts.push(contact);
                     });
                 });
             } else {
                 const currentContactId = currentContact?.id;
-
                 setUserMaster.contacts.pushMessage({ where: [sender, receiver], message, currentContactId }).then(() => {
                     if (currentContact?.id === receiver || currentContact?.id === sender) {
                         scrollToBottom(true);
@@ -158,22 +129,19 @@ export default function Chat({ setToken, theme, setTheme }: ChatI) {
         });
 
         socket.on("group-message", ({ message }) => {
-            const group_id = message.group_id, currentGrouptId = currentGroup?.id;
+            const group_id = message.group_id, currentGroupId = currentGroup?.id;
 
-            setUserMaster.groups.pushMessage({ where: group_id, message, currentGrouptId }).then(() => {
+            setUserMaster.groups.pushMessage({ where: group_id, message, currentGroupId }).then(() => {
                 if (currentGroup?.id === group_id) {
                     scrollToBottom(true);
                 };
             });
         });
 
-        socket.on("user", ({ event, contact_id, username, picture, status }) => {
+        socket.on("user", ({ event, where, set }) => {
             switch (event) {
                 case "update":
-                    setUserMaster.contacts.update({ where: contact_id, set: { username, image: picture } });
-                    break;
-                case "status":
-                    setUserMaster.contacts.update({ where: contact_id, set: { online: status } });
+                    setUserMaster.contacts.update({ where, set })
                     break;
             };
         });
@@ -190,51 +158,32 @@ export default function Chat({ setToken, theme, setTheme }: ChatI) {
     useEffect(() => {
         scrollToBottom();
 
-        if (currentContainer === "contacts" && currentContact && !(currentContact?.messages)) {
-            api.get(`/contact/messages?contact_id=${currentContact?.id}`).then(response => {
-                const { contact_id, messages } = response.data.contact;
-                setUserMaster.contacts.update({ where: contact_id, set: { messages } }).then(() => scrollToBottom());
-            });
-        };
-
-        if (currentContainer === "contacts" && currentContact && currentContact?.unread_messages > 0) {
-            api.put(`/contact/${currentContact?.id}?unread_messages=true`).then(() => {
-                setUserMaster.contacts.update({ where: currentContact.id, set: { unread_messages: 0 } });
-            });
-        };
-
-        if (currentContainer === "groups" && currentGroup && !(currentGroup?.messages)) {
-            api.get(`/group/messages?group_id=${currentGroup?.id}`).then(response => {
-                const { messages } = response.data;
-                setUserMaster.groups.update({ where: currentGroup.id, set: { messages } }).then(() => scrollToBottom());
-            });
+        if (currentContainer === "contacts" && currentContact) {
+            if (!(currentContact?.messages)) {
+                api.get(`/contact/messages?contact_id=${currentContact?.id}`).then(response => {
+                    const { contact_id, messages } = response.data.contact;
+                    setUserMaster.contacts.update({ where: contact_id, set: { messages } }).then(() => scrollToBottom());
+                });
+            };
+            if (currentContact?.unread_messages > 0) {
+                api.put(`/contact/${currentContact?.id}?unread_messages=true`).then(() => {
+                    setUserMaster.contacts.update({ where: currentContact.id, set: { unread_messages: 0 } });
+                });
+            };
+        } else if (currentContainer === "groups" && currentGroup) {
+            if (!(currentGroup?.messages)) {
+                api.get(`/group/messages?group_id=${currentGroup?.id}`).then(response => {
+                    const { messages } = response.data;
+                    setUserMaster.groups.update({ where: currentGroup.id, set: { messages } }).then(() => scrollToBottom());
+                });
+            };
+            if (currentGroup?.unread_messages > 0) {
+                api.put(`/group/${currentGroup.id}?unread_messages=true`).then(() => {
+                    setUserMaster.groups.update({ where: currentGroup.id, set: { unread_messages: 0 } });
+                });
+            };
         };
     }, [currentContact, currentGroup]);
-
-    async function privateMessage(e: React.FormEvent<HTMLFormElement>) {
-        e.preventDefault();
-
-        setShowEmojiPicker(false);
-        const receiver_id = currentContact?.id, id_contact = currentContact?.id_contact;
-
-        if (message.length > 0) {
-            await api.post(`/contact/message`, { message, receiver_id, id_contact }).then(response => {
-                const { message, unread_messages } = response.data;
-                socket.emit("private-message", { message, unread_messages }, () => setMessage(""));
-            });
-        };
-    };
-
-    async function groupMessage(e: React.FormEvent<HTMLFormElement>) {
-        e.preventDefault();
-
-        if (message.length > 0) {
-            await api.post(`/group/message`, { group_id: currentGroup?.id, message }).then(response => {
-                const { message } = response.data;
-                socket.emit("group-message", { message }, () => setMessage(""));
-            });
-        };
-    };
 
     function scrollToBottom(newMessage?: boolean) {
         if (messagesContainerRef.current) {
@@ -251,169 +200,79 @@ export default function Chat({ setToken, theme, setTheme }: ChatI) {
         };
     };
 
-    function onScroll() {
-        if (messagesContainerRef.current) {
-            const { scrollTop, clientHeight, scrollHeight } = messagesContainerRef.current;
-
-            if (!(scrollTop + 100 > scrollHeight - clientHeight)) {
-                setShowScrollButton(true);
-            } else {
-                setShowScrollButton(false);
-            };
-        };
-    };
-
     return (
         <Container>
             <Head>
                 <title>Zero | Chat</title>
             </Head>
 
-            <Sidebar
-                user={user}
-                setToken={setToken}
-
-                setCurrentContainer={setCurrentContainer}
-
-                setCurrentContact={setCurrentContact}
-                setCurrentGroup={setCurrentGroup}
-
-                theme={theme}
-                setTheme={setTheme}
-            />
-
-            <Inner>
-                {currentContainer === "profile" ? (
-                    <Profile
+            {!loading ? (
+                <>
+                    <Sidebar
                         user={user}
-                        setUserMaster={setUserMaster}
-                        theme={theme}
                         setToken={setToken}
-                        socket={socket}
+                        setCurrentContainer={setCurrentContainer}
+                        setCurrentContact={setCurrentContact}
+                        setCurrentGroup={setCurrentGroup}
+                        theme={theme}
+                        setTheme={setTheme}
                     />
-                ) :
-                    currentContainer === "contacts" || currentContainer === "groups" ? (
-                        !currentContact && !currentGroup ? (
-                            <ContainerWithoutChat>
-                                {currentContainer === "contacts" ? (
-                                    <h1>Select a contact to chat</h1>
-                                ) : (
-                                    <h1>Select a group to chat</h1>
-                                )}
-                            </ContainerWithoutChat>
-                        ) : (
-                            <>
-                                <Header>
-                                    <Room>
-                                        <Avatar src={currentContainer === "contacts" ? currentContact?.image : currentGroup?.image} />
-                                        <h2>{currentContainer === "contacts" ? currentContact?.username : currentGroup?.name}</h2>
-                                    </Room>
 
-                                    {currentContact ? (
-                                        <>
-                                            <IButton>
-                                                <CallIcon />
-                                            </IButton>
-
-                                            <IButton>
-                                                <VideocamIcon />
-                                            </IButton>
-
-                                        </>
-                                    ) : null}
-
-                                    <IButton>
-                                        <MoreVertIcon />
-                                    </IButton>
-                                </Header>
-
-                                <MessagesContainer ref={messagesContainerRef} onScroll={() => onScroll()}>
-                                    {currentContact ?
-                                        currentContact?.messages?.map((msg, i) => {
-                                            return msg ? msg.sender_id === user?.id ? (
-                                                <MessageSender key={i}>
-                                                    {msg.message}
-                                                </MessageSender>
-                                            ) : (
-                                                <Message key={i}>
-                                                    {msg.message}
-                                                </Message>
-                                            )
-                                                : null
-                                        })
-                                        :
-                                        currentGroup?.messages?.map((msg, i) => {
-                                            return msg ? msg.sender_id === user?.id ? (
-                                                <MessageSender key={i}>
-                                                    {msg.message}
-                                                </MessageSender>
-                                            ) : (
-                                                <Message key={i}>
-                                                    {msg.message}
-                                                </Message>
-                                            )
-                                                : null
-                                        })
-                                    }
-
-                                    {showScrollButton ? (
-                                        <ScrollToBottom onClick={() => scrollToBottom()}>
-                                            <KeyboardArrowDownIcon fontSize="large" />
-                                        </ScrollToBottom>
-                                    ) : null}
-                                </MessagesContainer>
-
-                                <FormContainer>
-                                    {showEmojiPicker ? (
-                                        <EmojiPickerContainer>
-                                            <Picker onSelect={(emoji: BaseEmoji) => setMessage(message.concat(emoji.native))} />
-                                        </EmojiPickerContainer>
-                                    ) : null}
-
-                                    <IconButton
-                                        type="button"
-                                        onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                                    >
-                                        <InsertEmoticonIcon fontSize="large" />
-                                    </IconButton>
-
-                                    <Form onSubmit={currentContainer === "contacts" ? privateMessage : groupMessage}>
-                                        <Input
-                                            type="text"
-                                            value={message}
-                                            onChange={e => setMessage(e.target.value)}
-                                            autoComplete="off"
-                                            onFocus={() => setShowEmojiPicker(false)}
-                                        />
-
-                                        <Submit type="submit">
-                                            <SendIcon fontSize="large" />
-                                        </Submit>
-                                    </Form>
-                                </FormContainer>
-                            </>
-                        )
-                    ) :
-                        currentContainer === "addContact" ? (
-                            <AddContact
+                    <Inner>
+                        {currentContainer === "profile" ? (
+                            <Profile
                                 user={user}
                                 setUserMaster={setUserMaster}
-                                setCurrentContact={setCurrentContact}
-                                setCurrentContainer={setCurrentContainer}
+                                theme={theme}
+                                setToken={setToken}
                                 socket={socket}
                             />
                         ) :
-                            currentContainer === "createGroup" ? (
-                                <CreateGroup
-                                    user={user}
-                                    setUserMaster={setUserMaster}
-                                    setCurrentGroup={setCurrentGroup}
-                                    setCurrentContainer={setCurrentContainer}
-                                    socket={socket}
-                                />
-                            ) : null
-                }
-            </Inner>
+                            currentContainer === "contacts" || currentContainer === "groups" ? (
+                                !currentContact && !currentGroup ? (
+                                    <ContainerWithoutChat>
+                                        {currentContainer === "contacts" ? (
+                                            <h1>Select a contact to chat</h1>
+                                        ) : (
+                                            <h1>Select a group to chat</h1>
+                                        )}
+                                    </ContainerWithoutChat>
+                                ) : (
+                                    <Messages
+                                        user={user}
+                                        socket={socket}
+                                        currentContact={currentContact}
+                                        currentGroup={currentGroup}
+                                        currentContainer={currentContainer}
+                                        messagesContainerRef={messagesContainerRef}
+                                        scrollToBottom={scrollToBottom}
+                                    />
+                                )
+                            ) :
+                                currentContainer === "addContact" ? (
+                                    <AddContact
+                                        user={user}
+                                        setUserMaster={setUserMaster}
+                                        setCurrentContact={setCurrentContact}
+                                        setCurrentContainer={setCurrentContainer}
+                                        socket={socket}
+                                    />
+                                ) :
+                                    currentContainer === "createGroup" ? (
+                                        <CreateGroup
+                                            user={user}
+                                            setUserMaster={setUserMaster}
+                                            setCurrentGroup={setCurrentGroup}
+                                            setCurrentContainer={setCurrentContainer}
+                                            socket={socket}
+                                        />
+                                    ) : null
+                        }
+                    </Inner>
+                </>
+            ) : (
+                <Loading theme={theme} />
+            )}
         </Container>
     );
 };
