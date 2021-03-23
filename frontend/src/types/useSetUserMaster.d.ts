@@ -16,7 +16,7 @@ export interface ContactPushMessageI {
 export interface GroupPushMessageI {
     where: string;
     message: any;
-    currentGrouptId: string;
+    currentGroupId: string;
 };
 
 export interface ContactUpdateSetI {
@@ -37,6 +37,7 @@ export interface GroupUpdateSetI {
     image?: string;
     description?: string;
     messages?: GroupMessageI[];
+    unread_messages?: number | undefined;
 };
 
 export interface GroupUpdateI {

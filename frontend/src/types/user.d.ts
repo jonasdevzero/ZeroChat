@@ -12,7 +12,7 @@ export interface ContactI {
     id: string;
     username: string;
     image: string;
-    messages: ContactMessageI[] | [];
+    messages: ContactMessageI[];
     online: true | false;
     unread_messages: number | null;
     active: true | false;
