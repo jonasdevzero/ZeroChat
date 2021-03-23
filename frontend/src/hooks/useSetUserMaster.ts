@@ -2,7 +2,6 @@ import React from "react";
 import api from "../services/api";
 import {
     ContactI,
-    ContactMessageI,
     GroupI,
     GroupUserI,
     UserI,
@@ -37,9 +36,7 @@ export default function useSetUserMaster(user: UserI, setUser: React.Dispatch<Re
                             const { message, currentContactId } = data;
                             const { sender_id, contact: { id: receiver_id, unread_messages } } = message;
 
-                            const messages = contact?.messages?.filter((msg: ContactMessageI) => msg.id !== message.id);
-                            messages?.push(message);
-                            contact.messages = messages;
+                            contact.messages?.push(message);
                             contact.active = true;
 
                             if (user.id === receiver_id) {
@@ -66,15 +63,13 @@ export default function useSetUserMaster(user: UserI, setUser: React.Dispatch<Re
                     position = index;
                     switch (change) {
                         case "NEW_MESSAGE":
-                            const { message, currentContactId } = data;
+                            const { message, currentGroupId } = data;
                             const { group_id, users } = message;
 
-                            const messages = group?.messages?.filter(msg => msg.id !== message.id);
-                            messages?.push(message);
-                            group.messages = messages;
+                            group.messages?.push(message);
 
-                            if (currentContactId === group_id) {
-                                api.put(`/group/${currentContactId}?unread_messages=true`);
+                            if (currentGroupId === group_id) {
+                                api.put(`/group/${currentGroupId}?unread_messages=true`);
                                 group.unread_messages = undefined;
                             } else {
                                 group.unread_messages = users.find((u: GroupUserI) => u.id === user?.id).unread_messages;
@@ -127,8 +122,8 @@ export default function useSetUserMaster(user: UserI, setUser: React.Dispatch<Re
                 user.groups.forEach(g => groups.push(g));
                 setUser({ ...user, groups });
             },
-            async pushMessage({ where, message, currentGrouptId }: GroupPushMessageI) {
-                setUserMasterUpdate({ dispatch: "GROUPS", where, change: "NEW_MESSAGE", data: { message, currentGrouptId } });
+            async pushMessage({ where, message, currentGroupId }: GroupPushMessageI) {
+                setUserMasterUpdate({ dispatch: "GROUPS", where, change: "NEW_MESSAGE", data: { message, currentGroupId } });
             },
         },
     } as SetUserMasterI;
