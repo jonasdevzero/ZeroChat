@@ -1,7 +1,6 @@
 import { useState, useEffect, Dispatch } from "react";
 import { UserI, ContactI } from "../types/user";
 import api from "../services/api";
-import { SocketIOClient } from "../types/socket";
 import { SetUserMasterI } from "../types/useSetUserMaster";
 
 import {

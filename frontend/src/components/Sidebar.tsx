@@ -233,6 +233,12 @@ function Sidebar({
                                         >
                                             <Avatar src={group.image} />
                                             <h3>{group.name}</h3>
+
+                                            {group.unread_messages ? (
+                                                <UnreadMessages>
+                                                    {group.unread_messages}
+                                                </UnreadMessages>
+                                            ) : null}
                                         </Room>
                                     )
                                 })
@@ -245,6 +251,12 @@ function Sidebar({
                                         >
                                             <Avatar src={group.image} />
                                             <h3>{group.name}</h3>
+
+                                            {group.unread_messages ? (
+                                                <UnreadMessages>
+                                                    {group.unread_messages}
+                                                </UnreadMessages>
+                                            ) : null}
                                         </Room>
                                     )
                                 })

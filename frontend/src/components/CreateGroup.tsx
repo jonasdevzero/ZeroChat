@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { UserI, ContactI, GroupI } from "../types/user";
 import Fuse from "fuse.js";
 import api from "../services/api";
-import { SocketIOClient } from "../types/socket";
 import { SetUserMasterI } from "../types/useSetUserMaster";
 
 import {
