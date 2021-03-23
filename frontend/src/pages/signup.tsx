@@ -23,6 +23,7 @@ import {
 } from "../styles/components/Form";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import Warning from "../components/Warning";
+import { Loading } from "../components";
 
 export default function SignUp({ setToken, theme }) {
     const [name, setName] = useState("");
@@ -37,6 +38,8 @@ export default function SignUp({ setToken, theme }) {
     const [successWarning, setSuccessWarning] = useState(false);
 
     const router = useRouter();
+
+    const [loading, setLoading] = useState(false);
 
     async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -62,6 +65,7 @@ export default function SignUp({ setToken, theme }) {
             setSuccessWarning(true);
 
             setTimeout(() => {
+                setLoading(true);
                 return router.push("/chat");
             }, 2000);
         }).catch((err: AxiosError) => {
@@ -94,112 +98,118 @@ export default function SignUp({ setToken, theme }) {
                 <title>Zero | SignUp</title>
             </Head>
 
-            <Warning showWarning={successWarning}>
-                Welcome to Zero, redirecting...
-            </Warning>
+            {!loading ? (
+                <>
+                    <Warning showWarning={successWarning}>
+                        Welcome to Zero, redirecting...
+                    </Warning>
 
-            <Form onSubmit={onSubmit}>
-                <TitleContainer>
-                    <ArrowBackButton type="button" onClick={() => router.back()}>
-                        <ArrowBackIcon />
-                    </ArrowBackButton>
+                    <Form onSubmit={onSubmit}>
+                        <TitleContainer>
+                            <ArrowBackButton type="button" onClick={() => router.back()}>
+                                <ArrowBackIcon />
+                            </ArrowBackButton>
 
-                    <Title>SignUp</Title>
-                </TitleContainer>
+                            <Title>SignUp</Title>
+                        </TitleContainer>
 
-                {error ? (
-                    <Error>
-                        <strong>{error}</strong>
-                    </Error>
-                ) : null}
+                        {error ? (
+                            <Error>
+                                <strong>{error}</strong>
+                            </Error>
+                        ) : null}
 
-                <WrapperInputs>
-                    <Wrapper>
-                        <Input
-                            value={name}
-                            onChange={e => setName(e.target.value)}
-                            required
-                            autoComplete="off"
-                            type="text"
-                        />
-                        <Label>
-                            <Span>Name</Span>
-                        </Label>
-                    </Wrapper>
+                        <WrapperInputs>
+                            <Wrapper>
+                                <Input
+                                    value={name}
+                                    onChange={e => setName(e.target.value)}
+                                    required
+                                    autoComplete="off"
+                                    type="text"
+                                />
+                                <Label>
+                                    <Span>Name</Span>
+                                </Label>
+                            </Wrapper>
 
-                    <Wrapper>
-                        <Input
-                            value={username}
-                            onChange={e => setUsername(e.target.value)}
-                            required
-                            autoComplete="off"
-                            type="text"
-                        />
-                        <Label>
-                            <Span>Username</Span>
-                        </Label>
-                    </Wrapper>
-                </WrapperInputs>
+                            <Wrapper>
+                                <Input
+                                    value={username}
+                                    onChange={e => setUsername(e.target.value)}
+                                    required
+                                    autoComplete="off"
+                                    type="text"
+                                />
+                                <Label>
+                                    <Span>Username</Span>
+                                </Label>
+                            </Wrapper>
+                        </WrapperInputs>
 
-                <Wrapper>
-                    <Input
-                        value={email}
-                        onChange={e => setEmail(e.target.value)}
-                        required
-                        autoComplete="off"
-                        type="text"
-                    />
-                    <Label>
-                        <Span>Email</Span>
-                    </Label>
-                </Wrapper>
+                        <Wrapper>
+                            <Input
+                                value={email}
+                                onChange={e => setEmail(e.target.value)}
+                                required
+                                autoComplete="off"
+                                type="text"
+                            />
+                            <Label>
+                                <Span>Email</Span>
+                            </Label>
+                        </Wrapper>
 
-                <WrapperInputs>
-                    <Wrapper>
-                        <Input
-                            value={password}
-                            onChange={e => setPassword(e.target.value)}
-                            required
-                            autoComplete="off"
-                            type="password"
-                        />
-                        <Label>
-                            <Span>Password</Span>
-                        </Label>
-                    </Wrapper>
+                        <WrapperInputs>
+                            <Wrapper>
+                                <Input
+                                    value={password}
+                                    onChange={e => setPassword(e.target.value)}
+                                    required
+                                    autoComplete="off"
+                                    type="password"
+                                />
+                                <Label>
+                                    <Span>Password</Span>
+                                </Label>
+                            </Wrapper>
 
-                    <Wrapper>
-                        <Input
-                            value={confirmPassword}
-                            onChange={e => setConfirmPassword(e.target.value)}
-                            required
-                            autoComplete="off"
-                            type="password"
-                        />
-                        <Label>
-                            <Span>Confirm Password</Span>
-                        </Label>
-                    </Wrapper>
-                </WrapperInputs>
+                            <Wrapper>
+                                <Input
+                                    value={confirmPassword}
+                                    onChange={e => setConfirmPassword(e.target.value)}
+                                    required
+                                    autoComplete="off"
+                                    type="password"
+                                />
+                                <Label>
+                                    <Span>Confirm Password</Span>
+                                </Label>
+                            </Wrapper>
+                        </WrapperInputs>
 
-                <Submit type="submit">
-                    {loadingRequest ? (
-                        <img
-                            src={`/loading-${theme}.svg`}
-                            alt="loading"
-                        />
-                    ) : "SignUp"}
-                </Submit>
+                        <Submit type="submit">
+                            {loadingRequest ? (
+                                <img
+                                    src={`/loading-${theme}.svg`}
+                                    alt="loading"
+                                />
+                            ) : "SignUp"}
+                        </Submit>
 
-                <Info>
-                    Already have an account?
-                    <Link href="/signin">
-                        <StyledLink>
-                            SignIn
-                        </StyledLink>
-                    </Link>
-                </Info>
-            </Form>
+                        <Info>
+                            Already have an account?
+                            <Link href="/signin">
+                                <StyledLink>
+                                    SignIn
+                                </StyledLink>
+                            </Link>
+                        </Info>
+                    </Form>
+                </>
+            ) : (
+                <Loading theme={theme} />
+            )}
         </Container>
     );
 };

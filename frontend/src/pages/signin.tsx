@@ -22,6 +22,7 @@ import {
 } from "../styles/components/Form";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import Warning from "../components/Warning";
+import { Loading } from "../components";
 
 export default function SignIn({ setToken, theme }) {
     const [email, setEmail] = useState("");
@@ -34,13 +35,15 @@ export default function SignIn({ setToken, theme }) {
 
     const router = useRouter();
 
+    const [loading, setLoading] = useState(false);
+
     useEffect(() => {
         const token = JSON.parse(localStorage.getItem("token"));
 
         if (token) {
             api.post(`/user/auth?signin_auth=true`, {}, { headers: { Authorization: `Bearer ${token}` } }).then(_ => {
                 return router.push("/chat");
-            }).catch(() => {});
+            }).catch(() => { });
         };
     }, []);
 
@@ -61,6 +64,7 @@ export default function SignIn({ setToken, theme }) {
             setSuccessWarning(true);
 
             setTimeout(() => {
+                setLoading(true);
                 return router.push("/chat");
             }, 2000);
         }).catch((err: AxiosError) => {
@@ -88,77 +92,84 @@ export default function SignIn({ setToken, theme }) {
                 <title>Zero | SignIn</title>
             </Head>
 
-            <Warning showWarning={successWarning}>
-                Successful login, redirecting...
-            </Warning>
+            {!loading ? (
+                <>
+                    <Warning showWarning={successWarning}>
+                        Successful login, redirecting...
+                    </Warning>
 
-            <Form onSubmit={onSubmit}>
-                <TitleContainer>
-                    <ArrowBackButton type="button" onClick={() => router.back()}>
-                        <ArrowBackIcon />
-                    </ArrowBackButton>
+                    <Form onSubmit={onSubmit}>
+                        <TitleContainer>
+                            <ArrowBackButton type="button" onClick={() => router.back()}>
+                                <ArrowBackIcon />
+                            </ArrowBackButton>
 
-                    <Title>SignIn</Title>
-                </TitleContainer>
+                            <Title>SignIn</Title>
+                        </TitleContainer>
 
-                {error ? (
-                    <Error>
-                        <strong>{error}</strong>
-                    </Error>
-                ) : null}
+                        {error ? (
+                            <Error>
+                                <strong>{error}</strong>
+                            </Error>
+                        ) : null}
 
-                <Wrapper>
-                    <Input
-                        value={email}
-                        onChange={e => setEmail(e.target.value)}
-                        required
-                        autoComplete="off"
-                        type="text"
-                    />
-                    <Label>
-                        <Span>Email</Span>
-                    </Label>
-                </Wrapper>
+                        <Wrapper>
+                            <Input
+                                value={email}
+                                onChange={e => setEmail(e.target.value)}
+                                required
+                                autoComplete="off"
+                                type="text"
+                            />
+                            <Label>
+                                <Span>Email</Span>
+                            </Label>
+                        </Wrapper>
 
-                <Wrapper>
-                    <Input
-                        value={password}
-                        onChange={e => setPassword(e.target.value)}
-                        required
-                        autoComplete="off"
-                        type="password"
-                    />
-                    <Label>
-                        <Span>Password</Span>
-                    </Label>
-                </Wrapper>
+                        <Wrapper>
+                            <Input
+                                value={password}
+                                onChange={e => setPassword(e.target.value)}
+                                required
+                                autoComplete="off"
+                                type="password"
+                            />
+                            <Label>
+                                <Span>Password</Span>
+                            </Label>
+                        </Wrapper>
 
-                <Submit type="submit">
-                    {loadingRequest ? (
-                        <img
-                            src={`/loading-${theme}.svg`}
-                            alt="loading"
-                        />
-                    ) : "SignIn"}
-                </Submit>
+                        <Submit type="submit">
+                            {loadingRequest ? (
+                                <img
+                                    src={`/loading-${theme}.svg`}
+                                    alt="loading"
+                                />
+                            ) : "SignIn"}
+                        </Submit>
 
-                <Info>
-                    Forgot password?
-                    <Link href="/forgotPassword">
-                        <StyledLink>
-                            Click here
-                        </StyledLink>
-                    </Link>
-                </Info>
-                <Info>
-                    Don't have an account?
-                    <Link href="/signup">
-                        <StyledLink>
-                            SignUp
-                        </StyledLink>
-                    </Link>
-                </Info>
-            </Form>
+                        <Info>
+                            Forgot password?
+                            <Link href="/forgotPassword">
+                                <StyledLink>
+                                    Click here
+                                </StyledLink>
+                            </Link>
+                        </Info>
+                        <Info>
+                            Don't have an account?
+                            <Link href="/signup">
+                                <StyledLink>
+                                    SignUp
+                                </StyledLink>
+                            </Link>
+                        </Info>
+                    </Form>
+                </>
+            ) : (
+                <Loading theme={theme} />
+            )}
+
         </Container>
     );
 };
