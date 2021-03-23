@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { getRepository } from "typeorm";
 import { Group, GroupUsers, User, GroupMessages } from "../models";
-import { GroupView } from "../views";
+import { GroupUsersView, GroupView } from "../views";
 
 export default {
     async index(request: Request, response: Response) {
@@ -75,13 +75,13 @@ export default {
             const { unread_messages } = request.query;
 
             const groupUsersRepository = getRepository(GroupUsers);
-            const group = await groupUsersRepository.findOne({ where: { user: { id: user_id }, group: { id } } })
+            const groupUser = await groupUsersRepository.findOne({ where: { user: { id: user_id }, group: { id } } })
 
-            if (!group)
+            if (!groupUser)
                 return response.status(400).json({ message: "Incorrect group Id" });
 
             if (unread_messages === "true") {
-                await groupUsersRepository.update(group, { unread_messages: undefined });
+                await groupUsersRepository.update(groupUser, { unread_messages: undefined });
                 return response.status(200).json({ message: "ok" });
             };
         } catch (err) {
@@ -109,31 +109,30 @@ export default {
             const { group_id, message } = request.body;
 
             const groupRepository = getRepository(Group);
+            const groupUsersRepository = getRepository(GroupUsers);
             const groupMessagesRepository = getRepository(GroupMessages);
 
             const posted_at = new Date();
 
             const messageData = await groupMessagesRepository.create({ sender_id, group_id, message, posted_at }).save();
 
-            let group = await groupRepository.findOne({
-                where: { id: group_id },
-                relations: ["users", "users.user"],
-            });
-
+            const group = await groupRepository.findOne({ where: { id: group_id }, relations: ["users", "users.user"] });
             if (!group)
-                return response.status(500).json({ message: "Internal Server Error" });
+                return response.status(400).json({ message: "Group_id Incorrect" });
 
-            group.last_message_time = posted_at;
-            const updatedUsers = group.users.map(u => {
-                u.unread_messages = typeof u.unread_messages === "number" ? ++u.unread_messages : 1;
-                return u;
+            group?.users.forEach(async (groupUser) => {
+                if (groupUser.user.id !== sender_id) {
+                    const id = groupUser.id;
+                    const unread_messages = groupUser.unread_messages ? ++groupUser.unread_messages : 1;
+                    await groupUsersRepository.update(id, { unread_messages });
+                };
             });
-            const id = group_id
-            await groupRepository.update(id, { last_message_time: posted_at, users: updatedUsers });
+
+            const groupUsers = await groupUsersRepository.find({ where: { group: { id: group_id } }, relations: ["user"] });
 
             const newMessage = {
                 ...messageData,
-                users: updatedUsers,
+                users: GroupUsersView.renderUsers(groupUsers),
             };
 
             return response.status(201).json({ message: newMessage });

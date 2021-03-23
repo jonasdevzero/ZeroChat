@@ -24,7 +24,7 @@ export default function socketConnection(io: Server) {
 
             console.log(`user connected: ${userId}`);
 
-            contactsOnline.forEach(contact => socket.to(contact).emit("user", { event: "status", contact_id: userId, status: "online" }) );
+            contactsOnline.forEach(contact => socket.to(contact).emit("user", { event: "update", where: userId, set: { online: true } }) );
 
             callback(contactsOnline);
         });
@@ -41,7 +41,7 @@ export default function socketConnection(io: Server) {
             callback();
         });
 
-        socket.on("user", ({ contactId, event, data }: OnUserI, callback) => {
+        socket.on("user", ({ event, data, contactId }: OnUserI, callback) => {
             const contacts = SessionUser.findOne(socket.id)?.contacts || []
             const contactsOnline = SessionUser.getContactsOnline(contacts);
 
@@ -53,7 +53,8 @@ export default function socketConnection(io: Server) {
                     };
                     break;
                 case "update":
-                    contactsOnline.forEach(c => socket.to(c).emit("user", data));
+                    const { where, set } = data;
+                    contactsOnline.forEach(c => socket.to(c).emit("user", { event, where, set }));
                     break;
             };
         });
@@ -81,8 +82,7 @@ export default function socketConnection(io: Server) {
                 console.log(`user disconnected: ${id}`);
 
                 const contactsOnline = SessionUser.getContactsOnline(contacts)
-
-                contactsOnline.forEach(contact => socket.to(contact).emit("user", { event: "status", contact_id: id, status: "offline" }) );
+                contactsOnline.forEach(contact => socket.to(contact).emit("user", { event: "update", where: id, set: { online: false } }) );
             };
         });
     });
