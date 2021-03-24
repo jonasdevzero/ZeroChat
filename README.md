@@ -1,4 +1,5 @@
-<h1 align='center'>ZeroChat</h1>
-<h2 align='center'>My website with real time chat</h2>
+<h1 align='center'>Zero | A realtime chat</h1>
+
+<img src="https://github.com/jonasdevzero/MediaHub/blob/master/projects/zero/chat.PNG" align="center" />
 
 <p align='center'>More soon</p>
