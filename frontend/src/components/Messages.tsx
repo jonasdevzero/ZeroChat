@@ -1,13 +1,20 @@
 import { useState } from "react";
 import api from "../services/api";
 import { UserI, ContactI, GroupI } from "../types/user";
+import moment from "moment";
 
+import { Details } from "../components";
 import {
+    Container,
+    Inner,
     Header,
     Room,
     MessagesContainer,
+    MessageWrapper,
+    MessageInner,
     Message,
-    MessageSender,
+    Day,
+    Time,
     FormContainer,
     Form,
     Input,
@@ -43,6 +50,7 @@ export default function Messages({ user, socket, currentRoom, currentRoomType, m
 
     const [showScrollButton, setShowScrollButton] = useState(false);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [showRoomDetail, setShowRoomDetail] = useState(false);
 
     async function handleMessage(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -73,68 +81,91 @@ export default function Messages({ user, socket, currentRoom, currentRoomType, m
     };
 
     return (
-        <>
-            <Header>
-                <Room>
-                    <Avatar src={currentRoom?.image} />
-                    <h2>{currentRoom?.username ? currentRoom?.username : currentRoom?.name}</h2>
-                </Room>
+        <Container>
+            <Inner>
+                <Header>
+                    <Room onClick={() => setShowRoomDetail(true)}>
+                        <Avatar src={currentRoom?.image} />
+                        <h2>{currentRoom?.username ? currentRoom?.username : currentRoom?.name}</h2>
+                    </Room>
 
-                {currentRoomType === "contact" ? (
-                    <>
-                        <IconButtonUi>
-                            <CallIcon />
-                        </IconButtonUi>
+                    {currentRoomType === "contact" ? (
+                        <>
+                            <IconButtonUi>
+                                <CallIcon />
+                            </IconButtonUi>
 
-                        <IconButtonUi>
-                            <VideocamIcon />
-                        </IconButtonUi>
+                            <IconButtonUi>
+                                <VideocamIcon />
+                            </IconButtonUi>
+                        </>
+                    ) : null}
 
-                    </>
-                ) : null}
+                    <IconButtonUi>
+                        <MoreVertIcon />
+                    </IconButtonUi>
+                </Header>
 
-                <IconButtonUi>
-                    <MoreVertIcon />
-                </IconButtonUi>
-            </Header>
+                <MessagesContainer ref={messagesContainerRef} onScroll={() => onScroll()}>
+                    {currentRoom?.messages?.map((msg, i) => {
+                        if (msg.type && msg.type === "day") {
+                            return <Day key={i}>{msg.date}</Day>
+                        };
 
-            <MessagesContainer ref={messagesContainerRef} onScroll={() => onScroll()}>
-                {currentRoom?.messages?.map((msg, i) => msg.sender_id === user.id ?
-                    (<MessageSender key={i}>{msg.message}</MessageSender>) : (<Message key={i}>{msg.message}</Message>)
-                )}
+                        return (
+                            <MessageWrapper key={i} className={msg.sender_id === currentRoom.messages[i - 1].sender_id && "concat"}>
+                                <MessageInner className={msg.sender_id === user.id && "sender"}>
+                                    <Message>
+                                        {msg.message}
+                                    </Message>
 
-                {showScrollButton ? (
-                    <ScrollToBottom onClick={() => scrollToBottom()}>
-                        <KeyboardArrowDownIcon fontSize="large" />
-                    </ScrollToBottom>
-                ) : null}
-            </MessagesContainer>
+                                    <Time>{moment(msg.posted_at).format("HH:mm A")}</Time>
+                                </MessageInner>
+                            </MessageWrapper>
+                        );
+                    })}
 
-            <FormContainer>
-                {showEmojiPicker ? (
-                    <EmojiPickerContainer>
-                        <Picker onSelect={(emoji: BaseEmoji) => setMessage(message.concat(emoji.native))} />
-                    </EmojiPickerContainer>
-                ) : null}
+                    {showScrollButton ? (
+                        <ScrollToBottom onClick={() => scrollToBottom()}>
+                            <KeyboardArrowDownIcon fontSize="large" />
+                        </ScrollToBottom>
+                    ) : null}
+                </MessagesContainer>
 
-                <IconButton type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)}>
-                    <InsertEmoticonIcon fontSize="large" />
-                </IconButton>
+                <FormContainer>
+                    {showEmojiPicker ? (
+                        <EmojiPickerContainer>
+                            <Picker onSelect={(emoji: BaseEmoji) => setMessage(message.concat(emoji.native))} />
+                        </EmojiPickerContainer>
+                    ) : null}
 
-                <Form onSubmit={handleMessage}>
-                    <Input
-                        type="text"
-                        value={message}
-                        onChange={e => setMessage(e.target.value)}
-                        autoComplete="off"
-                        onFocus={() => setShowEmojiPicker(false)}
-                    />
+                    <IconButton type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)}>
+                        <InsertEmoticonIcon fontSize="large" />
+                    </IconButton>
 
-                    <Submit type="submit">
-                        <SendIcon fontSize="large" />
-                    </Submit>
-                </Form>
-            </FormContainer>
-        </>
+                    <Form onSubmit={handleMessage}>
+                        <Input
+                            type="text"
+                            value={message}
+                            onChange={e => setMessage(e.target.value)}
+                            autoComplete="off"
+                            onFocus={() => setShowEmojiPicker(false)}
+                        />
+
+                        <Submit type="submit">
+                            <SendIcon fontSize="large" />
+                        </Submit>
+                    </Form>
+                </FormContainer>
+            </Inner>
+
+            {showRoomDetail ? (
+                <Details
+                    currentRoom={currentRoom}
+                    currentRoomType={currentRoomType}
+                    setShowRoomDetail={setShowRoomDetail}
+                />
+            ) : null}
+        </Container>
     );
 };
