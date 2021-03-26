@@ -1,5 +1,6 @@
 import { useState } from "react";
 import api from "../services/api";
+import { UserI, ContactI, GroupI } from "../types/user";
 
 import {
     Header,
@@ -15,7 +16,7 @@ import {
     ScrollToBottom,
     EmojiPickerContainer,
 } from "../styles/components/Messages";
-import { Avatar, IconButton as IButton } from "@material-ui/core";
+import { Avatar, IconButton as IconButtonUi } from "@material-ui/core";
 import {
     Send as SendIcon,
     KeyboardArrowDown as KeyboardArrowDownIcon,
@@ -27,45 +28,34 @@ import {
 
 import "emoji-mart/css/emoji-mart.css";
 import { Picker, BaseEmoji } from "emoji-mart";
-import { UserI, ContactI, GroupI } from "../types/user";
 
 interface MessagesI {
     user: UserI;
-    socket: SocketIOClient.Socket
-    currentContact: ContactI;
-    currentGroup: GroupI;
-    currentContainer: "profile" | "contacts" | "groups" | "addContact" | "createGroup";
+    socket: SocketIOClient.Socket;
+    currentRoom: ContactI & GroupI;
+    currentRoomType: "contact" | "group";
     messagesContainerRef: React.MutableRefObject<any>;
-    scrollToBottom(newMessage?: boolean): void
+    scrollToBottom(newMessage?: boolean): void;
 };
 
-export default function Messages({ user, socket, currentContact, currentGroup, currentContainer, messagesContainerRef, scrollToBottom }: MessagesI) {
+export default function Messages({ user, socket, currentRoom, currentRoomType, messagesContainerRef, scrollToBottom }: MessagesI) {
     const [message, setMessage] = useState("");
 
     const [showScrollButton, setShowScrollButton] = useState(false);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
-    async function privateMessage(e: React.FormEvent<HTMLFormElement>) {
-        e.preventDefault();
-
-        setShowEmojiPicker(false);
-        const receiver_id = currentContact?.id, id_contact = currentContact?.id_contact;
-
-        if (message.trim()) {
-            await api.post(`/contact/message`, { message, receiver_id, id_contact }).then(response => {
-                const { message, unread_messages } = response.data;
-                socket.emit("private-message", { message, unread_messages }, () => setMessage(""));
-            });
-        };
-    };
-
-    async function groupMessage(e: React.FormEvent<HTMLFormElement>) {
+    async function handleMessage(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
 
         if (message.trim()) {
-            await api.post(`/group/message`, { group_id: currentGroup?.id, message }).then(response => {
+            const tag = currentRoomType === "contact" ? "private" : "group";
+            const data = { message, receiver_id: currentRoom.id, group_id: currentRoom.id };
+
+            setShowEmojiPicker(false);
+
+            await api.post(`/${currentRoomType}/message`, data).then(response => {
                 const { message } = response.data;
-                socket.emit("group-message", { message }, () => setMessage(""));
+                socket.emit(`${tag}-message`, message, () => setMessage(""));
             });
         };
     };
@@ -86,56 +76,32 @@ export default function Messages({ user, socket, currentContact, currentGroup, c
         <>
             <Header>
                 <Room>
-                    <Avatar src={currentContainer === "contacts" ? currentContact?.image : currentGroup?.image} />
-                    <h2>{currentContainer === "contacts" ? currentContact?.username : currentGroup?.name}</h2>
+                    <Avatar src={currentRoom?.image} />
+                    <h2>{currentRoom?.username ? currentRoom?.username : currentRoom?.name}</h2>
                 </Room>
 
-                {currentContact ? (
+                {currentRoomType === "contact" ? (
                     <>
-                        <IButton>
+                        <IconButtonUi>
                             <CallIcon />
-                        </IButton>
+                        </IconButtonUi>
 
-                        <IButton>
+                        <IconButtonUi>
                             <VideocamIcon />
-                        </IButton>
+                        </IconButtonUi>
 
                     </>
                 ) : null}
 
-                <IButton>
+                <IconButtonUi>
                     <MoreVertIcon />
-                </IButton>
+                </IconButtonUi>
             </Header>
 
             <MessagesContainer ref={messagesContainerRef} onScroll={() => onScroll()}>
-                {currentContact ?
-                    currentContact?.messages?.map((msg, i) => {
-                        return msg ? msg.sender_id === user?.id ? (
-                            <MessageSender key={i}>
-                                {msg.message}
-                            </MessageSender>
-                        ) : (
-                            <Message key={i}>
-                                {msg.message}
-                            </Message>
-                        )
-                            : null
-                    })
-                    :
-                    currentGroup?.messages?.map((msg, i) => {
-                        return msg ? msg.sender_id === user?.id ? (
-                            <MessageSender key={i}>
-                                {msg.message}
-                            </MessageSender>
-                        ) : (
-                            <Message key={i}>
-                                {msg.message}
-                            </Message>
-                        )
-                            : null
-                    })
-                }
+                {currentRoom?.messages?.map((msg, i) => msg.sender_id === user.id ?
+                    (<MessageSender key={i}>{msg.message}</MessageSender>) : (<Message key={i}>{msg.message}</Message>)
+                )}
 
                 {showScrollButton ? (
                     <ScrollToBottom onClick={() => scrollToBottom()}>
@@ -151,14 +117,11 @@ export default function Messages({ user, socket, currentContact, currentGroup, c
                     </EmojiPickerContainer>
                 ) : null}
 
-                <IconButton
-                    type="button"
-                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                >
+                <IconButton type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)}>
                     <InsertEmoticonIcon fontSize="large" />
                 </IconButton>
 
-                <Form onSubmit={currentContainer === "contacts" ? privateMessage : groupMessage}>
+                <Form onSubmit={handleMessage}>
                     <Input
                         type="text"
                         value={message}

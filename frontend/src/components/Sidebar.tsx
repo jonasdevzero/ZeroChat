@@ -39,7 +39,6 @@ interface SidebarI {
     currentContainer: "messages" | "profile" | "addContact" | "createGroup";
     setCurrentContainer: Dispatch<SetStateAction<"profile" | "messages" | "addContact" | "createGroup">>;
     setCurrentRoom: Dispatch<SetStateAction<ContactI & GroupI>>;
-    currentRoomType: "contact" | "group";
     setCurrentRoomType: Dispatch<SetStateAction<"contact" | "group">>;
     theme: "light" | "dark";
     setTheme: Dispatch<SetStateAction<"light" | "dark">>;
@@ -51,7 +50,6 @@ function Sidebar({
     currentContainer,
     setCurrentContainer,
     setCurrentRoom,
-    currentRoomType,
     setCurrentRoomType,
     theme,
     setTheme

@@ -226,7 +226,6 @@ export default function Chat({ setToken, theme, setTheme }: ChatI) {
                         currentContainer={currentContainer}
                         setCurrentContainer={setCurrentContainer}
                         setCurrentRoom={setCurrentRoom}
-                        currentRoomType={currentRoomType}
                         setCurrentRoomType={setCurrentRoomType}
                         theme={theme}
                         setTheme={setTheme}
