@@ -106,25 +106,31 @@ export default {
 
             const userRepository = getRepository(User);
 
-            const user = await userRepository.findOne(id);
+            const result = await Promise.all([
+                userRepository.findOne(id),
+                update_email === "true" ? userRepository.findOne({ where: { email, id: Not(id) } })
+                    : userRepository.findOne({ where: { username, id: Not(id) } }),
+            ]);
+
+            const user = result[0];
+
             if (!user)
                 return response.status(400).json({ message: "Incorrect Id" });
 
             if (update_email === "true") {
-                const existsEmail = await userRepository.findOne({ where: { email, id: Not(id) } });
-
+                const existsEmail = result[1];
                 if (existsEmail)
                     return response.status(400).json({ message: "This email is already registred" });
 
                 if (!comparePasswords(password, user.password))
                     return response.status(401).json({ message: "Incorrect password" });
 
-                await userRepository.update(user, { email });
+                await userRepository.update(id, { email });
 
                 return response.status(200).json({ email });
             };
 
-            const existsUsername = await userRepository.findOne({ where: { username, id: Not(id) } });
+            const existsUsername = result[1];
 
             if (existsUsername)
                 return response.status(400).json({ message: "Username already in use" });
@@ -205,10 +211,7 @@ export default {
 
                 try {
                     const userRepository = getRepository(User);
-                    const user = await userRepository.findOne({
-                        where: { id },
-                        relations: ["contacts", "contacts.contact", "groups", "groups.group", "groups.group.users", "groups.group.users.user"]
-                    });
+                    const user = await userRepository.findOne(id);
 
                     if (!user)
                         return response.status(500).json({ message: "Unexpected error" });
@@ -282,7 +285,7 @@ export default {
                 html: `
                     <h1>Click <a href="http://localhost:3000/resetPassword/${resetToken}">here</a> to reset your password</h1>               
                 `,
-            })
+            });
 
             return response.status(200).json({ message: "Check your email" });
         } catch (err) {
