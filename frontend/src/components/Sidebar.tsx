@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Dispatch, SetStateAction } from "react";
 import Fuse from "fuse.js";
 
 import { UserI, ContactI, GroupI } from "../types/user";
@@ -35,62 +35,55 @@ import {
 
 interface SidebarI {
     user: UserI;
-    setToken: React.Dispatch<React.SetStateAction<string>>;
-
-    setCurrentContainer: React.Dispatch<React.SetStateAction<"contacts" | "groups" | "profile" | "addContact" | "createGroup">>;
-
-    setCurrentContact: React.Dispatch<React.SetStateAction<ContactI>>;
-    setCurrentGroup: React.Dispatch<React.SetStateAction<GroupI>>;
-
+    setToken: Dispatch<SetStateAction<string>>;
+    currentContainer: "messages" | "profile" | "addContact" | "createGroup";
+    setCurrentContainer: Dispatch<SetStateAction<"profile" | "messages" | "addContact" | "createGroup">>;
+    setCurrentRoom: Dispatch<SetStateAction<ContactI & GroupI>>;
+    currentRoomType: "contact" | "group";
+    setCurrentRoomType: Dispatch<SetStateAction<"contact" | "group">>;
     theme: "light" | "dark";
-    setTheme: React.Dispatch<React.SetStateAction<"light" | "dark">>;
+    setTheme: Dispatch<SetStateAction<"light" | "dark">>;
 };
 
 function Sidebar({
     user,
     setToken,
+    currentContainer,
     setCurrentContainer,
-    setCurrentContact,
-    setCurrentGroup,
+    setCurrentRoom,
+    currentRoomType,
+    setCurrentRoomType,
     theme,
     setTheme
 }: SidebarI) {
+    const [rooms, setRooms] = useState<any[]>(user.contacts);
+    const [search, setSearch] = useState("");
+    const [searchResult, setSearchResult] = useState<any[]>(undefined);
+
+    const [roomsType, setRoomsType] = useState<"contacts" | "groups">("contacts");
+
     const router = useRouter();
 
-    const [search, setSearch] = useState("");
-    const [searchResult, setSearchResult] = useState([]);
-    const [currentRoomType, setCurrentRoomType] = useState<"contacts" | "groups">("contacts");
+    useEffect(() => {
+        const fuse =  new Fuse(rooms, { keys: ["name", "username"] });
+        const result = fuse.search(search).map(({ item }) => item);
+        setSearchResult(result);
+    }, [search, user.contacts, user.groups]);
 
     useEffect(() => {
-        if (currentRoomType === "contacts" && user?.contacts) {
-            const fuse = new Fuse(user.contacts, { keys: ["username"] });
+        roomsType === "contacts" ? setRooms(user.contacts) : setRooms(user.groups);
+    }, [roomsType]);
 
-            const result = fuse.search(search).map(({ item }) => item);
-            setSearchResult(result);
-        } else if (currentRoomType === "groups" && user?.groups) {
-            const fuse = new Fuse(user?.groups, { keys: ["name"] });
-
-            const result = fuse.search(search).map(({ item }) => item);
-            setSearchResult(result);
-        };
-    }, [search, user?.contacts, user?.groups]);
-
-    function changeContainer(option: "contacts" | "groups" | "profile" | "addContact" | "createGroup") {
-        setCurrentContact(undefined);
-        setCurrentGroup(undefined);
-
-        if (option === "contacts" || option === "groups") {
-            setCurrentRoomType(option);
-        };
-
+    function changeContainer(option: "messages" | "profile" | "addContact" | "createGroup", subOption?: "contacts" | "groups") {
+        option === "messages" ? setRoomsType(subOption) : setCurrentRoom(undefined);
         setCurrentContainer(option);
     };
 
     function selectRoom(room: any, type: "contact" | "group") {
         setSearch("");
-        setCurrentContainer(type === "contact" ? "contacts" : "groups");
-        setCurrentGroup(type === "contact" ? undefined : room);
-        setCurrentContact(type === "contact" ? room : undefined);
+        setCurrentContainer("messages");
+        setCurrentRoom(room);
+        setCurrentRoomType(type);
     };
 
     function toggleTheme() {
@@ -106,8 +99,8 @@ function Sidebar({
         <Container>
             <Header>
                 <User onClick={() => changeContainer("profile")}>
-                    <Avatar src={user?.picture} />
-                    <h2>{user?.username}</h2>
+                    <Avatar src={user.picture} />
+                    <h2>{user.username}</h2>
                 </User>
 
                 <IconButton>
@@ -119,28 +112,28 @@ function Sidebar({
                 <Options>
                     <div>
                         <OptionButton
-                            className={`option ${currentRoomType === "contacts" && "selected"}`}
-                            onClick={() => changeContainer("contacts")}
+                            className={`option ${currentContainer === "messages" && roomsType === "contacts" && "selected"}`}
+                            onClick={() => changeContainer("messages", "contacts")}
                         >
                             <PersonIcon />
                         </OptionButton>
 
                         <OptionButton
-                            className={`option ${currentRoomType === "groups" && "selected"}`}
-                            onClick={() => changeContainer("groups")}
+                            className={`option ${currentContainer === "messages" && roomsType === "groups" && "selected"}`}
+                            onClick={() => changeContainer("messages", "groups")}
                         >
                             <GroupIcon />
                         </OptionButton>
 
                         <OptionButton
-                            className="option"
+                            className={`option ${currentContainer === "addContact" && "selected"}`}
                             onClick={() => changeContainer("addContact")}
                         >
                             <PersonAddIcon />
                         </OptionButton>
 
                         <OptionButton
-                            className="option"
+                            className={`option ${currentContainer === "createGroup" && "selected"}`}
                             onClick={() => changeContainer("createGroup")}
                         >
                             <GroupAddIcon />
@@ -148,21 +141,11 @@ function Sidebar({
                     </div>
 
                     <div>
-                        <OptionButton
-                            className="theme"
-                            onClick={() => toggleTheme()}
-                        >
-                            {theme === "dark" ? (
-                                <Brightness3Icon />
-                            ) : (
-                                <Brightness7Icon />
-                            )}
+                        <OptionButton className="theme" onClick={() => toggleTheme()} >
+                            {theme === "dark" ? (<Brightness3Icon />) : (<Brightness7Icon />)}
                         </OptionButton>
 
-                        <OptionButton
-                            className="off"
-                            onClick={() => logOut()}
-                        >
+                        <OptionButton className="off" onClick={() => logOut()} >
                             <PowerSettingsNewIcon />
                         </OptionButton>
                     </div>
@@ -172,7 +155,7 @@ function Sidebar({
                     <Search>
                         <SearchInput
                             type="text"
-                            placeholder={`Find a ${currentRoomType}`}
+                            placeholder={`Find a ${roomsType}`}
                             value={search}
                             onChange={e => setSearch(e.target.value)}
                         />
@@ -183,85 +166,22 @@ function Sidebar({
                     </Search>
 
                     <Rooms>
-                        {currentRoomType === "contacts" ? (
-                            search.length > 0 ? (
-                                searchResult.map((contact: ContactI, i) => {
-                                    return contact.active ? (
-                                        <Room
-                                            key={i}
-                                            onClick={() => selectRoom(contact, "contact")}
-                                        >
-                                            <Avatar src={contact.image} />
-                                            <h3>{contact.username}</h3>
-                                            <Status className={contact.online ? "online" : "offline"} />
+                        {(search.length > 0 ? searchResult : rooms).map(room => {
+                            return (
+                                <Room key={room.id} onClick={() => selectRoom(room, roomsType === "contacts" ? "contact" : "group")}>
+                                    <Avatar src={room.image} />
+                                    <h3>{roomsType === "contacts" ? room.username : room.name}</h3>
 
-                                            {contact.unread_messages ? (
-                                                <UnreadMessages>
-                                                    {contact.unread_messages}
-                                                </UnreadMessages>
-                                            ) : null}
-                                        </Room>
-                                    ) : null;
-                                })
-                            ) : (
-                                user?.contacts?.map((contact, i) => {
-                                    return contact.active ? (
-                                        <Room
-                                            key={i}
-                                            onClick={() => selectRoom(contact, "contact")}
-                                        >
-                                            <Avatar src={contact.image} />
-                                            <h3>{contact.username}</h3>
-                                            <Status className={contact.online ? "online" : "offline"} />
+                                    {roomsType === "contacts" ? (
+                                        <Status className={room.online ? "online" : "offline"} />
+                                    ) : null}
 
-                                            {contact.unread_messages ? (
-                                                <UnreadMessages>
-                                                    {contact.unread_messages}
-                                                </UnreadMessages>
-                                            ) : null}
-                                        </Room>
-                                    ) : null;
-                                })
-                            )
-                        ) : (
-                            search.length > 0 ? (
-                                searchResult.map((group, i) => {
-                                    return (
-                                        <Room
-                                            key={i}
-                                            onClick={() => selectRoom(group, "group")}
-                                        >
-                                            <Avatar src={group.image} />
-                                            <h3>{group.name}</h3>
-
-                                            {group.unread_messages ? (
-                                                <UnreadMessages>
-                                                    {group.unread_messages}
-                                                </UnreadMessages>
-                                            ) : null}
-                                        </Room>
-                                    )
-                                })
-                            ) : (
-                                user?.groups?.map((group, i) => {
-                                    return (
-                                        <Room
-                                            key={i}
-                                            onClick={() => selectRoom(group, "group")}
-                                        >
-                                            <Avatar src={group.image} />
-                                            <h3>{group.name}</h3>
-
-                                            {group.unread_messages ? (
-                                                <UnreadMessages>
-                                                    {group.unread_messages}
-                                                </UnreadMessages>
-                                            ) : null}
-                                        </Room>
-                                    )
-                                })
-                            )
-                        )}
+                                    {room.unread_messages > 0 ? (
+                                        <UnreadMessages>{room.unread_messages}</UnreadMessages>
+                                    ) : null}
+                                </Room>
+                            );
+                        })}
                     </Rooms>
                 </RoomsContainer>
             </Inner>
