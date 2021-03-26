@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import { getRepository } from "typeorm";
-import { Group, GroupUsers, User, GroupMessages } from "../models";
+import { Group, GroupUsers, GroupMessages } from "../models";
 import { GroupUsersView, GroupView } from "../views";
+import * as Yup from "yup";
 
 export default {
     async index(request: Request, response: Response) {
@@ -28,12 +29,17 @@ export default {
         try {
             const id = response.locals.user.id;
             const { name, description, members } = request.body;
+            const data = { name, description };
 
-            const userRepository = getRepository(User);
-            const user = await userRepository.findOne(id);
-
-            if (!user)
-                return response.status(400).json({ message: "Invalid id" });
+            const schema = Yup.object().shape({
+                name: Yup.string().required(),
+                description: Yup.string().required(),
+            });
+            await schema.validate(data, { abortEarly: false })
+                .catch(err => response.status(400).json({
+                    message: err.message,
+                    fields: err.inner.map((field: { path: string }) => field.path),
+                }));
 
             let image = undefined, image_key = undefined;
             if (request.file) {
@@ -50,16 +56,14 @@ export default {
             const group = await groupRepository.create({ name, image: image, description, created_by: id, image_key, last_message_time: now }).save();
 
             const groupUsersRepository = getRepository(GroupUsers);
-            await groupUsersRepository.create({ user, group, role: "admim" }).save();
+            const createUsers = [groupUsersRepository.create({ user: { id }, group, role: "admim" }).save()];
 
             if (members) {
-                const membersArray = Array.isArray(members) ? members : [members];
-                const groupUsersRepository = getRepository(GroupUsers);
-
-                membersArray.forEach(async (member_id: string) => {
-                    await groupUsersRepository.create({ user: { id: member_id }, group, role: "user" }).save();
-                });
+                const membersArray: string[] = Array.isArray(members) ? members : [members];
+                membersArray.forEach(id => createUsers.push(groupUsersRepository.create({ user: { id }, group, role: "user" }).save()))
             };
+
+            await Promise.all(createUsers);
 
             return response.status(200).json({ group: GroupView.render(group) });
         } catch (err) {
@@ -108,31 +112,34 @@ export default {
             const sender_id = response.locals.user.id; // from auth route
             const { group_id, message } = request.body;
 
-            const groupRepository = getRepository(Group);
             const groupUsersRepository = getRepository(GroupUsers);
             const groupMessagesRepository = getRepository(GroupMessages);
 
             const posted_at = new Date();
 
-            const messageData = await groupMessagesRepository.create({ sender_id, group_id, message, posted_at }).save();
+            const result = await Promise.all([
+                groupMessagesRepository.create({ sender_id, group_id, message, posted_at }).save(),
+                groupUsersRepository.find({ where: { group: { id: group_id } }, relations: ["user"] }),
+            ]);
+            const messageData = result[0];
+            const groupUsers = result[1];
 
-            const group = await groupRepository.findOne({ where: { id: group_id }, relations: ["users", "users.user"] });
-            if (!group)
-                return response.status(400).json({ message: "Group_id Incorrect" });
+            if (!groupUsers) // every group has at least one person 
+                return response.status(400).json({ message: "Group Id incorrect" });
 
-            group?.users.forEach(async (groupUser) => {
-                if (groupUser.user.id !== sender_id) {
-                    const id = groupUser.id;
-                    const unread_messages = groupUser.unread_messages ? ++groupUser.unread_messages : 1;
-                    await groupUsersRepository.update(id, { unread_messages });
-                };
-            });
+            await Promise.all(groupUsers.map(groupUser => {
+                if (groupUser.user.id === sender_id) return;
 
-            const groupUsers = await groupUsersRepository.find({ where: { group: { id: group_id } }, relations: ["user"] });
+                const id = groupUser.id;
+                const unread_messages = groupUser.unread_messages ? ++groupUser.unread_messages : 1;
+                return groupUsersRepository.update(id, { unread_messages });
+            }));
+
+            const groupUsersUpdated = await groupUsersRepository.find({ where: { group: { id: group_id } }, relations: ["user"] });
 
             const newMessage = {
                 ...messageData,
-                users: GroupUsersView.renderUsers(groupUsers),
+                users: GroupUsersView.renderUsers(groupUsersUpdated),
             };
 
             return response.status(201).json({ message: newMessage });
