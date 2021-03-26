@@ -6,9 +6,6 @@ export default class Contact extends BaseEntity {
     @PrimaryGeneratedColumn("uuid")
     id: string;
 
-    @Column("uuid")
-    contact_id: string;
-
     @Column()
     unread_messages: number;
 
