@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Dispatch, SetStateAction } from "react";
 import { UserI, ContactI, GroupI } from "../types/user";
 import Fuse from "fuse.js";
 import api from "../services/api";
@@ -44,12 +44,13 @@ import {
 interface CreateGroupI {
     user: UserI;
     setUserMaster: SetUserMasterI;
-    setCurrentGroup: React.Dispatch<React.SetStateAction<GroupI>>;
-    setCurrentContainer: React.Dispatch<React.SetStateAction<"profile" | "contacts" | "groups" | "addContact" | "createGroup">>;
+    setCurrentContainer: Dispatch<SetStateAction<"profile" | "messages" | "addContact" | "createGroup">>;
+    setCurrentRoom: Dispatch<SetStateAction<ContactI & GroupI>>;
+    setCurrentRoomType: Dispatch<SetStateAction<"contact" | "group">>;
     socket: SocketIOClient.Socket;
 };
 
-export default function CreateGroup({ user, setUserMaster, setCurrentGroup, setCurrentContainer, socket }: CreateGroupI) {
+export default function CreateGroup({ user, setUserMaster, setCurrentRoomType, setCurrentRoom, setCurrentContainer, socket }: CreateGroupI) {
     const [name, setName] = useState("");
     const [image, setImage] = useState<File>(undefined);
     const [description, setDescription] = useState("");
@@ -74,13 +75,15 @@ export default function CreateGroup({ user, setUserMaster, setCurrentGroup, setC
 
         await api.post(`/group`, data)
             .then(response => {
-                const group: GroupI = response.data.group;
+                const group = response.data.group;
                 group.messages = [];
 
                 socket.emit("group", { event: "new", data: { event: "new", group, members } }, () => {
-                    setUserMaster.groups.push(group);
-                    setCurrentGroup(group);
-                    setCurrentContainer("groups");
+                    setUserMaster.groups.push(group).then(() => {
+                        setCurrentRoomType("group");
+                        setCurrentRoom(group);
+                        setCurrentContainer("messages");
+                    });
                 });
             });
     };
@@ -114,17 +117,15 @@ export default function CreateGroup({ user, setUserMaster, setCurrentGroup, setC
     };
 
     useEffect(() => {
-        if (user?.contacts) {
-            const fuse = new Fuse(user.contacts, { keys: ["username"] });
-            let results: ContactI[] = [];
-            fuse.search(search).map(({ item }) => item).forEach(contact => {
-                if (!(selectedContacts?.find(c => c.id === contact.id))) {
-                    results.push(contact);
-                };
-            });
+        const fuse = new Fuse(user.contacts, { keys: ["username"] });
+        let results: ContactI[] = [];
+        fuse.search(search).map(({ item }) => item).forEach(contact => {
+            if (!(selectedContacts?.find(c => c.id === contact.id))) {
+                results.push(contact);
+            };
+        });
 
-            setSearchResult(results);
-        };
+        setSearchResult(results);
     }, [search, user?.contacts])
 
     return (

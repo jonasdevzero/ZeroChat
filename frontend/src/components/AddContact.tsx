@@ -1,7 +1,7 @@
-import { useState, useEffect, Dispatch } from "react";
-import { UserI, ContactI } from "../types/user";
-import api from "../services/api";
+import { useState, useEffect, Dispatch, SetStateAction } from "react";
+import { UserI, ContactI, GroupI } from "../types/user";
 import { SetUserMasterI } from "../types/useSetUserMaster";
+import api from "../services/api";
 
 import {
     Container,
@@ -26,14 +26,14 @@ import {
 interface AddContactI {
     user: UserI;
     setUserMaster: SetUserMasterI;
-    setCurrentContact: Dispatch<React.SetStateAction<ContactI>>;
-    setCurrentContainer: Dispatch<React.SetStateAction<"profile" | "contacts" | "groups" | "addContact" | "createGroup">>;
+    setCurrentContainer: Dispatch<SetStateAction<"profile" | "messages" | "addContact" | "createGroup">>;
+    setCurrentRoom: Dispatch<SetStateAction<ContactI & GroupI>>;
+    setCurrentRoomType: Dispatch<SetStateAction<"contact" | "group">>;
     socket: SocketIOClient.Socket;
 };
 
-export default function AddContact({ user, setUserMaster, setCurrentContact, setCurrentContainer, socket }: AddContactI) {
+export default function AddContact({ user, setUserMaster, setCurrentContainer, setCurrentRoom, setCurrentRoomType, socket }: AddContactI) {
     const [username, setUsername] = useState("");
-
     const [contacts, setContacts] = useState<UserI[]>();
 
     function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -42,24 +42,23 @@ export default function AddContact({ user, setUserMaster, setCurrentContact, set
 
     async function add(contact: UserI) {
         await api.post(`/contact`, { contact_id: contact.id }).then(response => {
-            const newContact: ContactI = response.data.contact;
+            const newContact = response.data.contact;
             newContact.messages = [];
-
-            console.log(newContact);
 
             socket.emit("user", { contactId: newContact.id, event: "addContact" }, (isOnline: boolean) => {
                 newContact.online = isOnline;
+
                 setUserMaster.contacts.push(newContact).then(() => {
-                    console.log(newContact)
-                    setCurrentContact(newContact);
-                    setCurrentContainer("contacts");
+                    setCurrentRoomType("contact");
+                    setCurrentRoom(newContact);
+                    setCurrentContainer("messages");
                 });
             });
         });
     };
 
     useEffect(() => {
-        let timeout = setTimeout(() => {
+        const timeout = setTimeout(() => {
             if (username.length > 0) {
                 api.get(`/user?username=${username}`).then(response => {
                     const users = response.data.users;
