@@ -56,40 +56,31 @@ export default {
             const { contact_id } = request.body;
 
             const userRepository = getRepository(User);
+            const contactRepository = getRepository(Contact);
 
-            const user = await userRepository.findOne(id);
-            if (!user || id === contact_id)
-                return response.status(400).json({ message: "Invalid Id" });
+            const result = await Promise.all([
+                userRepository.findOne({ where: { id: contact_id } }),
+                contactRepository.findOne({ where: { user: { id }, contact: { id: contact_id } } })
+            ]);
 
-            const userContact = await userRepository.findOne({ where: { id: contact_id } });
+            const userContact = result[0];
             if (!userContact)
                 return response.status(400).json({ message: "Invalid contact id" });
 
-            const contactRepository = getRepository(Contact);
-
-            const existsContact = await contactRepository.findOne({ where: { contact_id, user } });
+            const existsContact = result[1];
             if (existsContact)
                 return response.status(400).json({ message: "Contact already exists" });
 
             const now = new Date();
-            const data = {
-                user,
-                contact_id: userContact.id,
-                contact: userContact,
-                active: true,
-                blocked: false,
-                last_message_time: now,
-            };
-            const data2 = {
-                user: userContact,
-                contact: user,
-                active: false,
-                blocked: false,
-                last_message_time: now,
-            };
 
-            const createdContact = await contactRepository.create(data).save();
-            await contactRepository.create(data2).save()
+            await Promise.all([
+                contactRepository.create({ user: { id }, contact: { id: contact_id }, active: true, blocked: false, last_message_time: now }).save(),
+                contactRepository.create({ user: { id: contact_id }, contact: { id }, active: false, blocked: false, last_message_time: now }).save()
+            ]);
+            const createdContact = await contactRepository.findOne({ where: { user: { id }, contact: { id: contact_id } }, relations: ["contact"] });
+
+            if (!createdContact)
+                return response.status(500).json({ message: "Uxnpected Error" });
 
             return response.status(201).json({ contact: ContactView.render(createdContact) });
         } catch (err) {
@@ -127,16 +118,20 @@ export default {
             const { contact_id } = request.query;
 
             const contactRepository = getRepository(Contact);
+            const contact = await contactRepository
+                .createQueryBuilder("contact")
+                .leftJoin("contact.user", "user")
+                .leftJoin("contact.contact", "c")
+                .leftJoinAndSelect("contact.messages", "messages")
+                .where("user.id = :id", { id })
+                .andWhere("c.id = :contact_id", { contact_id })
+                .orderBy("messages.posted_at", "ASC")
+                .getOne()
 
-            const contact = await contactRepository.findOne({
-                where: { contact_id, user: { id } },
-                relations: ["messages"],
-            });
+            if (!contact) 
+                return response.status(400).json({ message: "Contact not found" });
 
-            if (!contact)
-                return response.status(400).json({ message: "id or contact_id is invalid" })
-
-            return response.status(200).json({ contact });
+            return response.status(200).json({ messages: contact.messages });
         } catch (err) {
             console.log(err);
             return response.status(500).json({ message: "Internal Server Error" });
@@ -146,69 +141,46 @@ export default {
     async createMessage(request: Request, response: Response) {
         try {
             const sender_id = response.locals.user.id; // from auth route
-            const { message, receiver_id, id_contact } = request.body;
+            const { message, receiver_id } = request.body;
 
             const contactRepository = getRepository(Contact);
-            let receiverContact = await contactRepository.findOne({ user: { id: receiver_id }, contact: { id: sender_id } });
 
-            if (!receiverContact)
+            const contacts = await Promise.all([
+                contactRepository.findOne({ user: { id: sender_id }, contact: { id: receiver_id } }),
+                contactRepository.findOne({ user: { id: receiver_id }, contact: { id: sender_id } }),
+            ]);
+            const sender = contacts[0];
+            const receiver = contacts[1];
+
+            if (!receiver || !sender)
                 return response.status(400).json({ message: "This contact not exists" });
 
-            if (receiverContact?.blocked)
+            if (receiver?.blocked)
                 return response.status(400).json({ message: "You are blocked" });
-
 
             const contactMessagesRepository = getRepository(ContactMessages);
 
             const double_contact_id = uuidv4();
             const posted_at = new Date();
-            const unread_messages = typeof receiverContact.unread_messages == "number" ? ++receiverContact.unread_messages : 1;
+            const unread_messages = typeof receiver.unread_messages == "number" ? ++receiver.unread_messages : 1;
 
-            const messageData = await contactMessagesRepository.create({ 
-                message, 
-                sender_id, 
-                contact: { 
-                    id: id_contact 
-                }, 
-                double_contact_id, 
-                posted_at 
-            }).save();
-            await contactMessagesRepository.create({ 
-                message, 
-                sender_id, 
-                contact: { 
-                    id: receiverContact.id 
-                }, 
-                double_contact_id, 
-                posted_at 
-            }).save();
+            const result = await Promise.all([
+                contactMessagesRepository.create({ message, sender_id, contact: sender, double_contact_id, posted_at }).save(),
+                contactMessagesRepository.create({ message, sender_id, contact: receiver, double_contact_id, posted_at }).save(),
+                contactRepository.update(receiver, { unread_messages, active: true, last_message_time: posted_at }),
+                contactRepository.update(sender, { last_message_time: posted_at }),
+            ]);
+            const newMessage = result[0];
 
-            const id = receiverContact.id;
-            await contactRepository.update(id, { unread_messages, active: true, last_message_time: posted_at });
-
-            await contactRepository
-                .createQueryBuilder("contact")
-                .leftJoin("contact.user", "user")
-                .update()
-                .set({ last_message_time: posted_at })                
-                .where("user.id = :user_id", { user_id: sender_id  })
-                .andWhere("contact.contact_id = :contact_id", { contact_id: receiver_id })
-                .execute();
-
-            const newMessage = {
-                id: messageData.id,
-                double_contact_id: messageData.double_contact_id,
-                id_contact,
-                sender_id,
-                message,
+            const messageData = {
+                ...newMessage,
                 contact: {
                     id: receiver_id,
-                    unread_messages,
-                },
-                posted_at
+                    unread_messages
+                }
             };
 
-            return response.status(201).json({ message: newMessage });
+            return response.status(201).json({ message: messageData });
         } catch (err) {
             console.log(err);
             return response.status(500).json({ message: "Internal server error" });
