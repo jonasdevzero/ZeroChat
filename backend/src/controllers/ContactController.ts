@@ -118,20 +118,9 @@ export default {
             const { contact_id } = request.query;
 
             const contactRepository = getRepository(Contact);
-            const contact = await contactRepository
-                .createQueryBuilder("contact")
-                .leftJoin("contact.user", "user")
-                .leftJoin("contact.contact", "c")
-                .leftJoinAndSelect("contact.messages", "messages")
-                .where("user.id = :id", { id })
-                .andWhere("c.id = :contact_id", { contact_id })
-                .orderBy("messages.posted_at", "ASC")
-                .getOne()
+            const contact = await contactRepository.findOne({ where: { user: { id }, contact: { id: contact_id } }, relations: ["messages"] });
 
-            if (!contact) 
-                return response.status(400).json({ message: "Contact not found" });
-
-            return response.status(200).json({ messages: contact.messages });
+            return response.status(200).json({ messages: contact?.messages });
         } catch (err) {
             console.log(err);
             return response.status(500).json({ message: "Internal Server Error" });

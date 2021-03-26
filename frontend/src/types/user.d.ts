@@ -5,6 +5,8 @@ export interface ContactMessageI {
     posted_at: Date;
     id_contact: string;
     double_contact_id: string;
+    type?: string;
+    date?: string;
 };
 
 export interface ContactI {
