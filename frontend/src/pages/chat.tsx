@@ -23,7 +23,7 @@ import {
 } from "../components"
 
 let socket: SocketIOClient.Socket = undefined;
-const ENDPOINT = "ws://localhost:3001";
+const ENDPOINT = "ws://back-zerochat.herokuapp.com";
 
 interface ChatI {
     setToken: React.Dispatch<React.SetStateAction<string>>;
