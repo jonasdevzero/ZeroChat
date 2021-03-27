@@ -23,7 +23,7 @@ import {
 } from "../components"
 
 let socket: SocketIOClient.Socket = undefined;
-const ENDPOINT = "ws://back-zerochat.herokuapp.com";
+const ENDPOINT = "https://back-zerochat.herokuapp.com";
 
 interface ChatI {
     setToken: React.Dispatch<React.SetStateAction<string>>;
@@ -94,7 +94,6 @@ export default function Chat({ setToken, theme, setTheme }: ChatI) {
                             return contact;
                         });
                         setUser(data.user);
-                        setLoading(false);
                     });
                 });
             });
@@ -102,6 +101,8 @@ export default function Chat({ setToken, theme, setTheme }: ChatI) {
             setToken("");
             router.replace("/signin");
         });
+
+        setLoading(false);
 
         return () => {
             socket.disconnect();
