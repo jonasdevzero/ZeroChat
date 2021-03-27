@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import api from "../services/api";
 import { UserI, ContactI, GroupI } from "../types/user";
 import moment from "moment";
@@ -51,6 +51,8 @@ export default function Messages({ user, socket, currentRoom, currentRoomType, m
     const [showScrollButton, setShowScrollButton] = useState(false);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [showRoomDetail, setShowRoomDetail] = useState(false);
+
+    useEffect(() => setShowRoomDetail(false), [currentRoom]);
 
     async function handleMessage(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
