@@ -24,26 +24,26 @@ export default function socketConnection(io: Server) {
 
             console.log(`user connected: ${userId}`);
 
-            contactsOnline.forEach(contact => socket.to(contact).emit("user", { event: "update", where: userId, set: { online: true } }) );
+            contactsOnline.forEach(contact => socket.to(contact).emit("user", { event: "update", data: { where: userId, set: { online: true } } }));
 
             callback(contactsOnline);
         });
 
-        socket.on("private-message", ({ message }, callback) => {
-            io.to(message.sender_id).to(message.contact.id).emit("private-message", { message });
-
+        socket.on("private-message", (message, callback) => {
+            io.to(message.sender_id).to(message.contact.id).emit("private-message", message);
             callback();
         });
 
-        socket.on("group-message", ({ message }, callback) => {
-            io.to(message.group_id).emit("group-message", { message });
-
+        socket.on("group-message", (message, callback) => {
+            io.to(message.group_id).emit("group-message", message);
             callback();
         });
 
         socket.on("user", ({ event, data, contactId }: OnUserI, callback) => {
-            const contacts = SessionUser.findOne(socket.id)?.contacts || []
-            const contactsOnline = SessionUser.getContactsOnline(contacts);
+            const user = SessionUser.findOne(socket.id);
+            if (!user) return;
+
+            const contactsOnline = SessionUser.getContactsOnline(user.contacts || []);
 
             switch (event) {
                 case "addContact":
@@ -54,21 +54,30 @@ export default function socketConnection(io: Server) {
                     break;
                 case "update":
                     const { where, set } = data;
-                    contactsOnline.forEach(c => socket.to(c).emit("user", { event, where, set }));
+                    contactsOnline.forEach(c => socket.to(c).emit("user", { event, data: { where, set } }));
                     break;
             };
         });
 
+        socket.on("callRequest", data => {
+            const user = SessionUser.findOne(socket.id);
+            socket.to(data.to).emit("callRequest", { signal: data.signal, callFrom: user?.id });
+        });
+
+        socket.on("answerCall", data => {
+            socket.to(data.to).emit("callAccepted", data.signal);
+        });
+
         socket.on("group", ({ groupId, event, data }: OnGroupI, callback) => {
             switch (event) {
-                case "new":             
+                case "new":
                     data.members.forEach((c: string) => socket.to(c).emit("group", data));
                     break;
                 case "join":
                     if (groupId) socket.join(groupId);
                     break;
             };
-            
+
             callback();
         });
 
@@ -82,7 +91,7 @@ export default function socketConnection(io: Server) {
                 console.log(`user disconnected: ${id}`);
 
                 const contactsOnline = SessionUser.getContactsOnline(contacts)
-                contactsOnline.forEach(contact => socket.to(contact).emit("user", { event: "update", where: id, set: { online: false } }) );
+                contactsOnline.forEach(contact => socket.to(contact).emit("user", { event: "update", data: { where: id, set: { online: false } } }));
             };
         });
     });
