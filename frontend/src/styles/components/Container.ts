@@ -44,13 +44,13 @@ export const Form = styled.form`
     align-items: center;
 
     margin-bottom: 3rem;
-    padding: 3rem;
-    padding-bottom: 2rem;
+    padding: 2rem;
+    padding-bottom: 1.5rem;
 
     background-color: #2f2f2f;
     border-radius: 1rem;
 
-    .button-wrapper {
+    .buttons-wrapper {
         display: flex;
     };
 `;
@@ -112,13 +112,15 @@ export const Button = styled.button`
     font-size: 1.4rem;
     background-color: #222;
 
-    margin-left: 1rem;
     padding: .5rem 2rem;
     border: none;
     border-radius: .7rem;
     outline: none;
     cursor: pointer;
 
+    & + &, div + & {
+        margin-left: 1rem;
+    };
     &.cancel {
         background-color: #3b3b3b;
     };

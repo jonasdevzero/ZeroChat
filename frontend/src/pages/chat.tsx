@@ -5,6 +5,7 @@ import io from 'socket.io-client';
 import api from "../services/api";
 import { UserI, ContactI, GroupI, GroupUserI } from "../types/user";
 import useSetUserMaster from "../hooks/useSetUserMaster";
+import orderMessages from '../utils/orderMessages';
 
 import {
     Container,
@@ -179,7 +180,7 @@ export default function Chat({ setToken, theme, setTheme }: ChatI) {
             if (!(currentRoom?.messages)) {
                 api.get(`/${currentRoomType}/messages?${currentRoomType}_id=${currentRoom.id}`).then(response => {
                     const { messages } = response.data;
-                    setUserMaster[updateTag].update({ where: currentRoom.id, set: { messages } }).then(() => scrollToBottom());
+                    setUserMaster[updateTag].update({ where: currentRoom.id, set: { messages: orderMessages(messages) } }).then(() => scrollToBottom());
                 });
             };
             if (currentRoom.unread_messages > 0) {
@@ -275,6 +276,7 @@ export default function Chat({ setToken, theme, setTheme }: ChatI) {
                                             setCurrentRoomType={setCurrentRoomType}
                                             setCurrentContainer={setCurrentContainer}
                                             socket={socket}
+                                            theme={theme}
                                         />
                                     ) : null
                         }

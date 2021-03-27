@@ -8,6 +8,7 @@ import { SetUserMasterI } from "../types/useSetUserMaster";
 import {
     Info,
     InputContainer,
+    InputsWrapper,
     Message,
     WrapperScreen,
     Screen,
@@ -89,7 +90,7 @@ export default function Profile({ user, setUserMaster, theme, setToken, socket }
                 setUserMaster.update({ name, username, picture });
                 setWarning("Updated with success!");
 
-                socket.emit("user", { event: "update", data: { where: user?.id, set: { username, image: picture } } }, () => {});
+                socket.emit("user", { event: "update", data: { where: user?.id, set: { username, image: picture } } }, () => { });
             }).catch((error: AxiosError) => {
                 const { message } = error.response.data;
                 setError(message);
@@ -238,16 +239,18 @@ export default function Profile({ user, setUserMaster, theme, setToken, socket }
                         </ErrorMessage>
                     ) : null}
 
-                    <InputWrapper>
-                        <Label>Name</Label>
-                        <Input value={name} onChange={e => setName(e.target.value)} />
-                    </InputWrapper>
-                    <InputWrapper>
-                        <Label>Username</Label>
-                        <Input value={username} onChange={e => setUsername(e.target.value)} />
-                    </InputWrapper>
+                    <InputsWrapper>
+                        <InputWrapper>
+                            <Label>Name</Label>
+                            <Input value={name} onChange={e => setName(e.target.value)} />
+                        </InputWrapper>
+                        <InputWrapper>
+                            <Label>Username</Label>
+                            <Input value={username} onChange={e => setUsername(e.target.value)} />
+                        </InputWrapper>
+                    </InputsWrapper>
 
-                    <div className="button-wrapper">
+                    <div className="buttons-wrapper">
                         <Button
                             className="cancel"
                             type="button"

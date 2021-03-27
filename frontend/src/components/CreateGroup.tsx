@@ -48,9 +48,10 @@ interface CreateGroupI {
     setCurrentRoom: Dispatch<SetStateAction<ContactI & GroupI>>;
     setCurrentRoomType: Dispatch<SetStateAction<"contact" | "group">>;
     socket: SocketIOClient.Socket;
+    theme: "light" | "dark";
 };
 
-export default function CreateGroup({ user, setUserMaster, setCurrentRoomType, setCurrentRoom, setCurrentContainer, socket }: CreateGroupI) {
+export default function CreateGroup({ user, setUserMaster, setCurrentRoomType, setCurrentRoom, setCurrentContainer, socket, theme }: CreateGroupI) {
     const [name, setName] = useState("");
     const [image, setImage] = useState<File>(undefined);
     const [description, setDescription] = useState("");
@@ -63,6 +64,8 @@ export default function CreateGroup({ user, setUserMaster, setCurrentRoomType, s
 
     const [imagePreview, setImagePreview] = useState("");
 
+    const [loading, setLoading] = useState(false);
+
     async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
 
@@ -73,19 +76,22 @@ export default function CreateGroup({ user, setUserMaster, setCurrentRoomType, s
 
         members.forEach(member => data.append("members", member));
 
-        await api.post(`/group`, data)
-            .then(response => {
-                const group = response.data.group;
-                group.messages = [];
+        setLoading(true);
 
-                socket.emit("group", { event: "new", data: { event: "new", group, members } }, () => {
-                    setUserMaster.groups.push(group).then(() => {
-                        setCurrentRoomType("group");
-                        setCurrentRoom(group);
-                        setCurrentContainer("messages");
-                    });
+        await api.post(`/group`, data).then(response => {
+            const group = response.data.group;
+            group.messages = [];
+            setLoading(false);
+
+            socket.emit("group", { event: "new", data: { event: "new", group, members } }, () => {
+                setUserMaster.groups.push(group).then(() => {
+                    setCurrentRoomType("group");
+                    setCurrentRoom(group);
+                    setCurrentContainer("messages");
                 });
             });
+        });
+
     };
 
     function handleSelectImage(e: React.ChangeEvent<HTMLInputElement>) {
@@ -245,7 +251,14 @@ export default function CreateGroup({ user, setUserMaster, setCurrentRoomType, s
                         </SelectedContacts>
                     </Fieldset>
 
-                    <Button type="submit">Create</Button>
+                    <Button type="submit">
+                    {loading ? (
+                                <img
+                                    src={`/loading-${theme}.svg`}
+                                    alt="loading"
+                                />
+                            ) : "Create"}
+                    </Button>
                 </Form>
             </Inner>
         </Container>

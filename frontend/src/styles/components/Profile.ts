@@ -20,6 +20,15 @@ export const Info = styled.div`
     };
 `;
 
+export const InputsWrapper = styled.div`
+    display: flex;
+    width: 100%;
+
+    div + div {
+        margin-left: 1rem;
+    };
+`;
+
 export const InputContainer = styled.div`
     display: flex;
     position: relative;
