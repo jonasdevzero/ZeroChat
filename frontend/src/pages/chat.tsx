@@ -94,6 +94,7 @@ export default function Chat({ setToken, theme, setTheme }: ChatI) {
                             return contact;
                         });
                         setUser(data.user);
+                        setLoading(false);
                     });
                 });
             });
@@ -102,7 +103,6 @@ export default function Chat({ setToken, theme, setTheme }: ChatI) {
             router.replace("/signin");
         });
 
-        setLoading(false);
 
         return () => {
             socket.disconnect();
