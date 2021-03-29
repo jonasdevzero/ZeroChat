@@ -1,6 +1,6 @@
 import {
     Container,
-} from "../styles/components/Loading";
+} from "../styles/components/LoadingContainer";
 
 interface LoadingI {
     theme: "light" | "dark";

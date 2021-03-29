@@ -52,6 +52,10 @@ export const Form = styled.form`
 
     .buttons-wrapper {
         display: flex;
+
+        &.right {
+            margin-right: auto;
+        };
     };
 `;
 

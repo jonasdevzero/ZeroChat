@@ -7,7 +7,7 @@ import {
     Inner,
     GroupDescription,
     GroupUsers,
-} from "../styles/components/Details";
+} from "../styles/components/RoomDetails";
 import { IconButton, Avatar } from "@material-ui/core"
 import CloseIcon from '@material-ui/icons/Close';
 
@@ -17,7 +17,7 @@ interface DetailsI {
     setShowRoomDetail: Dispatch<SetStateAction<boolean>>;
 };
 
-export default function Details({ currentRoom, currentRoomType, setShowRoomDetail }: DetailsI) {
+export default function RoomDetails({ currentRoom, currentRoomType, setShowRoomDetail }: DetailsI) {
 
 
     return (

@@ -5,5 +5,5 @@ export { default as Profile } from "./Profile";
 export { default as AddContact } from "./AddContact";
 export { default as CreateGroup } from "./CreateGroup";
 export { default as Messages } from "./Messages";
-export { default as Loading } from "./Loading";
-export { default as Details } from "./Details";
+export { default as LoadingContainer } from "./LoadingContainer";
+export { default as RoomDetails } from "./RoomDetails";

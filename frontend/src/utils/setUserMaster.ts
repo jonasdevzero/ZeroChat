@@ -1,4 +1,4 @@
-import React from "react";
+import { Dispatch, SetStateAction } from "react";
 import api from "../services/api";
 import {
     ContactI,
@@ -17,7 +17,7 @@ import {
     GroupPushMessageI,
 } from "../types/useSetUserMaster";
 
-export default function useSetUserMaster(user: UserI, setUser: React.Dispatch<React.SetStateAction<UserI>>) {
+export default function useSetUserMaster(user: UserI, setUser: Dispatch<SetStateAction<UserI>>) {
     function orderRoomsByLastMessage<T extends any[]>(arr: T, from: number, to: number) {
         arr?.splice(to, 0, arr?.splice(from, 1)[0]);
         return arr;
@@ -90,8 +90,8 @@ export default function useSetUserMaster(user: UserI, setUser: React.Dispatch<Re
         if (change === "NEW_MESSAGE" && position > 0) {
             setUser({
                 ...user,
-                contacts: dispatch === "CONTACTS" ? orderRoomsByLastMessage(user?.contacts, position, 0) : user?.contacts,
-                groups: dispatch === "GROUPS" ? orderRoomsByLastMessage(user?.groups, position, 0) : user?.groups,
+                contacts: dispatch === "CONTACTS" ? orderRoomsByLastMessage(user.contacts, position, 0) : user.contacts,
+                groups: dispatch === "GROUPS" ? orderRoomsByLastMessage(user.groups, position, 0) : user.groups,
             });
         };
     };

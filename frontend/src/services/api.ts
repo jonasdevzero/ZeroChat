@@ -1,5 +1,5 @@
 import axios from "axios";
 
 export default axios.create({
-    baseURL: "https://back-zerochat.herokuapp.com/",
+    baseURL: process.env.API_URL || "http://localhost:3001",
 });
