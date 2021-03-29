@@ -151,12 +151,13 @@ export default {
 
             const double_contact_id = uuidv4();
             const posted_at = new Date();
-            const unread_messages = typeof receiver.unread_messages == "number" ? ++receiver.unread_messages : 1;
+            const unread_messages = receiver.unread_messages ? receiver.unread_messages += 1 : 1;
+            const id = receiver.id;
 
             const result = await Promise.all([
                 contactMessagesRepository.create({ message, sender_id, contact: sender, double_contact_id, posted_at }).save(),
                 contactMessagesRepository.create({ message, sender_id, contact: receiver, double_contact_id, posted_at }).save(),
-                contactRepository.update(receiver, { unread_messages, active: true, last_message_time: posted_at }),
+                contactRepository.update(id, { unread_messages, active: true, last_message_time: posted_at }),
                 contactRepository.update(sender, { last_message_time: posted_at }),
             ]);
             const newMessage = result[0];

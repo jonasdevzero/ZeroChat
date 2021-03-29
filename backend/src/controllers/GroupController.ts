@@ -41,19 +41,16 @@ export default {
                     fields: err.inner.map((field: { path: string }) => field.path),
                 }));
 
-            let image = undefined, image_key = undefined;
-            if (request.file) {
-                // I'm changed the Express.Multer.File interface adding the location variable as string | undefined;   
-                const { location, filename } = request.file;
-
-                image = process.env.STORAGE_TYPE === "s3" ? location : `${process.env.APP_URL}/files/${filename}`;
-                image_key = filename;
+            let image = undefined;
+            if (request.file) {  
+                const { filename } = request.file;
+                image = `${process.env.STORAGE_TYPE === "s3" ? process.env.S3_BASE_URL : "http://localhost:3001/files"}/${filename}`;
             };
 
             const now = new Date();
 
             const groupRepository = getRepository(Group);
-            const group = await groupRepository.create({ name, image: image, description, created_by: id, image_key, last_message_time: now }).save();
+            const group = await groupRepository.create({ name, image, description, created_by: id, last_message_time: now }).save();
 
             const groupUsersRepository = getRepository(GroupUsers);
             const createUsers = [groupUsersRepository.create({ user: { id }, group, role: "admim" }).save()];
@@ -131,7 +128,7 @@ export default {
                 if (groupUser.user.id === sender_id) return;
 
                 const id = groupUser.id;
-                const unread_messages = groupUser.unread_messages ? ++groupUser.unread_messages : 1;
+                const unread_messages = groupUser.unread_messages ? groupUser.unread_messages += 1 : 1;
                 return groupUsersRepository.update(id, { unread_messages });
             }));
 

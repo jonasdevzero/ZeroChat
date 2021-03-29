@@ -5,7 +5,7 @@ import UserView from "../views/UserView";
 import { encryptPassword, generateToken, comparePasswords, authenticateToken, removePicture } from "../utils/user";
 import * as Yup from "yup";
 import crypto from "crypto";
-import transporter from "../modules/mailer";
+import transporter from "../config/mailer";
 
 export default {
     async index(request: Request, response: Response) {
@@ -136,27 +136,22 @@ export default {
                 return response.status(400).json({ message: "Username already in use" });
 
             let picture: string | undefined = user.picture;
-            let picture_key: string | undefined = user.picture_key;
             if (request.file) {
-                // I'm changed the Express.Multer.File interface adding the location variable as string | undefined;   
-                const { location, filename } = request.file;
-
-                picture = process.env.STORAGE_TYPE === "s3" ? location : `${process.env.APP_URL}/files/${filename}`;
-                picture_key = filename;
+                const { filename } = request.file;
+                picture = `${process.env.STORAGE_TYPE === "s3" ? process.env.S3_BASE_URL : "http://localhost:3001/files"}/${filename}`;
 
                 if (user.picture) { // Removing the old image
-                    removePicture(user.picture_key);
+                    removePicture(user.picture);
                 };
             } else if (!request.file && without_image === "true") {
                 picture = undefined;
-                picture_key = undefined;
 
                 if (user.picture) { // Removing the old image
-                    removePicture(user.picture_key);
+                    removePicture(user.picture);
                 };
             };
 
-            await userRepository.update(id, { name, username, picture, picture_key });
+            await userRepository.update(id, { name, username, picture });
             const updatedUser = await userRepository.findOne(id);
 
             if (!updatedUser)

@@ -6,8 +6,7 @@ export default nodemailer.createTransport({
     secure: true,
     auth: {
         user: "devzerotest@gmail.com",
-        pass: process.env.NODEMAILER_PASS
+        pass: process.env.NODEMAILER_PASS,
     },
-
 });
 
