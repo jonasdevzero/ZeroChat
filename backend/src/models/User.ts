@@ -23,9 +23,6 @@ export default class User extends BaseEntity {
     picture: string;
 
     @Column()
-    picture_key: string;
-
-    @Column()
     resetToken: string;
 
     @Column()

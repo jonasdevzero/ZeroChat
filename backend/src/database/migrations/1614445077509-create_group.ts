@@ -29,11 +29,6 @@ export class createGroup1614445077509 implements MigrationInterface {
                     isNullable: true,
                 },
                 {
-                    name: "image_key",
-                    type: "text",
-                    isNullable: true,
-                },
-                {
                     name: "created_by",
                     type: "uuid",
                     unsigned: true,

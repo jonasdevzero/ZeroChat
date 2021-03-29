@@ -27,12 +27,14 @@ export function authenticateToken(token: string) {
     return jwt.verify(token, secret);
 };
 
-export function removePicture(Key: string) {
-    if (process.env.STORAGE_TYPE === "S3") {
-        s3.deleteObject({ Bucket: "zero-chat", Key }, (err, _data) => {
-            if (err) console.log("error on [update.removing_image] {user}  ->", err);
+export function removePicture(key: string) {
+    if (process.env.STORAGE_TYPE === "s3") {
+        const picture_key = key.split(`${process.env.S3_BASE_URL}/`)[1];
+        s3.deleteObject({ Bucket: "zero-chat", Key: picture_key }, (err, _data) => {
+            if (err) console.log("error on [update.removing_image] {user} ->", err);
         });
     } else {
-        promisify(fs.unlink)(path.resolve(__dirname, "..", "..", "uploads", Key));
+        const picture_key = key.split("http://localhost:3001/uploads/")[1];
+        promisify(fs.unlink)(path.resolve(__dirname, "..", "..", "uploads", picture_key));
     };
 };

@@ -39,11 +39,6 @@ export class createUser1613406151448 implements MigrationInterface {
                     isNullable: true,
                 },
                 {
-                    name: "picture_key",
-                    type: "text",
-                    isNullable: true,
-                },
-                {
                     name: "resetToken",
                     type: "varchar",
                     isNullable: true,
