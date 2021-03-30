@@ -1,61 +1,119 @@
 export const light = {
-    color: '#000',
-    backgroundColor: '#fff',
+    textColor: '#000',
 
-    contrastColors: {
-        Color1: "#ddd",    // light
-        Color2: "#fff",    // lightness
-        Color3: "#222",    // dark
-        Color4: "#000",    // darkness
+    pages: {
+        landing: {
+            backgroundColor: '#eee',
+
+            header: {
+                backgroundColor: '#ddd',
+
+                link: {
+                    signup: {
+                        color: '#eee',
+                        backgroundColor: '#090909'
+                    }
+                }
+            },
+
+            button: {
+                color: '#eee',
+                backgroundColor: '#090909'
+            }
+        },
     },
 
-    header: {
-        color: '#fff',
-        backgroundColor: '#191818',
-        invertedBackgroundColor: "#fff",
-    },
-
-    form: {
-        backgroundColor: "#eee",
-
-        input: {
-            backgroundColor: "#fff",
+    components: {
+        form: {
+            containerBackgroundColor: '#eee',
+            backgroundColor: '#ddd',
+            arrowBackColor: '#090909',
+            borderColor: '#777',
+            label: {
+                span: {
+                    colorOnFocus: '#777'
+                },
+            },
+            input: {
+                backgroundColor: '#eee',
+                color: '#090909'
+            },
+            submit: {
+                backgroundColor: '#090909',
+                color: '#eee'
+            },
+            error: {
+                backgroundColor: '#f00',
+            },
         },
-        span: {
-            color: "#505050",
-            onFocus: "#999",
+
+        warning: {
+            backgroundColor: '#ddd',
+            loadingBarColor: '#090909'
         },
-        errorColor: "#FF5150",
+
+        loadingContainer: {
+            backgroundColor: '#f0f0f0'
+        }
     },
 };
 
 export const dark = {
-    color: '#fff',
-    backgroundColor: '#111',
+    textColor: '#eee',
 
-    contrastColors: {
-        Color1: "#333",    // dark
-        Color2: "#000",    // darkness
-        Color3: "#eee",    // light
-        Color4: "#fff",    // lightness
+    pages: {
+        landing: {
+            backgroundColor: '#090909',
+
+            header: {
+                backgroundColor: '#000',
+
+                link: {
+                    signup: {
+                        color: '#090909',
+                        backgroundColor: '#eee'
+                    }
+                }
+            },
+
+            button: {
+                color: '#090909',
+                backgroundColor: '#eee'
+            },
+        },
     },
 
-    header: {
-        color: '#fff',
-        backgroundColor: '#000',
-        invertedBackgroundColor: "#fff",
-    },
-
-    form: {
-        backgroundColor: "#000",
-
-        input: {
-            backgroundColor: "#111",
+    components: {
+        form: {
+            containerBackgroundColor: '#090909',
+            backgroundColor: '#151515',
+            arrowBackColor: '#eee',
+            borderColor: '#777',
+            label: {
+                span: {
+                    colorOnFocus: '#777'
+                },
+            },
+            input: {
+                backgroundColor: '#222',
+                color: '#eee'
+            },
+            submit: {
+                backgroundColor: '#eee',
+                color: '#090909'
+            },
+            error: {
+                backgroundColor: '#f00',
+            },
         },
-        span: {
-            color: "#eee",
-            onFocus: "#505050",
+
+        warning: {
+            backgroundColor: '#151515',
+            loadingBarColor: '#eee'
         },
-        errorColor: "#FF5150",
+
+        loadingContainer: {
+            backgroundColor: '#090909'
+        }
     },
 };
