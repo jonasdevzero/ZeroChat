@@ -10,10 +10,10 @@ export const Container = styled.div`
     justify-content: center;
     flex-direction: column;
 
-    background-color: #202020;
+    background-color: ${({ theme }) => theme.components.loadingContainer.backgroundColor};
 
     img {
-        width: 10rem;
-        height: 10rem;
+        width: 12rem;
+        height: 12rem;
     };
 `;

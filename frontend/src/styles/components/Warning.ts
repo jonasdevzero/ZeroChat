@@ -18,9 +18,9 @@ export const Container = styled.div<ContainerI>`
 
     width: 25rem;
     height: 12rem;
+    padding: 1rem;
 
-    background-color: #1f1f1f;
-    color: #fff;
+    background-color: ${({ theme }) => theme.components.warning.backgroundColor};
 
     border-radius: .3rem;
     overflow: hidden;
@@ -34,14 +34,12 @@ export const Container = styled.div<ContainerI>`
 
         width: 25rem;
         height: 12rem;
-        border-bottom: solid .3rem #6CFA66;
+        border-bottom: solid .3rem ${({ theme }) => theme.components.warning.loadingBarColor};
     };
 `;
 
 export const Message = styled.p`
-    font-size: 1.6rem;
-    font-weight: 500;
+    font-size: 1.4rem;
+    font-weight: 400;
     text-align: center;
-
-    padding: 0 2rem;
 `;

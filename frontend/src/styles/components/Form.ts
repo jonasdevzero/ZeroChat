@@ -4,12 +4,13 @@ export const Container = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     position: relative;
 
     width: 100vw;
     height: 100vh;
 
-    background-color: ${({ theme }) => theme.backgroundColor};
+    background-color: ${({ theme }) => theme.components.form.containerBackgroundColor};
 `;
 
 export const Form = styled.form`
@@ -18,10 +19,8 @@ export const Form = styled.form`
 
     width: 40rem;
     padding: 4rem 3.5rem 3rem 3.5rem;
-    margin-top: 5rem;
-    margin-bottom: 2rem;
 
-    background-color: ${({ theme }) => theme.form.backgroundColor};
+    background-color: ${({ theme }) => theme.components.form.backgroundColor};
     border-radius: .5rem;
 `;
 
@@ -32,7 +31,7 @@ export const TitleContainer = styled.div`
     position: relative;
 
     margin-bottom: 2rem;
-    border-bottom: solid .2rem ${({ theme }) => theme.contrastColors.Color1};
+    border-bottom: solid .1rem ${({ theme }) => theme.components.form.borderColor};
 `;
 
 export const ArrowBackButton = styled.button`
@@ -47,17 +46,16 @@ export const ArrowBackButton = styled.button`
 
     .MuiSvgIcon-root {
         cursor: pointer;
-        color: ${({ theme }) => theme.contrastColors.Color3};
+        color: ${({ theme }) => theme.components.form.arrowBackColor};
         font-size: 3rem !important;
     };
 `;
 
 export const Title = styled.h1`
     align-self: center;
-    font-size: 3.5rem;
+    font-size: 3rem;
     font-weight: 700;
     margin-bottom: 3rem;
-    color: ${({ theme }) => theme.contrastColors.Color3};
 `;
 
 export const Wrapper = styled.div`
@@ -89,26 +87,11 @@ export const Label = styled.label`
 
     pointer-events: none;
     overflow: hidden;
-
-    &::after {
-        content: "";
-        position: absolute;
-        left: 0rem;
-        bottom: 0rem;
-
-        width: 100%;
-        height: 100%;
-
-        border-bottom: solid .2rem #d9d9d9;
-        transform: translateX(-100%);
-        transition: all .3s ease;
-    };
 `;
 
 export const Span = styled.span`
     font-size: 1.4rem;
     font-weight: 500;
-    color: ${({ theme }) => theme.form.span.color};
 
     position: absolute;
     left: .6rem;
@@ -126,19 +109,15 @@ export const Input = styled.input`
 
     font-size: 1.6rem;
     font-weight: 500;
-    background-color: ${({ theme }) => theme.form.input.backgroundColor};
-    color: ${({ theme }) => theme.contrastColors.Color3};
+    color: ${({ theme }) => theme.components.form.input.color};
+    background-color: ${({ theme }) => theme.components.form.input.backgroundColor};
     padding: 2rem .6rem 1rem .6rem;
     box-sizing: border-box;
 
     &:focus + ${Label}  ${Span}, &:valid + ${Label}  ${Span} {
         transform: translateY(-120%);
         font-size: 1.3rem;
-        color: ${({ theme }) => theme.form.span.onFocus};
-    };
-
-    &:focus + ${Label}::after, &:valid + ${Label}::after {
-        transform: translateY(0%);
+        color: ${({ theme }) => theme.components.form.label.span.colorOnFocus};
     };
 `;
 
@@ -149,15 +128,16 @@ export const Submit = styled.button`
     border: none;
     outline: none;
 
-    background-color: ${({ theme }) => theme.contrastColors.Color4};
-    color:  ${({ theme }) => theme.backgroundColor};
+    background-color: ${({ theme }) => theme.components.form.submit.backgroundColor};
+    color:  ${({ theme }) => theme.components.form.submit.color};
+    font-size: 1.6em;
     font-weight: 500;
     transition: opacity .3s ease;
 
     cursor: pointer;
 
     &:hover {
-        opacity: .8;
+        opacity: .9;
     };
 
     img {
@@ -174,11 +154,10 @@ export const Error = styled.div`
     width: 100%;
     height: 5rem;
 
-    background-color: ${({ theme }) => theme.form.errorColor};
+    background-color: ${({ theme }) => theme.components.form.error.backgroundColor};
     border-radius: .2rem;
 
     strong {
-        color: #fff;
         font-size: 1.6rem;
         font-weight: 700;
     };
@@ -189,7 +168,6 @@ export const Info = styled.p`
     font-weight: 500;
     align-self: center;
     margin-top: 3rem;
-    color: ${({ theme }) => theme.contrastColors.Color3};
 
     & + & {
         margin-top: 1rem;
@@ -198,7 +176,6 @@ export const Info = styled.p`
 
 export const StyledLink = styled.a`
     text-decoration: none;
-    color: ${({ theme }) => theme.contrastColors.Color3};
     font-size: 1.3rem;
     cursor: pointer;
     margin-left: .5rem;
