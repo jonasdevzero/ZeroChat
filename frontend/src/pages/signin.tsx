@@ -22,7 +22,7 @@ import {
 } from "../styles/components/Form";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import Warning from "../components/Warning";
-import { Loading } from "../components";
+import { LoadingContainer } from "../components";
 
 export default function SignIn({ setToken, theme }) {
     const [email, setEmail] = useState("");
@@ -41,9 +41,10 @@ export default function SignIn({ setToken, theme }) {
         const token = JSON.parse(localStorage.getItem("token"));
 
         if (token) {
+            setLoading(true);
             api.post(`/user/auth?signin_auth=true`, {}, { headers: { Authorization: `Bearer ${token}` } }).then(_ => {
-                return router.push("/chat");
-            }).catch(() => { });
+                router.push("/chat");
+            }).catch(() => setLoading(false));
         };
     }, []);
 
@@ -52,10 +53,7 @@ export default function SignIn({ setToken, theme }) {
 
         setLoadingRequest(true);
 
-        await api.post("/user/login", {
-            email,
-            password,
-        }).then(response => {
+        await api.post("/user/login", { email, password }).then(response => {
             setToken(response.data.token);
 
             setEmail("");
@@ -65,7 +63,7 @@ export default function SignIn({ setToken, theme }) {
 
             setTimeout(() => {
                 setLoading(true);
-                return router.push("/chat");
+                router.push("/chat");
             }, 2000);
         }).catch((err: AxiosError) => {
             const { message, fields } = err.response.data;
@@ -167,7 +165,7 @@ export default function SignIn({ setToken, theme }) {
                     </Form>
                 </>
             ) : (
-                <Loading theme={theme} />
+                <LoadingContainer theme={theme} />
             )}
 
         </Container>

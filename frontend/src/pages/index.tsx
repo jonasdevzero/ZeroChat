@@ -5,6 +5,7 @@ import {
     Container,
     Header,
     Content,
+    InitialCard,
     StyledLink,
     CallToAction,
 } from '../styles/pages/home';
@@ -31,12 +32,13 @@ export default function Home() {
             </Header>
 
             <Content>
-                <h1>Zero</h1>
-                <h2>A realtime chat made for you!</h2>
+                <InitialCard>
+                    <h2>A perfect chat for you!</h2>
 
-                <Link href='/signup'>
-                    <CallToAction>Start now!</CallToAction>
-                </Link>
+                    <Link href='/signup'>
+                        <CallToAction>Start now!</CallToAction>
+                    </Link>
+                </InitialCard>
             </Content>
         </Container>
     );

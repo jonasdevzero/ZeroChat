@@ -23,7 +23,7 @@ import {
 } from "../styles/components/Form";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import Warning from "../components/Warning";
-import { Loading } from "../components";
+import { LoadingContainer } from "../components";
 
 export default function SignUp({ setToken, theme }) {
     const [name, setName] = useState("");
@@ -208,7 +208,7 @@ export default function SignUp({ setToken, theme }) {
                     </Form>
                 </>
             ) : (
-                <Loading theme={theme} />
+                <LoadingContainer theme={theme} />
             )}
         </Container>
     );

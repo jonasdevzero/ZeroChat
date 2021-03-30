@@ -13,6 +13,8 @@ function messagesDay(messages: GroupMessageI[] & ContactMessageI[]) {
 };
 
 export default function orderMessages(messages: GroupMessageI[] & ContactMessageI[]) {
+    if (!messages) return [];
+
     const days = messagesDay(messages);
     const sortedDays = Object.keys(days).sort((x, y) => moment(y, "YYYY-MM-DD").unix() - moment(x, "YYYY-MM-DD").unix());
 
