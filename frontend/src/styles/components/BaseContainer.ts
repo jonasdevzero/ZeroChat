@@ -38,7 +38,7 @@ export const Inner = styled.div`
     background-color: #2c2c2c;
 `;
 
-export const Form = styled.form`
+export const Form: any = styled.form`
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -49,17 +49,9 @@ export const Form = styled.form`
 
     background-color: #2f2f2f;
     border-radius: 1rem;
-
-    .buttons-wrapper {
-        display: flex;
-
-        &.right {
-            margin-right: auto;
-        };
-    };
 `;
 
-export const Wrapper = styled.div`
+Form.Wrapper = styled.div`
     display: flex;
     flex-direction: column;
 
@@ -67,7 +59,7 @@ export const Wrapper = styled.div`
     margin-left: 1rem;
 `;
 
-export const InputWrapper = styled.div`
+Form.Wrapper.Input = styled.div`
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -80,7 +72,28 @@ export const InputWrapper = styled.div`
     };
 `;
 
-export const Label = styled.label`
+Form.Wrapper.Image = styled.div`
+    position: relative;
+    min-width: 15rem;
+    max-width: 15rem;
+    height: 15rem;
+    border-radius: 50%;
+
+    .MuiAvatar-root {
+        width: 100%;
+        height: 100%;
+    };
+`;
+
+Form.Wrapper.Button = styled.div`
+    display: flex;
+
+    &.right {
+        margin-right: auto;
+    };
+`;
+
+Form.Label = styled.label`
     display: flex;
     align-items: center;
 
@@ -94,7 +107,7 @@ export const Label = styled.label`
     };
 `;
 
-export const Input = styled.input`
+Form.Input = styled.input`
     height: 4rem;
     width: 100%;
 
@@ -109,7 +122,7 @@ export const Input = styled.input`
     background-color: #353535;
 `;
 
-export const Button = styled.button`
+Form.Button = styled.button`
     height: 4rem;
 
     color: #fff;
@@ -142,20 +155,41 @@ export const Button = styled.button`
     };
 `;
 
-export const ImageWrapper = styled.div`
-    position: relative;
-    min-width: 15rem;
-    max-width: 15rem;
-    height: 15rem;
-    border-radius: 50%;
+Form.Fieldset = styled.fieldset`
+    width: 100%;
+    border: none;
 
-    .MuiAvatar-root {
-        width: 100%;
-        height: 100%;
+    & + & {
+        margin-top: 3rem;
     };
 `;
 
-export const ImageLabel = styled.label`
+Form.Legend = styled.legend`
+    width: 100%;
+    font-size: 1.8rem;
+
+    margin-bottom: 2rem;
+    padding: 0 0 1rem 1.5rem;
+    border-bottom: solid .1rem #777;
+`;
+
+Form.TextArea = styled.textarea`
+    background-color: #353535;
+    color: #fff;
+    font-size: 1.6rem;
+
+    min-height: 6rem;
+    max-height: 12rem;
+
+    padding: 1rem;
+    border: none;
+    outline: none;
+    resize: vertical;
+`;
+
+Form.Image = styled.div``;
+
+Form.Image.Label = styled.label`
     display: flex;
     align-items: center;
     justify-content: center;
@@ -174,11 +208,11 @@ export const ImageLabel = styled.label`
     };
 `;
 
-export const ImageInput = styled.input`
+Form.Image.Input = styled.input`
     display: none;
 `;
 
-export const RemoveImage = styled.button`
+Form.Image.Remove = styled.button`
     display: flex;
     align-items: center;
     justify-content: center;
@@ -201,7 +235,7 @@ export const RemoveImage = styled.button`
     };
 `;
 
-export const ErrorMessage = styled.div`
+Form.Error = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
@@ -212,8 +246,8 @@ export const ErrorMessage = styled.div`
     background-color: red;
     margin-bottom: 2rem;
     border-radius: .7rem;
+`;
 
-    strong {
-        font-size: 1.5rem;
-    };
+Form.Error.Message = styled.strong`
+    font-size: 1.5rem;
 `;

@@ -31,38 +31,6 @@ export const Wrapper = styled.div`
     margin-left: 1rem;
 `;
 
-export const Fieldset = styled.fieldset`
-    width: 100%;
-    border: none;
-
-    & + & {
-        margin-top: 3rem;
-    };
-`;
-
-export const Legend = styled.legend`
-    width: 100%;
-    font-size: 1.8rem;
-
-    margin-bottom: 2rem;
-    padding: 0 0 1rem 1.5rem;
-    border-bottom: solid .1rem #777;
-`;
-
-export const TextArea = styled.textarea`
-    background-color: #353535;
-    color: #fff;
-    font-size: 1.6rem;
-
-    min-height: 6rem;
-    max-height: 12rem;
-
-    padding: 1rem;
-    border: none;
-    outline: none;
-    resize: vertical;
-`;
-
 export const SearchInput = styled.input`
     width: 100%;
     height: 4rem;
@@ -84,7 +52,7 @@ export const SearchInputWrapper = styled.div`
     margin-bottom: 1rem;
 `;
 
-export const FilteredContacts = styled.div`
+export const FilteredContacts: any = styled.div`
     width: 100%;
     position: absolute;
 
@@ -96,7 +64,7 @@ export const FilteredContacts = styled.div`
     z-index: 1;
 `;
 
-export const FilteredContact = styled.div`
+FilteredContacts.Contact = styled.div`
     display: flex;
     align-items: center;
 
@@ -123,7 +91,7 @@ export const FilteredContact = styled.div`
     };
 `;
 
-export const SelectedContacts = styled.div`
+export const SelectedContacts: any = styled.div`
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
@@ -138,7 +106,7 @@ export const SelectedContacts = styled.div`
     overflow-y: scroll;
 `;
 
-export const SelectedContact = styled.div`
+SelectedContacts.Contact = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -165,7 +133,7 @@ export const SelectedContact = styled.div`
     };
 `;
 
-export const RemoveSelectedContact = styled.button`
+SelectedContacts.Contact.Remove = styled.button`
     position: absolute;
     top: .2rem;
     right: .2rem;
@@ -181,7 +149,7 @@ export const RemoveSelectedContact = styled.button`
     };
 `;
 
-export const ContainerWithoutContacts = styled.div`
+SelectedContacts.WithoutContacts = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;

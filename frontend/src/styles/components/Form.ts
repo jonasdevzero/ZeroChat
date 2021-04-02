@@ -62,7 +62,7 @@ export const Wrapper = styled.div`
     position: relative;
     max-width: 100%;
     height: 5.2rem;
-    margin-top: 2rem;
+    margin-top: 1.5rem;
 `;
 
 export const WrapperInputs = styled.div`

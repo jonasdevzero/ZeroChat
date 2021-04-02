@@ -29,6 +29,7 @@ export const Inner = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
+    position: relative;
 
     padding: 2rem;
     overflow-y: scroll;
@@ -85,8 +86,9 @@ GroupUsers.User = styled.div`
     transition: background-color .3s ease;
 
     h5 {
-        font-size: 1.7rem;
+        font-size: 1.6rem;
         margin-left: .5rem;
+        font-weight: 500;
     };
     .MuiAvatar-root {
         width: 5rem;
@@ -101,6 +103,15 @@ GroupUsers.User = styled.div`
 GroupUsers.User.Admin = styled.strong`
     margin-left: auto;
     font-size: 1rem;
-    font-weight: 500;
-    color: green;
+    font-weight: 600;
+`;
+
+export const EditGroupContainer = styled.div`
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+
+    .MuiSvgIcon-root {
+        color: #fff;
+    };
 `;

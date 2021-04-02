@@ -42,6 +42,10 @@ export const Room = styled.div`
         font-weight: 500;
         margin-left: 1rem;
     };
+    .MuiAvatar-root {
+        width: 4.5rem;
+        height: 4.5rem;
+    };
 `;
 
 export const MessagesContainer = styled.div`
@@ -57,17 +61,18 @@ export const MessagesContainer = styled.div`
     overflow-y: scroll;
 `;
 
-export const MessageWrapper = styled.div`
+export const Message: any = styled.div`
     width: 100%;
     padding: 0 3rem;
     margin-top: 1.5rem;
+    position: relative;
 
     &.concat {
         margin-top: .3rem;
     };
 `;
 
-export const MessageInner = styled.div`
+Message.Inner  = styled.div`
     width: fit-content;
     min-width: 9rem;
     max-width: 65%;
@@ -85,7 +90,7 @@ export const MessageInner = styled.div`
     };
 `;
 
-export const Message = styled.span`
+Message.Text = styled.span`
     font-size: 1.5rem;
     width: max-content;
     margin-right: 6rem;
@@ -94,13 +99,26 @@ export const Message = styled.span`
     flex-wrap: wrap;
 `;
 
-export const MessageUsername = styled.p`
+Message.User = styled.div`
+    display: flex;
     position: absolute;
-    top: .5rem;
-    left: .5rem;
+    position: absolute;
+    left: -3rem;
+    top: -2.5rem;
+
+    .MuiAvatar-root {
+        width: 4.5rem;
+        height: 4.5rem;
+    };
 `;
 
-export const Day = styled.span`
+Message.User.Username = styled.span`
+    font-size: 1.4rem;
+    margin-top: .5rem;
+    margin-left: 1.5rem;
+`;
+
+Message.Day = styled.span`
     font-size: 1.6rem;
 
     margin: 1.5rem auto 0 auto;
@@ -109,7 +127,7 @@ export const Day = styled.span`
     border-radius: 1rem;
 `;
 
-export const Time = styled.span`
+Message.Time = styled.span`
     position: absolute;
     bottom: .5rem;
     right: 1rem;
@@ -118,7 +136,7 @@ export const Time = styled.span`
     color: lightgray;
 `;
 
-export const FormContainer = styled.div`
+export const Form: any = styled.form`
     display: flex;
     align-items: center;
     justify-content: center;
@@ -138,12 +156,12 @@ export const FormContainer = styled.div`
     };
 `;
 
-export const Form = styled.form`
+Form.Inner = styled.div`
     display: flex;
     width: 100%;
 `;
 
-export const Input = styled.input`
+Form.Input = styled.input`
     width: 100%;
     height: 3.5rem;
 
@@ -158,7 +176,7 @@ export const Input = styled.input`
     border-radius: .2rem;
 `;
 
-export const Submit = styled.button`
+Form.Submit = styled.button`
     width: 3.5rem;
     height: 3.5rem;
 
@@ -173,7 +191,7 @@ export const Submit = styled.button`
     right: 2.5rem;
 `;
 
-export const IconButton = styled.button`
+Form.IconButton = styled.button`
     width: 3.5rem;
     height: 3.5rem;
 
@@ -181,6 +199,12 @@ export const IconButton = styled.button`
     border: none;
     border-radius: 0;
     background-color: transparent;
+`;
+
+Form.EmojiPickerContainer = styled.div`
+    position: absolute;
+    bottom: 6rem;
+    left: 1rem;
 `;
 
 export const ContainerWithoutChat = styled.div`
@@ -212,10 +236,4 @@ export const ScrollToBottom = styled.button`
 
     border-radius: 50%;
     cursor: pointer;
-`;
-
-export const EmojiPickerContainer = styled.div`
-    position: absolute;
-    bottom: 6rem;
-    left: 1rem;
 `;
