@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, BaseEntity } from "typeorm";
-import Group from "./Group";
+import { User, Group } from ".";
 
 @Entity("group_messages")
 export default class GroupMessages extends BaseEntity {
@@ -17,6 +17,10 @@ export default class GroupMessages extends BaseEntity {
 
     @Column()
     posted_at: Date;
+    
+    @ManyToOne(_ => User, user => user.group_messages_sent)
+    @JoinColumn({ name: "sender_id" })
+    sender: User;
 
     @ManyToOne(_ => Group, group => group.messages)
     @JoinColumn({ name: "group_id" })

@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, BeforeInsert, BeforeUpdate, BaseEntity, OneToMany, JoinColumn } from 'typeorm';
 import { encryptPassword } from "../utils/user";
-import { Contact, GroupUsers } from './';
+import { Contact, GroupMessages, GroupUsers } from './';
 
 @Entity("user")
 export default class User extends BaseEntity {
@@ -51,6 +51,10 @@ export default class User extends BaseEntity {
     })
     @JoinColumn({ name: "contact_id" })
     self_contact: Contact[];
+
+    @OneToMany(_ => GroupMessages, groupMessages => groupMessages.sender)
+    @JoinColumn({ name: "sender_id" })
+    group_messages_sent: GroupMessages[]
 
     @BeforeInsert()
     private beforeInsert() {

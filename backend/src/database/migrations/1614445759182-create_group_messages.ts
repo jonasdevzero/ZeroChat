@@ -43,7 +43,15 @@ export class createGroupMessages1614445759182 implements MigrationInterface {
                     referencedColumnNames: ["id"],
                     onUpdate: "CASCADE",
                     onDelete: "CASCADE",
-                },
+                }, 
+                {
+                    name: "UserSender",
+                    columnNames: ["sender_id"],
+                    referencedTableName: "user",
+                    referencedColumnNames: ["id"],
+                    onUpdate: "CASCADE",
+                    onDelete: "CASCADE"
+                }
             ],
         }));
     }
