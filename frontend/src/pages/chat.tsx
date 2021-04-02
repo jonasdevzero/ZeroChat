@@ -1,11 +1,9 @@
 import Head from 'next/head';
 import { useRouter } from "next/router";
-import { useState, useEffect, useRef } from 'react';
-import io from 'socket.io-client';
-import api from "../services/api";
-import { UserI, ContactI, GroupI, GroupUserI } from "../types/user";
-import useSetUserMaster from "../hooks/useSetUserMaster";
-import orderMessages from '../utils/orderMessages';
+import { useState, useEffect } from 'react';
+import { api, userService, socket } from "../services";
+import { UserI, ContactI, GroupI } from "../types/user";
+import { useSetUserMaster } from "../utils";
 
 import {
     Container,
@@ -18,12 +16,9 @@ import {
     Profile,
     AddContact,
     CreateGroup,
-    Loading,
+    LoadingContainer,
     Call,
 } from "../components"
-
-let socket: SocketIOClient.Socket = undefined;
-const ENDPOINT = "https://back-zerochat.herokuapp.com";
 
 interface ChatI {
     setToken: React.Dispatch<React.SetStateAction<string>>;
@@ -40,69 +35,28 @@ export default function Chat({ setToken, theme, setTheme }: ChatI) {
     const [currentRoom, setCurrentRoom] = useState<ContactI & GroupI>(undefined);
     const [currentRoomType, setCurrentRoomType] = useState<"contact" | "group">("contact");
 
-    const messagesContainerRef = useRef(null);
-
     const router = useRouter();
 
     const [loading, setLoading] = useState(true);
 
     const [startingCall, setStartingCall] = useState(false);
     const [callTo, setCallTo] = useState<ContactI>(undefined);
-
     const [receivingCall, setReceivingCall] = useState(false);
     const [callFrom, setCallFrom] = useState<ContactI>(undefined);
     const [callerSignal, setCallerSignal] = useState(undefined);
 
     useEffect(() => {
-        socket = io(ENDPOINT, { transports: ["websocket"] });
-
         const token = JSON.parse(localStorage.getItem("token"));
-        if (!token) {
-            router.replace("/signin");
-        };
+        if (!token) router.replace("/signin");
 
+        socket.connect();
         api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
-        api.post(`/user/auth?user_required=true`).then(response => {
-            const data = response.data;
+        userService.get().then(data => {
             setToken(data.token);
-
-            api.get(`/group`).then(response => {
-                const { groups } = response.data;
-
-                data.user.groups = groups.map(group => {
-                    group.unread_messages = group.users.find((u: GroupUserI) => u?.id === data.user.id).unread_messages;
-                    return group;
-                });
-
-                const rooms: string[] = [data.user.id];
-                groups.forEach(group => rooms.push(group.id));
-
-                api.get(`/contact`).then(response => {
-                    const { contacts } = response.data;
-                    data.user.contacts = contacts;
-
-                    const contactsId: string[] = [];
-                    contacts.forEach(contact => contactsId.push(contact.id));
-
-                    socket.emit("join", { rooms, contacts: contactsId }, (contactsOnline: string[]) => {
-                        data.user?.contacts?.map((contact: ContactI) => {
-                            contact.online = false;
-                            if (contactsOnline.includes(contact.id))
-                                contact.online = true;
-
-                            return contact;
-                        });
-                        setUser(data.user);
-                        setLoading(false);
-                    });
-                });
-            });
-        }).catch(() => {
-            setToken("");
-            router.replace("/signin");
-        });
-
+            setUser(data.user);
+            setLoading(false);
+        }).catch(() => router.replace('/signin'));
 
         return () => {
             socket.disconnect();
@@ -131,22 +85,14 @@ export default function Chat({ setToken, theme, setTheme }: ChatI) {
                 });
             } else {
                 const currentContactId = currentRoom?.id;
-                setUserMaster.contacts.pushMessage({ where: [sender, receiver], message, currentContactId }).then(() => {
-                    if (currentRoom?.id === receiver || currentRoom?.id === sender) {
-                        scrollToBottom(true);
-                    };
-                });
+                setUserMaster.contacts.pushMessage({ where: [sender, receiver], message, currentContactId });
             };
         });
 
         socket.on("group-message", message => {
             const group_id = message.group_id, currentGroupId = currentRoom?.id;
 
-            setUserMaster.groups.pushMessage({ where: group_id, message, currentGroupId }).then(() => {
-                if (currentRoom?.id === group_id) {
-                    scrollToBottom(true);
-                };
-            });
+            setUserMaster.groups.pushMessage({ where: group_id, message, currentGroupId });
         });
 
         socket.on("user", ({ event, data }) => {
@@ -161,53 +107,19 @@ export default function Chat({ setToken, theme, setTheme }: ChatI) {
         socket.on("group", ({ event, group }) => {
             switch (event) {
                 case "new":
-                    setUserMaster.groups.push(group);
+                    socket.emit("group", { event: "join", groupId: group.id }, () => {
+                        setUserMaster.groups.push(group);
+                    });
                     break;
             };
         });
 
         socket.on("callRequest", ({ signal, callFrom }) => {
-            console.log("Receiving a signal", signal)
             setCallFrom(user.contacts.find(contact => contact.id === callFrom));
             setCallerSignal(signal);
             setReceivingCall(true);
-        })
+        });
     }, [user, currentRoom]);
-
-    useEffect(() => {
-        if (currentRoom && (currentContainer === "messages")) {
-            const updateTag = currentRoomType === "contact" ? "contacts" : "groups";
-
-            if (!(currentRoom?.messages)) {
-                api.get(`/${currentRoomType}/messages?${currentRoomType}_id=${currentRoom.id}`).then(response => {
-                    const { messages } = response.data;
-                    setUserMaster[updateTag].update({ where: currentRoom.id, set: { messages: orderMessages(messages) } }).then(() => scrollToBottom());
-                });
-            };
-            if (currentRoom.unread_messages > 0) {
-                api.put(`/${currentRoomType}/${currentRoom.id}?unread_messages=true`).then(() => {
-                    setUserMaster[updateTag].update({ where: currentRoom.id, set: { unread_messages: 0 } });
-                });
-            };
-        };
-
-        scrollToBottom();
-    }, [currentRoom]);
-
-    function scrollToBottom(newMessage?: boolean) {
-        if (messagesContainerRef.current) {
-            const { scrollTop, clientHeight, scrollHeight } = messagesContainerRef.current;
-            const scroll = scrollHeight - clientHeight;
-
-            if (newMessage) {
-                if (scrollTop + 200 > scrollHeight - clientHeight) {
-                    messagesContainerRef.current.scrollTo(0, scroll);
-                };
-            } else {
-                messagesContainerRef.current.scrollTo(0, scroll);
-            };
-        };
-    };
 
     function callUser(contact: ContactI) {
         setCallTo(contact);
@@ -240,7 +152,6 @@ export default function Chat({ setToken, theme, setTheme }: ChatI) {
                                 setUserMaster={setUserMaster}
                                 theme={theme}
                                 setToken={setToken}
-                                socket={socket}
                             />
                         ) :
                             currentContainer === "messages" ? (
@@ -251,11 +162,9 @@ export default function Chat({ setToken, theme, setTheme }: ChatI) {
                                 ) : (
                                     <Messages
                                         user={user}
-                                        socket={socket}
                                         currentRoom={currentRoom}
                                         currentRoomType={currentRoomType}
-                                        messagesContainerRef={messagesContainerRef}
-                                        scrollToBottom={scrollToBottom}
+                                        setUserMaster={setUserMaster}
                                     />
                                 )
                             ) :
@@ -266,7 +175,6 @@ export default function Chat({ setToken, theme, setTheme }: ChatI) {
                                         setCurrentRoom={setCurrentRoom}
                                         setCurrentRoomType={setCurrentRoomType}
                                         setCurrentContainer={setCurrentContainer}
-                                        socket={socket}
                                     />
                                 ) :
                                     currentContainer === "createGroup" ? (
@@ -276,7 +184,6 @@ export default function Chat({ setToken, theme, setTheme }: ChatI) {
                                             setCurrentRoom={setCurrentRoom}
                                             setCurrentRoomType={setCurrentRoomType}
                                             setCurrentContainer={setCurrentContainer}
-                                            socket={socket}
                                             theme={theme}
                                         />
                                     ) : null
@@ -284,7 +191,6 @@ export default function Chat({ setToken, theme, setTheme }: ChatI) {
 
                         {startingCall || receivingCall ? (
                             <Call
-                                socket={socket}
                                 startingCall={startingCall}
                                 receivingCall={receivingCall}
                                 callTo={callTo}
@@ -295,7 +201,7 @@ export default function Chat({ setToken, theme, setTheme }: ChatI) {
                     </Inner>
                 </>
             ) : (
-                <Loading theme={theme} />
+                <LoadingContainer theme={theme} />
             )}
         </Container>
     );

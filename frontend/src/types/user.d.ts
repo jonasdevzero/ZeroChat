@@ -26,7 +26,11 @@ export interface GroupMessageI {
     group_id: string;
     sender_id: string;
     message: string;
-    posted_at: Date
+    posted_at: Date;
+    sender: {
+        username: string;
+        image: string;
+    };
 };
 
 export interface GroupUserI {
