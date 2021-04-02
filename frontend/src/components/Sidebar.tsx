@@ -70,7 +70,7 @@ function Sidebar({
 
     useEffect(() => {
         roomsType === "contacts" ? setRooms(user.contacts) : setRooms(user.groups);
-    }, [roomsType]);
+    }, [roomsType, user.contacts, user.groups]);
 
     function changeContainer(option: "messages" | "profile" | "addContact" | "createGroup", subOption?: "contacts" | "groups") {
         option === "messages" ? setRoomsType(subOption) : setCurrentRoom(undefined);

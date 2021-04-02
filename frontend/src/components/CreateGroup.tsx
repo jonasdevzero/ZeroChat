@@ -1,7 +1,7 @@
 import React, { useState, useEffect, Dispatch, SetStateAction } from "react";
 import { UserI, ContactI, GroupI } from "../types/user";
 import Fuse from "fuse.js";
-import api from "../services/api";
+import { api, socket } from "../services";
 import { SetUserMasterI } from "../types/useSetUserMaster";
 
 import {
@@ -9,30 +9,15 @@ import {
     Header,
     Inner,
     Form,
-    InputWrapper,
-    Label,
-    Input,
-    ImageWrapper,
-    ImageLabel,
-    ImageInput,
-    RemoveImage,
-    Button,
-} from "../styles/components/Container";
+} from "../styles/components/BaseContainer";
 import {
     InputContainer,
     SearchOrCloseButton,
     Wrapper,
-    TextArea,
-    Fieldset,
-    Legend,
     SearchInput,
     SearchInputWrapper,
     FilteredContacts,
-    FilteredContact,
     SelectedContacts,
-    SelectedContact,
-    RemoveSelectedContact,
-    ContainerWithoutContacts,
 } from "../styles/components/CreateGroup";
 import { Avatar } from "@material-ui/core";
 import {
@@ -47,11 +32,10 @@ interface CreateGroupI {
     setCurrentContainer: Dispatch<SetStateAction<"profile" | "messages" | "addContact" | "createGroup">>;
     setCurrentRoom: Dispatch<SetStateAction<ContactI & GroupI>>;
     setCurrentRoomType: Dispatch<SetStateAction<"contact" | "group">>;
-    socket: SocketIOClient.Socket;
     theme: "light" | "dark";
 };
 
-export default function CreateGroup({ user, setUserMaster, setCurrentRoomType, setCurrentRoom, setCurrentContainer, socket, theme }: CreateGroupI) {
+export default function CreateGroup({ user, setUserMaster, setCurrentRoomType, setCurrentRoom, setCurrentContainer, theme }: CreateGroupI) {
     const [name, setName] = useState("");
     const [image, setImage] = useState<File>(undefined);
     const [description, setDescription] = useState("");
@@ -84,10 +68,12 @@ export default function CreateGroup({ user, setUserMaster, setCurrentRoomType, s
             setLoading(false);
 
             socket.emit("group", { event: "new", data: { event: "new", group, members } }, () => {
-                setUserMaster.groups.push(group).then(() => {
-                    setCurrentRoomType("group");
-                    setCurrentRoom(group);
-                    setCurrentContainer("messages");
+                socket.emit("group", { event: "join", groupId: group.id }, () => {
+                    setUserMaster.groups.push(group).then(() => {
+                        setCurrentRoomType("group");
+                        setCurrentRoom(group);
+                        setCurrentContainer("messages");
+                    });
                 });
             });
         });
@@ -142,57 +128,51 @@ export default function CreateGroup({ user, setUserMaster, setCurrentRoomType, s
 
             <Inner>
                 <Form onSubmit={onSubmit}>
-                    <Fieldset>
-                        <Legend>Group Data</Legend>
+                    <Form.Fieldset>
+                        <Form.Legend>Group Data</Form.Legend>
 
-                        <InputWrapper className="row">
-                            <ImageWrapper>
+                        <Form.Wrapper.Input className="row">
+                            <Form.Wrapper.Image>
                                 {!image ? (
                                     <>
-                                        <ImageLabel htmlFor="image">
+                                        <Form.Image.Label htmlFor="image">
                                             <CloudUploadIcon fontSize="large" />
-                                        </ImageLabel>
+                                        </Form.Image.Label>
 
-                                        <ImageInput
-                                            id="image"
-                                            type="file"
-                                            onChange={handleSelectImage}
-                                        />
+                                        <Form.Image.Input id="image" type="file" onChange={handleSelectImage} />
                                     </>
                                 ) : (
-                                    <RemoveImage type="button" onClick={() => removeSelectedImage()}>
+                                    <Form.Image.Remove type="button" onClick={() => removeSelectedImage()}>
                                         <CloseIcon fontSize="large" />
-                                    </RemoveImage>
+                                    </Form.Image.Remove>
                                 )}
+
                                 <Avatar src={imagePreview} />
-                            </ImageWrapper>
+                            </Form.Wrapper.Image>
 
                             <Wrapper>
-                                <Label>Name</Label>
-                                <Input
-                                    type="text"
-                                    required
-                                    value={name}
-                                    onChange={e => setName(e.target.value)}
-                                />
+                                <Form.Label>
+                                    Name
+                                </Form.Label>
+
+                                <Form.Input type="text" required value={name} onChange={e => setName(e.target.value)} />
                             </Wrapper>
-                        </InputWrapper>
+                        </Form.Wrapper.Input>
 
-                        <InputWrapper>
-                            <Label>description</Label>
+                        <Form.Wrapper.Input>
+                            <Form.Label>
+                                description
+                            </Form.Label>
 
-                            <TextArea
-                                value={description}
-                                onChange={e => setDescription(e.target.value)}
+                            <Form.TextArea value={description} onChange={e => setDescription(e.target.value)} />
+                        </Form.Wrapper.Input>
+                    </Form.Fieldset>
 
-                            />
-                        </InputWrapper>
-                    </Fieldset>
-
-                    <Fieldset>
-                        <Legend>Group Members</Legend>
+                    <Form.Fieldset>
+                        <Form.Legend>Group Members</Form.Legend>
 
                         <SearchInputWrapper>
+
                             <InputContainer>
                                 <SearchInput
                                     type="text"
@@ -202,26 +182,24 @@ export default function CreateGroup({ user, setUserMaster, setCurrentRoomType, s
                                 />
 
                                 <SearchOrCloseButton type="button" onClick={() => search.length > 0 ? setSearch("") : null}>
-                                    {search.length > 0 ? (
-                                        <CloseIcon />
-                                    ) : (
-                                        <SearchIcon />
-                                    )}
+                                    {search.length > 0 ? (<CloseIcon />) : (<SearchIcon />)}
                                 </SearchOrCloseButton>
                             </InputContainer>
 
                             {searchResult?.length > 0 ? (
                                 <FilteredContacts>
-                                    {searchResult.map(contact => {
+                                    {searchResult.map((contact, i) => {
                                         return (
-                                            <FilteredContact key={contact.id} onClick={() => selectContact(contact)}>
+                                            <FilteredContacts.Contact key={i} onClick={() => selectContact(contact)}>
                                                 <Avatar src={contact?.image} />
+
                                                 <p>{contact.username}</p>
-                                            </FilteredContact>
+                                            </FilteredContacts.Contact>
                                         );
                                     })}
                                 </FilteredContacts>
                             ) : null}
+
                         </SearchInputWrapper>
 
                         <SelectedContacts>
@@ -229,36 +207,29 @@ export default function CreateGroup({ user, setUserMaster, setCurrentRoomType, s
                                 <>
                                     {selectedContacts.map((selectedContact, i) => {
                                         return (
-                                            <SelectedContact key={i}>
+                                            <SelectedContacts.Contact key={i}>
                                                 <Avatar src={selectedContact.username} />
+
                                                 <span>{selectedContact.username}</span>
 
-                                                <RemoveSelectedContact
-                                                    type="button"
-                                                    onClick={() => removeSelectedContact(selectedContact)}
-                                                >
+                                                <SelectedContacts.Contact.Remove type="button" onClick={() => removeSelectedContact(selectedContact)}>
                                                     <CloseIcon />
-                                                </RemoveSelectedContact>
-                                            </SelectedContact>
+                                                </SelectedContacts.Contact.Remove>
+                                            </SelectedContacts.Contact>
                                         );
                                     })}
                                 </>
                             ) : (
-                                <ContainerWithoutContacts>
+                                <SelectedContacts.WithoutContacts>
                                     <strong>Select contacts to your group</strong>
-                                </ContainerWithoutContacts>
+                                </SelectedContacts.WithoutContacts>
                             )}
                         </SelectedContacts>
-                    </Fieldset>
+                    </Form.Fieldset>
 
-                    <Button type="submit">
-                    {loading ? (
-                                <img
-                                    src={`/loading-${theme}.svg`}
-                                    alt="loading"
-                                />
-                            ) : "Create"}
-                    </Button>
+                    <Form.Button type="submit">
+                        {loading ? (<img src={`/loading-${theme === "dark" ? "light" : "dark"}.svg`} alt="loading" />) : "Create"}
+                    </Form.Button>
                 </Form>
             </Inner>
         </Container>

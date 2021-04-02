@@ -1,13 +1,13 @@
 import { useState, useEffect, Dispatch, SetStateAction } from "react";
 import { UserI, ContactI, GroupI } from "../types/user";
 import { SetUserMasterI } from "../types/useSetUserMaster";
-import api from "../services/api";
+import { api, socket } from "../services";
 
 import {
     Container,
     Header,
     Inner,
-} from "../styles/components/Container";
+} from "../styles/components/BaseContainer";
 import {
     Form,
     Input,
@@ -29,10 +29,9 @@ interface AddContactI {
     setCurrentContainer: Dispatch<SetStateAction<"profile" | "messages" | "addContact" | "createGroup">>;
     setCurrentRoom: Dispatch<SetStateAction<ContactI & GroupI>>;
     setCurrentRoomType: Dispatch<SetStateAction<"contact" | "group">>;
-    socket: SocketIOClient.Socket;
 };
 
-export default function AddContact({ user, setUserMaster, setCurrentContainer, setCurrentRoom, setCurrentRoomType, socket }: AddContactI) {
+export default function AddContact({ user, setUserMaster, setCurrentContainer, setCurrentRoom, setCurrentRoomType }: AddContactI) {
     const [username, setUsername] = useState("");
     const [contacts, setContacts] = useState<UserI[]>();
 

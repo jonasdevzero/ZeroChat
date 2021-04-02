@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { UserI } from "../types/user";
-import api from "../services/api";
+import { api, socket } from "../services";
 import { AxiosError } from "axios";
 import { SetUserMasterI } from "../types/useSetUserMaster";
 
@@ -20,17 +20,7 @@ import {
     Header,
     Inner,
     Form,
-    InputWrapper,
-    Label,
-    Input,
-    Button,
-    Wrapper,
-    ImageWrapper,
-    ImageLabel,
-    ImageInput,
-    RemoveImage,
-    ErrorMessage,
-} from "../styles/components/Container";
+} from "../styles/components/BaseContainer";
 import Warning from "./Warning";
 import { Avatar } from "@material-ui/core";
 import {
@@ -45,10 +35,9 @@ interface ProfileI {
     setUserMaster: SetUserMasterI;
     theme: "light" | "dark";
     setToken: React.Dispatch<React.SetStateAction<string>>;
-    socket: SocketIOClient.Socket;
 };
 
-export default function Profile({ user, setUserMaster, theme, setToken, socket }: ProfileI) {
+export default function Profile({ user, setUserMaster, theme, setToken }: ProfileI) {
     const [name, setName] = useState(user?.name);
     const [username, setUsername] = useState(user?.username);
     const [picture, setPicture] = useState(user?.picture);
@@ -205,75 +194,80 @@ export default function Profile({ user, setUserMaster, theme, setToken, socket }
 
             <Inner>
                 <Info>
-                    <ImageWrapper>
+                    <Form.Wrapper.Image>
                         {!picture ? (
                             <>
-                                <ImageLabel htmlFor="image">
+                                <Form.Image.Label htmlFor="image">
                                     <CloudUploadIcon fontSize="large" />
-                                </ImageLabel>
+                                </Form.Image.Label>
 
-                                <ImageInput
+                                <Form.ImageInput
                                     id="image"
                                     type="file"
                                     onChange={handleSelectImage}
                                 />
                             </>
                         ) : (
-                            <RemoveImage type="button" onClick={() => removeSelectedImage()}>
+                            <Form.Image.Remove type="button" onClick={() => removeSelectedImage()}>
                                 <CloseIcon fontSize="large" />
-                            </RemoveImage>
+                            </Form.Image.Remove>
                         )}
-                        <Avatar src={picture} />
-                    </ImageWrapper>
 
-                    <Wrapper>
+                        <Avatar src={picture} />
+                    </Form.Wrapper.Image>
+
+                    <Form.Wrapper>
                         <h3>{name}</h3>
                         <p>@{username}</p>
-                    </Wrapper>
+                    </Form.Wrapper>
                 </Info>
 
                 <Form onSubmit={onSubmit}>
                     {error?.length > 0 && currentRequest === "data" ? (
-                        <ErrorMessage>
-                            <strong>{error}</strong>
-                        </ErrorMessage>
+                        <Form.Error>
+                            <Form.Error.Message>
+                                {error}
+                            </Form.Error.Message>
+                        </Form.Error>
                     ) : null}
 
                     <InputsWrapper>
-                        <InputWrapper>
-                            <Label>Name</Label>
-                            <Input value={name} onChange={e => setName(e.target.value)} />
-                        </InputWrapper>
-                        <InputWrapper>
-                            <Label>Username</Label>
-                            <Input value={username} onChange={e => setUsername(e.target.value)} />
-                        </InputWrapper>
+                        <Form.Wrapper.Input>
+                            <Form.Label>
+                                Name
+                            </Form.Label>
+
+                            <Form.Input value={name} onChange={e => setName(e.target.value)} />
+                        </Form.Wrapper.Input>
+
+                        <Form.Wrapper.Input>
+                            <Form.Label>
+                                Username
+                            </Form.Label>
+
+                            <Form.Input value={username} onChange={e => setUsername(e.target.value)} />
+                        </Form.Wrapper.Input>
                     </InputsWrapper>
 
-                    <div className="buttons-wrapper">
-                        <Button
-                            className="cancel"
-                            type="button"
-                            onClick={() => resentInputs()}
-                        >
+                    <Form.Wrapper.Button className="right">
+                        <Form.Button className="cancel" type="button" onClick={() => resentInputs()}>
                             Cancel
-                        </Button>
-                        <Button
-                            type="submit"
-                        >
+                        </Form.Button>
+
+                        <Form.Button type="submit">
                             {loadingRequest && currentRequest === "data" ? (
                                 <img
                                     src={`/loading-${theme === "dark" ? "light" : "dark"}.svg`}
                                     alt="loading"
                                 />
                             ) : "Update"}
-                        </Button>
-                    </div>
+                        </Form.Button>
+                    </Form.Wrapper.Button>
                 </Form>
 
                 <Form>
-                    <InputWrapper>
-                        <Label>
+                    <Form.Wrapper.Input>
+                        <Form.Label>
                             E-mail
 
                             {showEmail ? (
@@ -281,53 +275,39 @@ export default function Profile({ user, setUserMaster, theme, setToken, socket }
                             ) : (
                                 <VisibilityOffIcon onClick={() => setShowEmail(true)} />
                             )}
-                        </Label>
+                        </Form.Label>
+
                         <InputContainer>
                             <div onClick={() => setShowMessage(true)}>
-                                <Input
+                                <Form.Input
                                     value={showEmail ? user?.email : `**************@${user?.email?.split("@")[1]}`}
                                     onChange={() => { }}
                                     disabled
                                 />
                             </div>
-                            <Button
-                                type="button"
-                                onClick={() => setUpdateEmailScreen(true)}
-                            >
-                                Change
-                            </Button>
 
-                            {showMessage ? (
-                                <Message>Click here to update</Message>
-                            ) : null}
+                            <Form.Button type="button" onClick={() => setUpdateEmailScreen(true)}>
+                                Change
+                            </Form.Button>
+
+                            {showMessage ? (<Message>Click here to update</Message>) : null}
                         </InputContainer>
-                    </InputWrapper>
+                    </Form.Wrapper.Input>
                 </Form>
 
-                <Button
-                    type="button"
-                    className="password"
-                    onClick={() => changePassword()}
-                >
+                <Form.Button type="button" className="password" onClick={() => changePassword()}>
                     Change password
-                </Button>
+                </Form.Button>
 
-                <Button
-                    type="button"
-                    className="delete"
-                    onClick={() => setDeleteAccountScreen(true)}
-                >
+                <Form.Button type="button" className="delete" onClick={() => setDeleteAccountScreen(true)}>
                     Delete account
-                </Button>
+                </Form.Button>
             </Inner>
 
             {updateEmailScreen ? (
                 <WrapperScreen>
                     <Screen>
-                        <Close
-                            type="button"
-                            onClick={() => closeScreen()}
-                        >
+                        <Close type="button" onClick={() => closeScreen()}>
                             <CloseIcon />
                         </Close>
 
@@ -335,34 +315,41 @@ export default function Profile({ user, setUserMaster, theme, setToken, socket }
                             <h1>Write an e-mail</h1>
 
                             {error?.length > 0 && currentRequest === "email" ? (
-                                <ErrorMessage>
+                                <Form.Error>
                                     <strong>{error}</strong>
-                                </ErrorMessage>
+                                </Form.Error>
                             ) : null}
 
-                            <InputWrapper>
-                                <Label>New e-mail</Label>
-                                <Input value={email} onChange={e => setEmail(e.target.value)} />
-                            </InputWrapper>
+                            <Form.Wrapper.Input>
+                                <Form.Label>
+                                    New e-mail
+                                </Form.Label>
 
-                            <InputWrapper>
-                                <Label>Password</Label>
-                                <Input type="password" value={password} onChange={e => setPassword(e.target.value)} />
-                            </InputWrapper>
+                                <Form.Input value={email} onChange={e => setEmail(e.target.value)} />
+                            </Form.Wrapper.Input>
 
-                            <div className="button-wrapper">
-                                <Button className="cancel" type="button" onClick={() => closeScreen()}>
+                            <Form.Wrapper.Input>
+                                <Form.Label>
+                                    Password
+                                </Form.Label>
+
+                                <Form.Input type="password" value={password} onChange={e => setPassword(e.target.value)} />
+                            </Form.Wrapper.Input>
+
+                            <Form.Wrapper.Button>
+                                <Form.Button className="cancel" type="button" onClick={() => closeScreen()}>
                                     Cancel
-                                </Button>
-                                <Button type="submit">
+                                </Form.Button>
+
+                                <Form.Button type="submit">
                                     {loadingRequest && currentRequest === "email" ? (
                                         <img
                                             src={`/loading-${theme === "dark" ? "light" : "dark"}.svg`}
                                             alt="loading"
                                         />
                                     ) : "Update"}
-                                </Button>
-                            </div>
+                                </Form.Button>
+                            </Form.Wrapper.Button>
                         </Form>
                     </Screen>
 
@@ -373,31 +360,34 @@ export default function Profile({ user, setUserMaster, theme, setToken, socket }
             {deleteAccountScreen ? (
                 <WrapperScreen>
                     <Screen className="delete">
-                        <Close
-                            type="button"
-                            onClick={() => closeScreen()}
-                        >
+                        <Close type="button" onClick={() => closeScreen()}>
                             <CloseIcon />
                         </Close>
 
                         <Form onSubmit={deleteAccount}>
                             <h1>Are you sure?</h1>
 
-                            <InputWrapper>
-                                <Label>Password</Label>
-                                <Input type="password" value={password} onChange={e => setPassword(e.target.value)} />
-                            </InputWrapper>
+                            <Form.Wrapper.Input>
+                                <Form.Label>
+                                    Password
+                                </Form.Label>
+
+                                <Form.Input type="password" value={password} onChange={e => setPassword(e.target.value)} />
+                            </Form.Wrapper.Input>
 
                             <div className="button-wrapper">
-                                <Button type="button" className="cancel" onClick={() => closeScreen()}>Cancel</Button>
-                                <Button type="submit">
+                                <Form.Button type="button" className="cancel" onClick={() => closeScreen()}>
+                                    Cancel
+                                </Form.Button>
+
+                                <Form.Button type="submit">
                                     {loadingRequest && currentRequest === "delete" ? (
                                         <img
                                             src={`/loading-${theme === "dark" ? "light" : "dark"}.svg`}
                                             alt="loading"
                                         />
                                     ) : "Delete"}
-                                </Button>
+                                </Form.Button>
                             </div>
                         </Form>
                     </Screen>
