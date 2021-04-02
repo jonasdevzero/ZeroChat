@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { getRepository } from "typeorm";
 import { Group, GroupUsers, GroupMessages } from "../models";
-import { GroupUsersView, GroupView } from "../views";
+import { GroupView, GroupMessagesView } from "../views";
 import * as Yup from "yup";
 
 export default {
@@ -95,9 +95,9 @@ export default {
             const group_id = request.query.group_id?.toString();
 
             const groupMessagesRepository = getRepository(GroupMessages);
-            const messages = await groupMessagesRepository.find({ group_id });
+            const messages = await groupMessagesRepository.find({ where: { group_id }, relations: ["sender"] });
 
-            return response.status(200).json({ messages });
+            return response.status(200).json({ messages: GroupMessagesView.renderMany(messages) });
         } catch (err) {
             console.log(err);
             return response.status(500).json({ message: "Internal Server Error" });
@@ -109,34 +109,46 @@ export default {
             const sender_id = response.locals.user.id; // from auth route
             const { group_id, message } = request.body;
 
+            const groupRepository = getRepository(Group);
             const groupUsersRepository = getRepository(GroupUsers);
             const groupMessagesRepository = getRepository(GroupMessages);
-
+            
+            const id = group_id;
             const posted_at = new Date();
 
+            const group = await groupRepository.findOne({ where: { id }, relations: ["users", "users.user"] });
+
+            if (!group)
+                return response.status(400).json({ message: 'This group not exists' })
+
+            if (!group.users.find(u => u.user.id === sender_id))
+                return response.status(401).json({ message: 'You are not in the group' });
+
             const result = await Promise.all([
-                groupMessagesRepository.create({ sender_id, group_id, message, posted_at }).save(),
-                groupUsersRepository.find({ where: { group: { id: group_id } }, relations: ["user"] }),
+                groupMessagesRepository.create({ sender_id, group_id, message, posted_at }).save(), // creating the message
+                groupRepository.update(id, { last_message_time: posted_at }), // updating the group
+                group.users.map(groupUser => { // update the group users
+                    if (groupUser.user.id === sender_id) return;
+    
+                    const id = groupUser.id;
+                    const unread_messages = groupUser.unread_messages ? groupUser.unread_messages += 1 : 1;
+                    return groupUsersRepository.update(id, { unread_messages });
+                }),
             ]);
             const messageData = result[0];
-            const groupUsers = result[1];
 
-            if (!groupUsers) // every group has at least one person 
-                return response.status(400).json({ message: "Group Id incorrect" });
-
-            await Promise.all(groupUsers.map(groupUser => {
-                if (groupUser.user.id === sender_id) return;
-
-                const id = groupUser.id;
-                const unread_messages = groupUser.unread_messages ? groupUser.unread_messages += 1 : 1;
-                return groupUsersRepository.update(id, { unread_messages });
-            }));
-
-            const groupUsersUpdated = await groupUsersRepository.find({ where: { group: { id: group_id } }, relations: ["user"] });
+            const groupUsersUpdated = await groupUsersRepository.find({ where: { group: { id: group_id } }, relations: ["user"] })
+            const users = groupUsersUpdated.map(u => {
+                return { id: u.user.id, unread_messages: u.unread_messages  };
+            });                
 
             const newMessage = {
                 ...messageData,
-                users: GroupUsersView.renderUsers(groupUsersUpdated),
+                sender: {
+                    username: groupUsersUpdated.find(u => u.user.id === sender_id)?.user.username,
+                    image: groupUsersUpdated.find(u => u.user.id === sender_id)?.user.picture,
+                },
+                users
             };
 
             return response.status(201).json({ message: newMessage });
