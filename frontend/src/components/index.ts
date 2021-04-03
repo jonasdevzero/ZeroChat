@@ -6,4 +6,4 @@ export { default as AddContact } from "./AddContact";
 export { default as CreateGroup } from "./CreateGroup";
 export { default as Messages } from "./Messages";
 export { default as LoadingContainer } from "./LoadingContainer";
-export { default as RoomDetails } from "./RoomDetails";
+export { default as RoomInfo } from "./RoomInfo";

@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction } from "react";
-import { ContactI, GroupI } from "../types/user";
+import { ContactI, GroupI, UserI } from "../types/user";
 
 import {
     Container,
@@ -7,17 +7,22 @@ import {
     Inner,
     GroupDescription,
     GroupUsers,
-} from "../styles/components/RoomDetails";
+    EditGroupContainer,
+} from "../styles/components/RoomInfo";
 import { IconButton, Avatar } from "@material-ui/core"
-import CloseIcon from '@material-ui/icons/Close';
+import {
+    Close as CloseIcon,
+    Edit as EditIcon,
+} from '@material-ui/icons';
 
 interface DetailsI {
+    user: UserI;
     currentRoom: ContactI & GroupI;
     currentRoomType: "contact" | "group";
     setShowRoomDetail: Dispatch<SetStateAction<boolean>>;
 };
 
-export default function RoomDetails({ currentRoom, currentRoomType, setShowRoomDetail }: DetailsI) {
+export default function RoomInfo({ user, currentRoom, currentRoomType, setShowRoomDetail }: DetailsI) {
 
 
     return (
@@ -38,6 +43,14 @@ export default function RoomDetails({ currentRoom, currentRoomType, setShowRoomD
                     </>
                 ) : (
                     <>
+                        {currentRoom.users.find(u => u.id === user.id).role === 'admim' ? (
+                            <EditGroupContainer>
+                                <IconButton>
+                                    <EditIcon fontSize="large" />
+                                </IconButton>
+                            </EditGroupContainer>
+                        ) : null}
+
                         <GroupDescription>
                             <h4>Description</h4>
 
@@ -54,7 +67,7 @@ export default function RoomDetails({ currentRoom, currentRoomType, setShowRoomD
                                         <h5>{u.username}</h5>
 
                                         {u.role === "admim" ? (
-                                            <GroupUsers.User.Admin>Admin</GroupUsers.User.Admin>
+                                            <GroupUsers.User.Admin>Adm</GroupUsers.User.Admin>
                                         ) : null}
                                     </GroupUsers.User>
                                 );

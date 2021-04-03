@@ -5,7 +5,7 @@ import { SetUserMasterI } from "../types/useSetUserMaster";
 import moment from "moment";
 import { orderMessages } from "../utils";
 
-import { RoomDetails } from "../components";
+import { RoomInfo } from "../components";
 import {
     Container,
     Inner,
@@ -16,7 +16,7 @@ import {
     Form,
     ScrollToBottom,
 } from "../styles/components/Messages";
-import { Dropdown } from '../styles/components/Dropdown';
+import Dropdown from '../styles/components/Dropdown';
 import { Avatar, IconButton } from "@material-ui/core";
 import {
     Send as SendIcon,
@@ -35,9 +35,10 @@ interface MessagesI {
     currentRoom: ContactI & GroupI;
     currentRoomType: "contact" | "group";
     setUserMaster: SetUserMasterI;
+    callUser(contact: ContactI): void;
 };
 
-export default function Messages({ user, currentRoom, currentRoomType, setUserMaster }: MessagesI) {
+export default function Messages({ user, currentRoom, currentRoomType, setUserMaster, callUser }: MessagesI) {
     const [message, setMessage] = useState("");
 
     const messagesContainerRef = useRef(null);
@@ -126,7 +127,7 @@ export default function Messages({ user, currentRoom, currentRoomType, setUserMa
 
                     {currentRoomType === "contact" ? (
                         <>
-                            <IconButton>
+                            <IconButton onClick={() => callUser(currentRoom)}>
                                 <CallIcon />
                             </IconButton>
 
@@ -143,11 +144,11 @@ export default function Messages({ user, currentRoom, currentRoomType, setUserMa
 
                         {showDropdown ? (
                             <Dropdown>
-                                <Dropdown.Item>
-                                    Room details
+                                <Dropdown.Item onClick={() => { }}>
+                                    {currentRoomType} info
                                 </Dropdown.Item>
 
-                                <Dropdown.Item>
+                                <Dropdown.Item onClick={() => { }}>
                                     Leave Group
                                 </Dropdown.Item>
                             </Dropdown>
@@ -221,7 +222,7 @@ export default function Messages({ user, currentRoom, currentRoomType, setUserMa
             </Inner>
 
             {showRoomDetail ? (
-                <RoomDetails
+                <RoomInfo
                     user={user}
                     currentRoom={currentRoom}
                     currentRoomType={currentRoomType}

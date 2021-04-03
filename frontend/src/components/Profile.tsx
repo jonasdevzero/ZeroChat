@@ -4,6 +4,7 @@ import { UserI } from "../types/user";
 import { api, socket } from "../services";
 import { AxiosError } from "axios";
 import { SetUserMasterI } from "../types/useSetUserMaster";
+import Cookies from 'js-cookie';
 
 import {
     Info,
@@ -34,10 +35,9 @@ interface ProfileI {
     user: UserI;
     setUserMaster: SetUserMasterI;
     theme: "light" | "dark";
-    setToken: React.Dispatch<React.SetStateAction<string>>;
 };
 
-export default function Profile({ user, setUserMaster, theme, setToken }: ProfileI) {
+export default function Profile({ user, setUserMaster, theme }: ProfileI) {
     const [name, setName] = useState(user?.name);
     const [username, setUsername] = useState(user?.username);
     const [picture, setPicture] = useState(user?.picture);
@@ -128,7 +128,7 @@ export default function Profile({ user, setUserMaster, theme, setToken }: Profil
 
         await api.post(`/user/delete`, { password }).then(_ => {
             setWarning("Deleted with success, redirecting...");
-            setToken("");
+            Cookies.remove('token');
             closeScreen();
 
             setTimeout(() => router.push("/"), 2000);

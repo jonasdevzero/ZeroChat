@@ -1,6 +1,7 @@
 import { useRouter } from "next/router";
 import { useState, useEffect, Dispatch, SetStateAction } from "react";
 import Fuse from "fuse.js";
+import Cookies from 'js-cookie';
 
 import { UserI, ContactI, GroupI } from "../types/user";
 
@@ -20,6 +21,7 @@ import {
     OptionButton,
     UnreadMessages
 } from "../styles/components/Sidebar";
+import Dropdown from '../styles/components/Dropdown';
 import { Avatar, IconButton } from "@material-ui/core";
 import {
     Person as PersonIcon,
@@ -35,7 +37,6 @@ import {
 
 interface SidebarI {
     user: UserI;
-    setToken: Dispatch<SetStateAction<string>>;
     currentContainer: "messages" | "profile" | "addContact" | "createGroup";
     setCurrentContainer: Dispatch<SetStateAction<"profile" | "messages" | "addContact" | "createGroup">>;
     setCurrentRoom: Dispatch<SetStateAction<ContactI & GroupI>>;
@@ -44,9 +45,8 @@ interface SidebarI {
     setTheme: Dispatch<SetStateAction<"light" | "dark">>;
 };
 
-function Sidebar({
+export default function Sidebar({
     user,
-    setToken,
     currentContainer,
     setCurrentContainer,
     setCurrentRoom,
@@ -60,10 +60,12 @@ function Sidebar({
 
     const [roomsType, setRoomsType] = useState<"contacts" | "groups">("contacts");
 
+    const [showDropdown, setShowDropdown] = useState(false);
+
     const router = useRouter();
 
     useEffect(() => {
-        const fuse =  new Fuse(rooms, { keys: ["name", "username"] });
+        const fuse = new Fuse(rooms, { keys: ["name", "username"] });
         const result = fuse.search(search).map(({ item }) => item);
         setSearchResult(result);
     }, [search, user.contacts, user.groups]);
@@ -89,8 +91,8 @@ function Sidebar({
     };
 
     function logOut() {
-        setToken("");
-        router.push("/");
+        Cookies.remove('token');
+        router.replace("/");
     };
 
     return (
@@ -101,9 +103,31 @@ function Sidebar({
                     <h2>{user.username}</h2>
                 </User>
 
-                <IconButton>
-                    <MoreVertIcon />
-                </IconButton>
+                <Dropdown.Wrapper>
+                    <IconButton onClick={() => setShowDropdown(!showDropdown)}>
+                        <MoreVertIcon />
+                    </IconButton>
+
+                    {showDropdown ? (
+                        <Dropdown>
+                            <Dropdown.Item onClick={() => { }}>
+                                Profile
+                            </Dropdown.Item>
+
+                            <Dropdown.Item onClick={() => { }}>
+                                Add contact
+                            </Dropdown.Item>
+
+                            <Dropdown.Item onClick={() => { }}>
+                                Create group
+                            </Dropdown.Item>
+
+                            <Dropdown.Item onClick={() => { }}>
+                                SignOut
+                            </Dropdown.Item>
+                        </Dropdown>
+                    ) : null}
+                </Dropdown.Wrapper>
             </Header>
 
             <Inner>
@@ -186,5 +210,3 @@ function Sidebar({
         </Container>
     );
 };
-
-export default Sidebar;
