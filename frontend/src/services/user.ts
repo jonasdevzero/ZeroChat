@@ -34,8 +34,8 @@ export default {
             contacts.forEach(contact => contactsId.push(contact.id));
 
             socket.emit("join", { rooms, contacts: contactsId }, (contactsOnline: string[]) => {
-                data.user.contacts.map((contact: ContactI) => {
-                    contact.online = contactsOnline.includes(contact.id);
+                data.user.contacts = data.user.contacts.map((contact: ContactI) => {
+                    contact.online = contactsOnline.find(id => id === contact.id) ? true : false;
 
                     return contact;
                 });
