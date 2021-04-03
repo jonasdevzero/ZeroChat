@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { api, userService, socket } from "../services";
 import { UserI, ContactI, GroupI } from "../types/user";
 import { useSetUserMaster } from "../utils";
+import Cookies from 'js-cookie';
 
 import {
     Container,
@@ -21,12 +22,11 @@ import {
 } from "../components"
 
 interface ChatI {
-    setToken: React.Dispatch<React.SetStateAction<string>>;
     theme: "light" | "dark";
     setTheme: React.Dispatch<React.SetStateAction<"light" | "dark">>
 };
 
-export default function Chat({ setToken, theme, setTheme }: ChatI) {
+export default function Chat({ theme, setTheme }: ChatI) {
     const [user, setUser] = useState<UserI>();
     const setUserMaster = useSetUserMaster(user, setUser);
 
@@ -39,24 +39,25 @@ export default function Chat({ setToken, theme, setTheme }: ChatI) {
 
     const [loading, setLoading] = useState(true);
 
-    const [startingCall, setStartingCall] = useState(false);
-    const [callTo, setCallTo] = useState<ContactI>(undefined);
-    const [receivingCall, setReceivingCall] = useState(false);
-    const [callFrom, setCallFrom] = useState<ContactI>(undefined);
+    const [startingOrReceivingCall, setStartingOrReceivingCall] = useState<'starting' | 'receiving'>(undefined);
+    const [userCall, setUserCall] = useState<ContactI>(undefined); // call from or call to
     const [callerSignal, setCallerSignal] = useState(undefined);
 
     useEffect(() => {
-        const token = JSON.parse(localStorage.getItem("token"));
+        const token = Cookies.get('token');
         if (!token) router.replace("/signin");
 
         socket.connect();
         api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
         userService.get().then(data => {
-            setToken(data.token);
+            Cookies.set('token', data.token, { expires: 3 });
             setUser(data.user);
             setLoading(false);
-        }).catch(() => router.replace('/signin'));
+        }).catch(() => {
+            Cookies.remove('token')
+            router.replace('/signin')
+        });
 
         return () => {
             socket.disconnect();
@@ -115,15 +116,15 @@ export default function Chat({ setToken, theme, setTheme }: ChatI) {
         });
 
         socket.on("callRequest", ({ signal, callFrom }) => {
-            setCallFrom(user.contacts.find(contact => contact.id === callFrom));
+            setUserCall(user.contacts.find(contact => contact.id === callFrom));
             setCallerSignal(signal);
-            setReceivingCall(true);
+            setStartingOrReceivingCall('receiving');
         });
     }, [user, currentRoom]);
 
     function callUser(contact: ContactI) {
-        setCallTo(contact);
-        setStartingCall(true);
+        setUserCall(contact);
+        setStartingOrReceivingCall('starting');
     };
 
     return (
@@ -136,7 +137,6 @@ export default function Chat({ setToken, theme, setTheme }: ChatI) {
                 <>
                     <Sidebar
                         user={user}
-                        setToken={setToken}
                         currentContainer={currentContainer}
                         setCurrentContainer={setCurrentContainer}
                         setCurrentRoom={setCurrentRoom}
@@ -151,7 +151,6 @@ export default function Chat({ setToken, theme, setTheme }: ChatI) {
                                 user={user}
                                 setUserMaster={setUserMaster}
                                 theme={theme}
-                                setToken={setToken}
                             />
                         ) :
                             currentContainer === "messages" ? (
@@ -165,6 +164,7 @@ export default function Chat({ setToken, theme, setTheme }: ChatI) {
                                         currentRoom={currentRoom}
                                         currentRoomType={currentRoomType}
                                         setUserMaster={setUserMaster}
+                                        callUser={callUser}
                                     />
                                 )
                             ) :
@@ -189,20 +189,16 @@ export default function Chat({ setToken, theme, setTheme }: ChatI) {
                                     ) : null
                         }
 
-                        {startingCall || receivingCall ? (
+                        {startingOrReceivingCall ? (
                             <Call
-                                startingCall={startingCall}
-                                receivingCall={receivingCall}
-                                callTo={callTo}
-                                callFrom={callFrom}
+                                userCall={userCall}
                                 callerSignal={callerSignal}
+                                startingOrReceivingCall={startingOrReceivingCall}
                             />
                         ) : null}
                     </Inner>
                 </>
-            ) : (
-                <LoadingContainer theme={theme} />
-            )}
+            ) : (<LoadingContainer theme={theme} />)}
         </Container>
     );
 };

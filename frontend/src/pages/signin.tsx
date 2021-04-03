@@ -4,6 +4,7 @@ import Head from 'next/head';
 import Link from "next/link";
 import api from "../services/api";
 import { AxiosError } from "axios";
+import Cookies from 'js-cookie';
 
 import {
     Container,
@@ -24,7 +25,7 @@ import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import Warning from "../components/Warning";
 import { LoadingContainer } from "../components";
 
-export default function SignIn({ setToken, theme }) {
+export default function SignIn({ theme }) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
@@ -38,13 +39,11 @@ export default function SignIn({ setToken, theme }) {
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        const token = JSON.parse(localStorage.getItem("token"));
+        const token = Cookies.get('token');
 
         if (token) {
             setLoading(true);
-            api.post(`/user/auth?signin_auth=true`, {}, { headers: { Authorization: `Bearer ${token}` } }).then(_ => {
-                router.push("/chat");
-            }).catch(() => setLoading(false));
+            router.push("/chat");
         };
     }, []);
 
@@ -54,13 +53,13 @@ export default function SignIn({ setToken, theme }) {
         setLoadingRequest(true);
 
         await api.post("/user/login", { email, password }).then(response => {
-            setToken(response.data.token);
+            const { token } = response.data;
+            Cookies.set('token', token);
 
             setEmail("");
             setPassword("");
 
             setSuccessWarning(true);
-
             setTimeout(() => {
                 setLoading(true);
                 router.push("/chat");

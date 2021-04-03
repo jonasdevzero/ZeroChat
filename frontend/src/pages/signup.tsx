@@ -4,6 +4,7 @@ import Head from 'next/head';
 import Link from "next/link";
 import api from "../services/api";
 import { AxiosError } from "axios";
+import Cookies from 'js-cookie';
 
 import {
     Container,
@@ -25,7 +26,7 @@ import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import Warning from "../components/Warning";
 import { LoadingContainer } from "../components";
 
-export default function SignUp({ setToken, theme }) {
+export default function SignUp({ theme }) {
     const [name, setName] = useState("");
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
@@ -54,7 +55,7 @@ export default function SignUp({ setToken, theme }) {
             confirmPassword,
         }).then(response => {
             const { token } = response.data;
-            setToken(token);
+            Cookies.set('token', token);
 
             setName("");
             setUsername("");
