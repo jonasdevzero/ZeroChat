@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import Peer from "simple-peer";
 import { ContactI, UserI } from "../types/user";
+import { socket } from '../services';
 
 import {
     Container,
@@ -15,15 +16,12 @@ import { Avatar, IconButton } from "@material-ui/core";
 import { Call as CallIcon, CallEnd as CallEndIcon } from "@material-ui/icons";
 
 interface ICall {
-    socket: SocketIOClient.Socket;
-    startingCall: boolean;
-    receivingCall: boolean;
-    callTo: ContactI;
-    callFrom: ContactI;
+    userCall: ContactI
     callerSignal: any;
+    startingOrReceivingCall: 'receiving' | 'starting'
 };
 
-export default function Call({ socket, callTo, callFrom, startingCall, receivingCall, callerSignal }: ICall) {
+export default function Call({ userCall, callerSignal, startingOrReceivingCall }: ICall) {
     const myVideo = useRef(null);
     const userVideo = useRef(null);
 
@@ -31,69 +29,62 @@ export default function Call({ socket, callTo, callFrom, startingCall, receiving
     const [callAccepted, setCallAccepted] = useState(false);
 
     useEffect(() => {
-        if (myVideo && startingCall) {
-            console.log("Starting a call to", callTo);
-            callUser(callTo.id);
+        if (myVideo && startingOrReceivingCall === 'starting') {
+            navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
+                setMediaLoaded(true);
+                myVideo.current.srcObject = stream;
+
+                callUser(userCall.id, stream);
+            });
         };
     }, [myVideo]);
 
-    function callUser(to: string) {
-        const peer = new Peer({ initiator: true });
+    function callUser(to: string, stream: MediaStream) {
+        const peer = new Peer({ initiator: true, trickle: false, stream });
 
         peer.on("signal", signal => {
             socket.emit("callRequest", { signal, to }, (sent: boolean) => { });
         });
 
         peer.on("stream", stream => {
-            console.log("receiving the stream");
             userVideo.current.srcObject = stream;
         });
 
         socket.on("callAccepted", signal => {
-            console.log("receiving a signal", signal)
             setCallAccepted(true);
             peer.signal(signal);
-        });
-
-        navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
-            setMediaLoaded(true);
-            myVideo.current.srcObject = stream;
-            peer.addStream(stream);
         });
     };
 
     function answerCall() {
         setCallAccepted(true);
 
-        const peer = new Peer({ initiator: false });
-
-        peer.on("signal", signal => {
-            console.log("Emiting my signal ", callFrom)
-            socket.emit("answerCall", { signal, to: callFrom.id });
-        });
-
-        peer.on("stream", stream => {
-            console.log("receiving the stream");
-            userVideo.current.srcObject = stream;
-        });
-
         navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
+            const peer = new Peer({ initiator: false, trickle: false, stream });
+
+            peer.on("signal", signal => {
+                socket.emit("answerCall", { signal, to: userCall.id });
+            });
+
+            peer.on("stream", stream => {
+                userVideo.current.srcObject = stream;
+            });
+
             setMediaLoaded(true);
             myVideo.current.srcObject = stream;
-            peer.addStream(stream);
-        });
 
-        peer.signal(callerSignal);
+            peer.signal(callerSignal);
+        });
     };
 
     return (
         <Container>
             <UsersContainer>
-                {receivingCall && !callAccepted ? (
+                {startingOrReceivingCall === 'receiving' && !callAccepted ? (
                     <ReceivingCallContainer>
-                        <Avatar src={callFrom?.image} />
+                        <Avatar src={userCall?.image} />
 
-                        <h1>{callFrom?.username} is calling...</h1>
+                        <h1>{userCall?.username} is calling...</h1>
 
                         <Buttons>
                             <IconButton onClick={() => answerCall()}>
