@@ -21,14 +21,12 @@ import {
     OptionButton,
     UnreadMessages
 } from "../styles/components/Sidebar";
-import Dropdown from '../styles/components/Dropdown';
-import { Avatar, IconButton } from "@material-ui/core";
+import { Avatar } from "@material-ui/core";
 import {
     Person as PersonIcon,
     Group as GroupIcon,
     PersonAdd as PersonAddIcon,
     GroupAdd as GroupAddIcon,
-    MoreVert as MoreVertIcon,
     Brightness3 as Brightness3Icon,
     Brightness7 as Brightness7Icon,
     PowerSettingsNew as PowerSettingsNewIcon,
@@ -59,8 +57,6 @@ export default function Sidebar({
     const [searchResult, setSearchResult] = useState<any[]>(undefined);
 
     const [roomsType, setRoomsType] = useState<"contacts" | "groups">("contacts");
-
-    const [showDropdown, setShowDropdown] = useState(false);
 
     const router = useRouter();
 
@@ -102,32 +98,6 @@ export default function Sidebar({
                     <Avatar src={user.picture} />
                     <h2>{user.username}</h2>
                 </User>
-
-                <Dropdown.Wrapper>
-                    <IconButton onClick={() => setShowDropdown(!showDropdown)}>
-                        <MoreVertIcon />
-                    </IconButton>
-
-                    {showDropdown ? (
-                        <Dropdown>
-                            <Dropdown.Item onClick={() => { }}>
-                                Profile
-                            </Dropdown.Item>
-
-                            <Dropdown.Item onClick={() => { }}>
-                                Add contact
-                            </Dropdown.Item>
-
-                            <Dropdown.Item onClick={() => { }}>
-                                Create group
-                            </Dropdown.Item>
-
-                            <Dropdown.Item onClick={() => { }}>
-                                SignOut
-                            </Dropdown.Item>
-                        </Dropdown>
-                    ) : null}
-                </Dropdown.Wrapper>
             </Header>
 
             <Inner>

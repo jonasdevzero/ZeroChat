@@ -146,38 +146,46 @@ export default function Chat({ theme, setTheme }: ChatI) {
                     />
 
                     <Inner>
-                        {currentContainer === "profile" ? (
-                            <Profile
-                                user={user}
-                                setUserMaster={setUserMaster}
-                                theme={theme}
-                            />
-                        ) :
-                            currentContainer === "messages" ? (
-                                !currentRoom ? (
-                                    <ContainerWithoutChat>
-                                        <h1>Select or serach a room to chat</h1>
-                                    </ContainerWithoutChat>
-                                ) : (
-                                    <Messages
-                                        user={user}
-                                        currentRoom={currentRoom}
-                                        currentRoomType={currentRoomType}
-                                        setUserMaster={setUserMaster}
-                                        callUser={callUser}
-                                    />
-                                )
-                            ) :
-                                currentContainer === "addContact" ? (
-                                    <AddContact
-                                        user={user}
-                                        setUserMaster={setUserMaster}
-                                        setCurrentRoom={setCurrentRoom}
-                                        setCurrentRoomType={setCurrentRoomType}
-                                        setCurrentContainer={setCurrentContainer}
-                                    />
-                                ) :
-                                    currentContainer === "createGroup" ? (
+                        {function () {
+                            switch (currentContainer) {
+                                case 'profile':
+                                    return (
+                                        <Profile
+                                            user={user}
+                                            setUserMaster={setUserMaster}
+                                            theme={theme}
+                                        />
+                                    );
+                                case 'messages':
+                                    if (!currentRoom) {
+                                        return (
+                                            <ContainerWithoutChat>
+                                                <h1>Select or serach a room to chat</h1>
+                                            </ContainerWithoutChat>
+                                        );
+                                    };
+
+                                    return (
+                                        <Messages
+                                            user={user}
+                                            currentRoom={currentRoom}
+                                            currentRoomType={currentRoomType}
+                                            setUserMaster={setUserMaster}
+                                            callUser={callUser}
+                                        />
+                                    );
+                                case 'addContact':
+                                    return (
+                                        <AddContact
+                                            user={user}
+                                            setUserMaster={setUserMaster}
+                                            setCurrentRoom={setCurrentRoom}
+                                            setCurrentRoomType={setCurrentRoomType}
+                                            setCurrentContainer={setCurrentContainer}
+                                        />
+                                    );
+                                case 'createGroup':
+                                    return (
                                         <CreateGroup
                                             user={user}
                                             setUserMaster={setUserMaster}
@@ -186,8 +194,9 @@ export default function Chat({ theme, setTheme }: ChatI) {
                                             setCurrentContainer={setCurrentContainer}
                                             theme={theme}
                                         />
-                                    ) : null
-                        }
+                                    );
+                            };
+                        }()}
 
                         {startingOrReceivingCall ? (
                             <Call
