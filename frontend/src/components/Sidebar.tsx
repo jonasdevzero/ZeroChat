@@ -35,8 +35,8 @@ import {
 
 interface SidebarI {
     user: UserI;
-    currentContainer: "messages" | "profile" | "addContact" | "createGroup";
-    setCurrentContainer: Dispatch<SetStateAction<"profile" | "messages" | "addContact" | "createGroup">>;
+    currentContainer: "messages" | "addContact" | "createGroup" | undefined;
+    setCurrentContainer: Dispatch<SetStateAction<"messages" | "addContact" | "createGroup" | undefined>>;
     setCurrentRoom: Dispatch<SetStateAction<ContactI & GroupI>>;
     setCurrentRoomType: Dispatch<SetStateAction<"contact" | "group">>;
     theme: "light" | "dark";
@@ -70,7 +70,7 @@ export default function Sidebar({
         roomsType === "contacts" ? setRooms(user.contacts) : setRooms(user.groups);
     }, [roomsType, user.contacts, user.groups]);
 
-    function changeContainer(option: "messages" | "profile" | "addContact" | "createGroup", subOption?: "contacts" | "groups") {
+    function changeContainer(option: "messages" | "addContact" | "createGroup" | undefined, subOption?: "contacts" | "groups") {
         option === "messages" ? setRoomsType(subOption) : setCurrentRoom(undefined);
         setCurrentContainer(option);
     };
@@ -94,7 +94,7 @@ export default function Sidebar({
     return (
         <Container>
             <Header>
-                <User onClick={() => changeContainer("profile")}>
+                <User onClick={() => changeContainer(undefined)}>
                     <Avatar src={user.picture} />
                     <h2>{user.username}</h2>
                 </User>

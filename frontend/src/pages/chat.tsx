@@ -30,7 +30,7 @@ export default function Chat({ theme, setTheme }: ChatI) {
     const [user, setUser] = useState<UserI>();
     const setUserMaster = useSetUserMaster(user, setUser);
 
-    const [currentContainer, setCurrentContainer] = useState<"profile" | "messages" | "addContact" | "createGroup">("messages");
+    const [currentContainer, setCurrentContainer] = useState<"messages" | "addContact" | "createGroup" | undefined>("messages");
 
     const [currentRoom, setCurrentRoom] = useState<ContactI & GroupI>(undefined);
     const [currentRoomType, setCurrentRoomType] = useState<"contact" | "group">("contact");
@@ -148,14 +148,6 @@ export default function Chat({ theme, setTheme }: ChatI) {
                     <Inner>
                         {function () {
                             switch (currentContainer) {
-                                case 'profile':
-                                    return (
-                                        <Profile
-                                            user={user}
-                                            setUserMaster={setUserMaster}
-                                            theme={theme}
-                                        />
-                                    );
                                 case 'messages':
                                     if (!currentRoom) {
                                         return (
@@ -192,6 +184,14 @@ export default function Chat({ theme, setTheme }: ChatI) {
                                             setCurrentRoom={setCurrentRoom}
                                             setCurrentRoomType={setCurrentRoomType}
                                             setCurrentContainer={setCurrentContainer}
+                                            theme={theme}
+                                        />
+                                    );
+                                default:
+                                    return (
+                                        <Profile
+                                            user={user}
+                                            setUserMaster={setUserMaster}
                                             theme={theme}
                                         />
                                     );
