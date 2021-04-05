@@ -201,7 +201,7 @@ export default function Profile({ user, setUserMaster, theme }: ProfileI) {
                                     <CloudUploadIcon fontSize="large" />
                                 </Form.Image.Label>
 
-                                <Form.ImageInput
+                                <Form.Image.Input
                                     id="image"
                                     type="file"
                                     onChange={handleSelectImage}
