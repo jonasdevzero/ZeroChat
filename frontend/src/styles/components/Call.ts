@@ -19,17 +19,76 @@ export const UsersContainer = styled.div`
     display: flex;
     width: 100%;
     height: calc(100% - 8rem);
+    position: relative;
 `;
 
 export const UserVideo = styled.video`
-    flex: auto;
+    flex: .5;
+    object-fit: cover;
 `;
 
-export const UserLoading = styled.div`
+export const LoadingMedia = styled.div`
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    z-index: 900;
+
+    img {
+        width: 10rem;
+        height: 10rem;
+    };
+
+    span {
+        margin-top: 2rem;
+        font-size: 1.7rem;
+    };
+`;
+
+export const ReceivingCall = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
-    flex: auto;
+    flex-direction: column;
+
+    width: 100%;
+    height: 100%;
+
+    z-index: 100000;
+
+    .MuiAvatar-root {
+        width: 25rem;
+        height: 25rem;
+    };
+
+    & > span {
+        margin-top: 2.5rem;
+        margin-bottom: 2rem;
+        font-size: 2.8rem;
+    };
+`;
+
+export const Calling = styled.div`
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    align-self: center;
+    margin: 0 auto;
+
+    .MuiAvatar-root {
+        width: 25rem;
+        height: 25rem;
+    };
+
+    span {
+        font-size: 2.2rem;
+        margin-top: 2.5rem;
+        margin-bottom: 2rem;
+    };
 `;
 
 export const InfoBar = styled.div`
@@ -43,34 +102,33 @@ export const InfoBar = styled.div`
     background-color: #111;
 `;
 
-export const ReceivingCallContainer = styled.div`
+export const Buttons = styled.div`
+    display: flex;
+`;
+
+export const Button = styled.button`
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-direction: column;
+    width: 5rem;
+    height: 5rem;
 
-    width: 100%;
-    height: 100%;
+    background-color: #070707;
+    border: none;
+    border-radius: 50%;
+    outline: none;
+    cursor: pointer;
 
-    z-index: 100000;
-
-    .MuiAvatar-root {
-        width: 40rem;
-        height: 40rem;
+    & + & {
+        margin-left: 1.5rem;
     };
-
-    h1 {
-        margin-top: 1rem;
-        margin-bottom: 2rem;
-        font-size: 3rem;
+    &.no-bg {
+        background-color: transparent;
     };
-`;
-
-export const Buttons = styled.div`
-    display: flex;
 
     .MuiSvgIcon-root {
-        font-size: 4rem;
+        font-size: 2.8rem;
+        color: #fff;
 
         &.call {
             color: green;
