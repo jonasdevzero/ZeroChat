@@ -35,10 +35,10 @@ interface MessagesI {
     currentRoom: ContactI & GroupI;
     currentRoomType: "contact" | "group";
     setUserMaster: SetUserMasterI;
-    callUser(contact: ContactI): void;
+    startCall(contact: ContactI, type: 'video' | 'audio'): void;
 };
 
-export default function Messages({ user, currentRoom, currentRoomType, setUserMaster, callUser }: MessagesI) {
+export default function Messages({ user, currentRoom, currentRoomType, setUserMaster, startCall }: MessagesI) {
     const [message, setMessage] = useState("");
 
     const messagesContainerRef = useRef(null);
@@ -127,12 +127,12 @@ export default function Messages({ user, currentRoom, currentRoomType, setUserMa
 
                     {currentRoomType === "contact" ? (
                         <>
-                            <IconButton onClick={() => callUser(currentRoom)}>
+                            <IconButton onClick={() => startCall(currentRoom, 'audio')}>
                                 <CallIcon />
                             </IconButton>
 
                             <IconButton>
-                                <VideocamIcon />
+                                <VideocamIcon onClick={() => startCall(currentRoom, 'video')} />
                             </IconButton>
                         </>
                     ) : null}

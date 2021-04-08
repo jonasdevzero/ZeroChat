@@ -30,7 +30,7 @@ export default function Chat({ theme, setTheme }: ChatI) {
     const [user, setUser] = useState<UserI>();
     const setUserMaster = useSetUserMaster(user, setUser);
 
-    const [currentContainer, setCurrentContainer] = useState<"messages" | "addContact" | "createGroup" | undefined>("messages");
+    const [currentContainer, setCurrentContainer] = useState<'profile' | "messages" | "addContact" | "createGroup">("messages");
 
     const [currentRoom, setCurrentRoom] = useState<ContactI & GroupI>(undefined);
     const [currentRoomType, setCurrentRoomType] = useState<"contact" | "group">("contact");
@@ -42,6 +42,8 @@ export default function Chat({ theme, setTheme }: ChatI) {
     const [startingOrReceivingCall, setStartingOrReceivingCall] = useState<'starting' | 'receiving'>(undefined);
     const [userCall, setUserCall] = useState<ContactI>(undefined); // call from or call to
     const [callerSignal, setCallerSignal] = useState(undefined);
+    const [callType, setCallType] = useState<'video' | 'audio'>(undefined);
+    const [callMinimized, setCallMinimized] = useState(false);
 
     useEffect(() => {
         const token = Cookies.get('token');
@@ -69,9 +71,7 @@ export default function Chat({ theme, setTheme }: ChatI) {
     }, []);
 
     useEffect(() => {
-        socket.removeAllListeners();
-
-        socket.on("private-message", message => {
+        socket.removeListener('private-message').on("private-message", message => {
             const sender = message.sender_id, receiver = message.contact.id;
 
             const existsContact = user?.contacts?.find(c => c?.id === sender);
@@ -90,13 +90,13 @@ export default function Chat({ theme, setTheme }: ChatI) {
             };
         });
 
-        socket.on("group-message", message => {
+        socket.removeListener('group-message').on("group-message", message => {
             const group_id = message.group_id, currentGroupId = currentRoom?.id;
 
             setUserMaster.groups.pushMessage({ where: group_id, message, currentGroupId });
         });
 
-        socket.on("user", ({ event, data }) => {
+        socket.removeListener('user').on("user", ({ event, data }) => {
             switch (event) {
                 case "update":
                     const { where, set } = data;
@@ -105,7 +105,7 @@ export default function Chat({ theme, setTheme }: ChatI) {
             };
         });
 
-        socket.on("group", ({ event, group }) => {
+        socket.removeListener('group').on("group", ({ event, group }) => {
             switch (event) {
                 case "new":
                     socket.emit("group", { event: "join", groupId: group.id }, () => {
@@ -115,15 +115,17 @@ export default function Chat({ theme, setTheme }: ChatI) {
             };
         });
 
-        socket.on("callRequest", ({ signal, callFrom }) => {
+        socket.removeListener('callRequest').on("callRequest", ({ signal, callType, callFrom }) => {
             setUserCall(user.contacts.find(contact => contact.id === callFrom));
             setCallerSignal(signal);
+            setCallType(callType);
             setStartingOrReceivingCall('receiving');
         });
     }, [user, currentRoom]);
 
-    function callUser(contact: ContactI) {
+    function startCall(contact: ContactI, type: 'video' | 'audio') {
         setUserCall(contact);
+        setCallType(type);
         setStartingOrReceivingCall('starting');
     };
 
@@ -143,11 +145,21 @@ export default function Chat({ theme, setTheme }: ChatI) {
                         setCurrentRoomType={setCurrentRoomType}
                         theme={theme}
                         setTheme={setTheme}
+                        callMinimized={callMinimized}
+                        setCallMinimized={setCallMinimized}
                     />
 
                     <Inner>
                         {function () {
                             switch (currentContainer) {
+                                case 'profile':
+                                    return (
+                                        <Profile
+                                            user={user}
+                                            setUserMaster={setUserMaster}
+                                            theme={theme}
+                                        />
+                                    );
                                 case 'messages':
                                     if (!currentRoom) {
                                         return (
@@ -163,7 +175,7 @@ export default function Chat({ theme, setTheme }: ChatI) {
                                             currentRoom={currentRoom}
                                             currentRoomType={currentRoomType}
                                             setUserMaster={setUserMaster}
-                                            callUser={callUser}
+                                            startCall={startCall}
                                         />
                                     );
                                 case 'addContact':
@@ -187,14 +199,6 @@ export default function Chat({ theme, setTheme }: ChatI) {
                                             theme={theme}
                                         />
                                     );
-                                default:
-                                    return (
-                                        <Profile
-                                            user={user}
-                                            setUserMaster={setUserMaster}
-                                            theme={theme}
-                                        />
-                                    );
                             };
                         }()}
 
@@ -203,6 +207,8 @@ export default function Chat({ theme, setTheme }: ChatI) {
                                 userCall={userCall}
                                 callerSignal={callerSignal}
                                 startingOrReceivingCall={startingOrReceivingCall}
+                                callType={callType}
+                                setCallMinimized={setCallMinimized}
                             />
                         ) : null}
                     </Inner>

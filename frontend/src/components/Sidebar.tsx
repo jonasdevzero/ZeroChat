@@ -31,16 +31,19 @@ import {
     Brightness7 as Brightness7Icon,
     PowerSettingsNew as PowerSettingsNewIcon,
     Search as SearchIcon,
+    Call as CallIcon,
 } from "@material-ui/icons";
 
 interface SidebarI {
     user: UserI;
-    currentContainer: "messages" | "addContact" | "createGroup" | undefined;
-    setCurrentContainer: Dispatch<SetStateAction<"messages" | "addContact" | "createGroup" | undefined>>;
+    currentContainer: 'profile' | "messages" | "addContact" | "createGroup";
+    setCurrentContainer: Dispatch<SetStateAction<'profile' | "messages" | "addContact" | "createGroup">>;
     setCurrentRoom: Dispatch<SetStateAction<ContactI & GroupI>>;
     setCurrentRoomType: Dispatch<SetStateAction<"contact" | "group">>;
     theme: "light" | "dark";
     setTheme: Dispatch<SetStateAction<"light" | "dark">>;
+    callMinimized: boolean;
+    setCallMinimized: Dispatch<SetStateAction<boolean>>;
 };
 
 export default function Sidebar({
@@ -50,7 +53,9 @@ export default function Sidebar({
     setCurrentRoom,
     setCurrentRoomType,
     theme,
-    setTheme
+    setTheme,
+    callMinimized,
+    setCallMinimized,
 }: SidebarI) {
     const [rooms, setRooms] = useState<any[]>(user.contacts);
     const [search, setSearch] = useState("");
@@ -70,7 +75,7 @@ export default function Sidebar({
         roomsType === "contacts" ? setRooms(user.contacts) : setRooms(user.groups);
     }, [roomsType, user.contacts, user.groups]);
 
-    function changeContainer(option: "messages" | "addContact" | "createGroup" | undefined, subOption?: "contacts" | "groups") {
+    function changeContainer(option: 'profile' | "messages" | "addContact" | "createGroup", subOption?: "contacts" | "groups") {
         option === "messages" ? setRoomsType(subOption) : setCurrentRoom(undefined);
         setCurrentContainer(option);
     };
@@ -94,7 +99,7 @@ export default function Sidebar({
     return (
         <Container>
             <Header>
-                <User onClick={() => changeContainer(undefined)}>
+                <User onClick={() => changeContainer('profile')}>
                     <Avatar src={user.picture} />
                     <h2>{user.username}</h2>
                 </User>
@@ -133,6 +138,12 @@ export default function Sidebar({
                     </div>
 
                     <div>
+                        {callMinimized ? (
+                            <OptionButton className='option' onClick={() => setCallMinimized(false)}>
+                                <CallIcon />
+                            </OptionButton>
+                        ) : null}
+
                         <OptionButton className="theme" onClick={() => toggleTheme()} >
                             {theme === "dark" ? (<Brightness3Icon />) : (<Brightness7Icon />)}
                         </OptionButton>
