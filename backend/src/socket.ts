@@ -59,14 +59,28 @@ export default function socketConnection(io: Server) {
             };
         });
 
-        socket.on("callRequest", data => {
+        socket.on("call-request", (data, callback) => {
             const user = SessionUser.findOne(socket.id);
-            socket.to(data.to).emit("callRequest", { signal: data.signal, callFrom: user?.id });
+            socket.to(data.to).emit("call-request", { signal: data.signal, callFrom: user?.id, callType: data.callType });
+
+            callback();
         });
 
-        socket.on("answerCall", data => {
-            socket.to(data.to).emit("callAccepted", data.signal);
+        socket.on("call-answer", data => {
+            socket.to(data.to).emit("call-accepted", data.signal);            
         });
+
+        socket.on('call-rejected', ({ to }, callback) => {
+            socket.to(to).emit('call-rejected');
+
+            callback();
+        });
+
+        socket.on('call-finished', ({ to }, callback) => {
+            socket.to(to).emit('call-finished');
+
+            callback();
+        })
 
         socket.on("group", ({ groupId, event, data }: OnGroupI, callback) => {
             switch (event) {

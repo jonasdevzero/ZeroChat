@@ -44,4 +44,10 @@ export default {
 
         return data;
     },
+
+    async searchUsers({ username }) {
+        const response = await api.get(`/user?username=${username}`);
+
+        return response.data.contacts;
+    },
 };

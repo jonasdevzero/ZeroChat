@@ -115,11 +115,19 @@ export default function Chat({ theme, setTheme }: ChatI) {
             };
         });
 
-        socket.removeListener('callRequest').on("callRequest", ({ signal, callType, callFrom }) => {
+        socket.removeListener('call-request').on("call-request", ({ signal, callType, callFrom }) => {
             setUserCall(user.contacts.find(contact => contact.id === callFrom));
             setCallerSignal(signal);
             setCallType(callType);
             setStartingOrReceivingCall('receiving');
+        });
+
+        socket.removeListener('call-finished').on('call-finished', () => {
+            navigator.mediaDevices.getUserMedia({ video: false, audio: false }).then(() => {
+                socket.removeListener('call-accepted');
+                socket.removeListener('call-rejected');
+                endCall();
+            });
         });
     }, [user, currentRoom]);
 
@@ -127,6 +135,16 @@ export default function Chat({ theme, setTheme }: ChatI) {
         setUserCall(contact);
         setCallType(type);
         setStartingOrReceivingCall('starting');
+    };
+
+    function endCall() {
+        setUserCall(undefined);
+        setCallType(undefined);
+        setStartingOrReceivingCall(undefined);
+    };
+
+    function rejectCall() {
+        socket.emit('call-rejected', { to: userCall.id }, () => endCall());
     };
 
     return (
@@ -176,6 +194,7 @@ export default function Chat({ theme, setTheme }: ChatI) {
                                             currentRoomType={currentRoomType}
                                             setUserMaster={setUserMaster}
                                             startCall={startCall}
+                                            theme={theme}
                                         />
                                     );
                                 case 'addContact':
@@ -208,7 +227,10 @@ export default function Chat({ theme, setTheme }: ChatI) {
                                 callerSignal={callerSignal}
                                 startingOrReceivingCall={startingOrReceivingCall}
                                 callType={callType}
+                                callMinimized={callMinimized}
                                 setCallMinimized={setCallMinimized}
+                                endCall={endCall}
+                                rejectCall={rejectCall}
                             />
                         ) : null}
                     </Inner>
