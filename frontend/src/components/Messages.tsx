@@ -15,6 +15,7 @@ import {
     Message,
     Form,
     ScrollToBottom,
+    LoadingMessages,
 } from "../styles/components/Messages";
 import Dropdown from '../styles/components/Dropdown';
 import { Avatar, IconButton } from "@material-ui/core";
@@ -36,12 +37,14 @@ interface MessagesI {
     currentRoomType: "contact" | "group";
     setUserMaster: SetUserMasterI;
     startCall(contact: ContactI, type: 'video' | 'audio'): void;
+    theme: 'light' | 'dark';
 };
 
-export default function Messages({ user, currentRoom, currentRoomType, setUserMaster, startCall }: MessagesI) {
+export default function Messages({ user, currentRoom, currentRoomType, setUserMaster, startCall, theme }: MessagesI) {
     const [message, setMessage] = useState("");
 
     const messagesContainerRef = useRef(null);
+    const [loadingMessages, setLoadingMessages] = useState(false);
 
     const [showScrollButton, setShowScrollButton] = useState(false);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -52,9 +55,14 @@ export default function Messages({ user, currentRoom, currentRoomType, setUserMa
         const updateTag = currentRoomType === "contact" ? "contacts" : "groups";
 
         if (!(currentRoom?.messages)) {
+            setLoadingMessages(true);
+
             api.get(`/${currentRoomType}/messages?${currentRoomType}_id=${currentRoom.id}`).then(response => {
                 const { messages } = response.data;
-                setUserMaster[updateTag].update({ where: currentRoom.id, set: { messages } }).then(() => scrollToBottom());
+                setUserMaster[updateTag].update({ where: currentRoom.id, set: { messages } }).then(() => {
+                    scrollToBottom();
+                    setLoadingMessages(false);
+                });
             });
         };
 
@@ -131,8 +139,8 @@ export default function Messages({ user, currentRoom, currentRoomType, setUserMa
                                 <CallIcon />
                             </IconButton>
 
-                            <IconButton>
-                                <VideocamIcon onClick={() => startCall(currentRoom, 'video')} />
+                            <IconButton onClick={() => startCall(currentRoom, 'video')}>
+                                <VideocamIcon />
                             </IconButton>
                         </>
                     ) : null}
@@ -157,6 +165,12 @@ export default function Messages({ user, currentRoom, currentRoomType, setUserMa
                 </Header>
 
                 <MessagesContainer ref={messagesContainerRef} onScroll={() => onScroll()}>
+                    {loadingMessages ? (
+                        <LoadingMessages>
+                            <img src={`/loading-${theme === 'dark' ? 'light' : 'dark'}.svg`} alt="loading"/>
+                        </LoadingMessages>
+                    ) : null}
+
                     {orderMessages(currentRoom?.messages).map((msg, i, arr) => {
                         if (msg.type && msg.type === "day") {
                             return <Message.Day key={i}>{msg.date}</Message.Day>

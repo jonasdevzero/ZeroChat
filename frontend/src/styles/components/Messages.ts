@@ -237,3 +237,19 @@ export const ScrollToBottom = styled.button`
     border-radius: 50%;
     cursor: pointer;
 `;
+
+export const LoadingMessages = styled.div`
+    position: absolute;
+    top: 7.5rem;
+    left: 50%;
+    padding: .5rem;
+    background-color: #1e1e1e;
+    border-radius: .3rem;
+
+    transform: translateX(-50%);
+
+    img {
+        width: 3.5rem;
+        height: 3.5rem;
+    };
+`;

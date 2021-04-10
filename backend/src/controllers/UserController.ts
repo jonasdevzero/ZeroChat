@@ -76,7 +76,7 @@ export default {
             const schema = Yup.object().shape({
                 name: Yup.string().required(),
                 username: Yup.string().min(1).required(),
-                email: Yup.string().trim().lowercase().required(),
+                email: Yup.string().trim().lowercase().matches(/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/).required(),
                 password: Yup.string().min(6).required(),
             });
 

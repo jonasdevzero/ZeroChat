@@ -2,6 +2,7 @@ import { useState, useEffect, Dispatch, SetStateAction } from "react";
 import { UserI, ContactI, GroupI } from "../types/user";
 import { SetUserMasterI } from "../types/useSetUserMaster";
 import { api, socket } from "../services";
+import useDebounce from '../hooks/useDebounce';
 
 import {
     Container,
@@ -35,10 +36,6 @@ export default function AddContact({ user, setUserMaster, setCurrentContainer, s
     const [username, setUsername] = useState("");
     const [contacts, setContacts] = useState<UserI[]>();
 
-    function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-        e.preventDefault();
-    };
-
     async function add(contact: UserI) {
         await api.post(`/contact`, { contact_id: contact.id }).then(response => {
             const newContact = response.data.contact;
@@ -56,22 +53,16 @@ export default function AddContact({ user, setUserMaster, setCurrentContainer, s
         });
     };
 
-    useEffect(() => {
-        const timeout = setTimeout(() => {
-            if (username.length > 0) {
-                api.get(`/user?username=${username}`).then(response => {
-                    const users = response.data.users;
-                    setContacts(users.filter((u: UserI) => u.id !== user.id && !(user.contacts.find(c => c.id === u.id))));
-                });
-            } else {
-                setContacts(undefined)
-            };
-        }, 500);
-
-        return () => {
-            clearTimeout(timeout);
+    useDebounce(() => {
+        if (username.length > 0) {
+            api.get(`/user?username=${username}`).then(response => {
+                const users = response.data.users;
+                setContacts(users.filter((u: UserI) => u.id !== user.id && !(user.contacts.find(c => c.id === u.id))));
+            });
+        } else {
+            setContacts(undefined)
         };
-    }, [username]);
+    }, [username], 500);
 
     return (
         <Container>
@@ -80,7 +71,7 @@ export default function AddContact({ user, setUserMaster, setCurrentContainer, s
             </Header>
 
             <Inner>
-                <Form onSubmit={onSubmit}>
+                <Form onSubmit={e => e.preventDefault()}>
                     <Input
                         placeholder="Type an username"
                         type="text"
@@ -88,7 +79,7 @@ export default function AddContact({ user, setUserMaster, setCurrentContainer, s
                         onChange={e => setUsername(e.target.value)}
                     />
 
-                    <Submit type="submit">
+                    <Submit type="button">
                         <SearchIcon />
                     </Submit>
                 </Form>

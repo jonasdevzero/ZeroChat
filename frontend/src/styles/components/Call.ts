@@ -1,6 +1,10 @@
 import styled from "styled-components";
 
-export const Container = styled.div`
+interface IContainer {
+    minimized: boolean;
+};
+
+export const Container = styled.div<IContainer>`
     display: flex;
     flex-direction: column;
 
@@ -8,8 +12,10 @@ export const Container = styled.div`
     height: 100%;
 
     position: fixed;
-    top: 0;
+    top: ${({ minimized }) => minimized ? '101%' : 0};
     left: 0;
+
+    transition: top .3s ease-in-out;
 
     background-color: #222;
     z-index: 1000;
@@ -94,10 +100,11 @@ export const Calling = styled.div`
 export const InfoBar = styled.div`
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
 
     width: 100%;
     height: 8rem;
+    padding: 0 5rem;
 
     background-color: #111;
 `;
@@ -120,7 +127,7 @@ export const Button = styled.button`
     cursor: pointer;
 
     & + & {
-        margin-left: 1.5rem;
+        margin-left: 2.5rem;
     };
     &.no-bg {
         background-color: transparent;
@@ -137,4 +144,21 @@ export const Button = styled.button`
             color: red;
         };
     };
+`;
+
+export const CallTime = styled.span`
+    font-size: 1.7rem;
+`;
+
+export const Message = styled.strong`
+    position: fixed;
+    top: 5rem;
+    left: 50%;
+    transform: translateX(-50%);
+
+    font-size: 1.7rem;
+    background-color: #1e1e1e;
+    color: #fff;
+    padding: .5rem;
+    border-radius: .3rem;
 `;
