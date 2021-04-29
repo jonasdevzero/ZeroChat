@@ -65,18 +65,7 @@ export default function SignIn({ theme }) {
                 router.push("/chat");
             }, 2000);
         }).catch((err: AxiosError) => {
-            const { message, fields } = err.response.data;
-
-            fields?.forEach((field: string) => {
-                switch (field) {
-                    case "email":
-                        setEmail("");
-                        break
-                    case "password":
-                        setPassword("");
-                };
-            });
-
+            const { message } = err.response.data;
             setError(message);
         });
 

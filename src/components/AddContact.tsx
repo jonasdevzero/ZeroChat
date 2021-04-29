@@ -41,7 +41,7 @@ export default function AddContact({ user, setUserMaster, setCurrentContainer, s
             const newContact = response.data.contact;
             newContact.messages = [];
 
-            socket.emit("user", { contactId: newContact.id, event: "addContact" }, (isOnline: boolean) => {
+            socket.emit("contact", { contactId: newContact.id, event: "addContact" }, (isOnline: boolean) => {
                 newContact.online = isOnline;
 
                 setUserMaster.contacts.push(newContact).then(() => {
@@ -56,7 +56,7 @@ export default function AddContact({ user, setUserMaster, setCurrentContainer, s
     useDebounce(() => {
         if (username.length > 0) {
             api.get(`/user?username=${username}`).then(response => {
-                const users = response.data.users;
+                const users = response.data.user;
                 setContacts(users.filter((u: UserI) => u.id !== user.id && !(user.contacts.find(c => c.id === u.id))));
             });
         } else {
