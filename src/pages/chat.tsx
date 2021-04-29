@@ -49,29 +49,39 @@ export default function Chat({ theme, setTheme }: ChatI) {
         const token = Cookies.get('token');
         if (!token) router.replace("/signin");
 
+        Cookies.remove('test')
         socket.connect();
         api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
-        userService.get().then(data => {
-            Cookies.set('token', data.token, { expires: 3 });
-            setUser(data.user);
-            setLoading(false);
-        }).catch(() => {
-            Cookies.remove('token')
-            router.replace('/signin')
-        });
+        userService.auth()
+            .then(user => {
+                setUser(user);
+                setLoading(false);
+            })
+            .catch(() => router.replace('/signin'));
 
         return () => {
             socket.disconnect();
             socket.off("private-message");
             socket.off("group-message");
-            socket.off("user");
+            socket.off("contact");
             socket.off("group");
         };
     }, []);
 
     useEffect(() => {
-        socket.removeListener('private-message').on("private-message", message => {
+        socket
+            .removeListener('private-message')
+            .removeListener('group-listener')
+            .removeListener('contact')
+            .removeListener('group')
+            .removeListener('call')
+
+        socket.once('ready', (contactsOnline) => {
+            console.log('contacts online', contactsOnline)
+        })
+
+        socket.on("private-message", message => {
             const sender = message.sender_id, receiver = message.contact.id;
 
             const existsContact = user?.contacts?.find(c => c?.id === sender);
@@ -90,13 +100,13 @@ export default function Chat({ theme, setTheme }: ChatI) {
             };
         });
 
-        socket.removeListener('group-message').on("group-message", message => {
+        socket.on("group-message", message => {
             const group_id = message.group_id, currentGroupId = currentRoom?.id;
 
             setUserMaster.groups.pushMessage({ where: group_id, message, currentGroupId });
         });
 
-        socket.removeListener('user').on("user", ({ event, data }) => {
+        socket.on("contact", ({ event, data }) => {
             switch (event) {
                 case "update":
                     const { where, set } = data;
@@ -105,7 +115,7 @@ export default function Chat({ theme, setTheme }: ChatI) {
             };
         });
 
-        socket.removeListener('group').on("group", ({ event, group }) => {
+        socket.on("group", ({ event, group }) => {
             switch (event) {
                 case "new":
                     socket.emit("group", { event: "join", groupId: group.id }, () => {
@@ -115,19 +125,22 @@ export default function Chat({ theme, setTheme }: ChatI) {
             };
         });
 
-        socket.removeListener('call-request').on("call-request", ({ signal, callType, callFrom }) => {
-            setUserCall(user.contacts.find(contact => contact.id === callFrom));
-            setCallerSignal(signal);
-            setCallType(callType);
-            setStartingOrReceivingCall('receiving');
-        });
-
-        socket.removeListener('call-finished').on('call-finished', () => {
-            navigator.mediaDevices.getUserMedia({ video: false, audio: false }).then(() => {
-                socket.removeListener('call-accepted');
-                socket.removeListener('call-rejected');
-                endCall();
-            });
+        socket.on("call", ({ event, signal, callType, callFrom }) => {
+            switch (event) {
+                case 'request':
+                    setUserCall(user.contacts.find(contact => contact.id === callFrom));
+                    setCallerSignal(signal);
+                    setCallType(callType);
+                    setStartingOrReceivingCall('receiving');
+                    break
+                case 'finished':
+                    navigator.mediaDevices.getUserMedia({ video: false, audio: false }).then(() => {
+                        socket.removeListener('call-accepted');
+                        socket.removeListener('call-rejected');
+                        endCall();
+                    });
+                    break
+            }
         });
     }, [user, currentRoom]);
 
@@ -144,7 +157,7 @@ export default function Chat({ theme, setTheme }: ChatI) {
     };
 
     function rejectCall() {
-        socket.emit('call-rejected', { to: userCall.id }, () => endCall());
+        socket.emit('call', { event: 'rejected', to: userCall.id }, () => endCall());
     };
 
     return (
