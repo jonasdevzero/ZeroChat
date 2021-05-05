@@ -33,18 +33,17 @@ export default function useSetUserMaster(user: UserI, setUser: Dispatch<SetState
                     position = index;
                     switch (change) {
                         case "NEW_MESSAGE":
-                            const { message, currentContactId } = data;
-                            const { sender_id, contact: { id: receiver_id, unread_messages } } = message;
+                            const { messageData, currentContactId } = data;
+                            const { receiver_id, message } = messageData;
 
                             contact.messages?.push(message);
-                            contact.active = true;
 
                             if (user.id === receiver_id) {
-                                if (currentContactId === sender_id) {
-                                    api.put(`/contact/${currentContactId}?&unread_messages=true`);
+                                if (currentContactId === message.sender_id) {
+                                    api.put(`/contact/${currentContactId}?&action=unread_messages`);
                                     contact.unread_messages = undefined;
                                 } else {
-                                    contact.unread_messages = unread_messages;
+                                    contact.unread_messages ? contact.unread_messages++ : contact.unread_messages = 1;
                                 };
                             };
                             break;
@@ -63,16 +62,16 @@ export default function useSetUserMaster(user: UserI, setUser: Dispatch<SetState
                     position = index;
                     switch (change) {
                         case "NEW_MESSAGE":
-                            const { message, currentGroupId } = data;
-                            const { group_id, users } = message;
+                            const { messageData, currentGroupId } = data;
+                            const { group_id, message } = messageData;
 
                             group.messages?.push(message);
 
                             if (currentGroupId === group_id) {
                                 api.put(`/group/${currentGroupId}?unread_messages=true`);
-                                group.unread_messages = undefined;
+                                group.me.unread_messages = undefined;
                             } else {
-                                group.unread_messages = users.find((u: GroupUserI) => u.id === user?.id).unread_messages;
+                                group.me.unread_messages ? group.me.unread_messages++ : group.me.unread_messages = 1;
                             };
                             break;
                         case "UPDATE":
@@ -109,8 +108,8 @@ export default function useSetUserMaster(user: UserI, setUser: Dispatch<SetState
                 user.contacts.forEach(c => contacts.push(c));
                 setUser({ ...user, contacts });
             },
-            async pushMessage({ where, message, currentContactId }: ContactPushMessageI) {
-                setUserMasterUpdate({ dispatch: "CONTACTS", where, change: "NEW_MESSAGE", data: { message, currentContactId } });
+            async pushMessage({ where, data, currentContactId }: ContactPushMessageI) {
+                setUserMasterUpdate({ dispatch: "CONTACTS", where, change: "NEW_MESSAGE", data: { messageData: data, currentContactId } });
             },
         },
         groups: {
@@ -122,8 +121,8 @@ export default function useSetUserMaster(user: UserI, setUser: Dispatch<SetState
                 user.groups.forEach(g => groups.push(g));
                 setUser({ ...user, groups });
             },
-            async pushMessage({ where, message, currentGroupId }: GroupPushMessageI) {
-                setUserMasterUpdate({ dispatch: "GROUPS", where, change: "NEW_MESSAGE", data: { message, currentGroupId } });
+            async pushMessage({ where, data, currentGroupId }: GroupPushMessageI) {
+                setUserMasterUpdate({ dispatch: "GROUPS", where, change: "NEW_MESSAGE", data: { messageData: data, currentGroupId } });
             },
         },
     } as SetUserMasterI;

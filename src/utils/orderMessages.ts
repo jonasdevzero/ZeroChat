@@ -19,7 +19,7 @@ function getDay(day: Date) {
 
 function messagesDay(messages: GroupMessageI[] & ContactMessageI[]) {
     return messages.reduce((acc, crr) => {
-        const messageDay = moment(crr.posted_at).format("YYYY-MM-DD");
+        const messageDay = moment(crr.created_at).format("YYYY-MM-DD");
 
         if (acc[messageDay]) {
             return { ...acc, [messageDay]: acc[messageDay].concat([crr]) };
@@ -36,8 +36,8 @@ export default function orderMessages(messages: GroupMessageI[] & ContactMessage
     const sortedDays = Object.keys(days).sort((x, y) => moment(y, "YYYY-MM-DD").unix() - moment(x, "YYYY-MM-DD").unix());
 
     const items = sortedDays.reduce((acc: any, date) => {
-        const dateFormat = getDay(days[date][0].posted_at);
-        const sortedMessages = days[date].sort((x, y) =>  moment(x.posted_at).unix() - moment(y.posted_at).unix());
+        const dateFormat = getDay(days[date][0].created_at);
+        const sortedMessages = days[date].sort((x, y) =>  moment(x.created_at).unix() - moment(y.created_at).unix());
 
         return [{ type: "day", date: dateFormat, id: date }, ...sortedMessages].concat(acc);
     }, []);
