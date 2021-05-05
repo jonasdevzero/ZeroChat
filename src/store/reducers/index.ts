@@ -1,7 +1,6 @@
 import { combineReducers } from 'redux';
 
-import user from './user';
+import call from './call'
+import currentRoom from './currentRoom'
 
-export default combineReducers({
-    user,
-});
+export default combineReducers({ call, currentRoom });
