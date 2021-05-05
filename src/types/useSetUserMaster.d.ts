@@ -9,13 +9,13 @@ interface UpdateUserI {
 
 export interface ContactPushMessageI {
     where: string | string[];
-    message: any;
+    data: any;
     currentContactId: string;
 };
 
 export interface GroupPushMessageI {
     where: string;
-    message: any;
+    data: any;
     currentGroupId: string;
 };
 
@@ -57,11 +57,11 @@ export interface SetUserMasterI {
     contacts: {
         update({ where, set }: ContactUpdateI): Promise<void>;
         push(contact: ContactI): Promise<void>;
-        pushMessage({ where, message, currentContactId }: ContactPushMessageI): Promise<void>;
+        pushMessage({ where, data, currentContactId }: ContactPushMessageI): Promise<void>;
     },
     groups: {
         update({ where, set }: GroupUpdateI): Promise<void>;
         push(group: GroupI): Promise<void>;
-        pushMessage({ where, message, currentGrouptId }: GroupPushMessageI): Promise<void>;
+        pushMessage({ where, data, currentGrouptId }: GroupPushMessageI): Promise<void>;
     }
 };

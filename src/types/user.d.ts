@@ -1,55 +1,76 @@
 export interface ContactMessageI {
     id: number;
+    text: string;
+    medias: [];
     sender_id: string;
-    message: string;
-    posted_at: Date;
-    id_contact: string;
-    double_contact_id: string;
+    created_at: Date;
+    bidirectional_id: string;
+
     type?: string;
     date?: string;
 };
 
 export interface ContactI {
-    id_contact: string;
     id: string;
     username: string;
-    image: string;
+    picture: string;
     messages: ContactMessageI[];
-    online: true | false;
-    unread_messages: number | null;
-    active: true | false;
-    blocked: true | false;
+    unread_messages: number | undefined;
+    blocked: boolean;
+    you_blocked: boolean;
+    online: boolean;
 };
 
 export interface GroupMessageI {
     id: string;
-    group_id: string;
-    sender_id: string;
-    message: string;
-    posted_at: Date;
+    text: string;
+    created_at: Date;
     sender: {
+        id: string;
         username: string;
-        image: string;
+        picture: string | null;
     };
 };
 
 export interface GroupUserI {
-    id: string;
-    username: string;
-    unread_messages: number | undefined;
-    image: string | undefined;
+    id: number;
     role: "user" | "admim";
+    user: {
+        id: string;
+        username: string;
+        picture: string | null;
+    };
 };
 
 export interface GroupI {
     id: string;
     name: string;
+    picture: string | null;
     description: string;
-    image: string;
     created_at: Date;
-    unread_messages: number | undefined;
-    messages: GroupMessageI[];
+    me: {
+        unread_messages: number;
+        role: string;
+    };
     users: GroupUserI[];
+    messages: GroupMessageI[]
+};
+
+export interface InvitationI {
+    id: string;
+    created_at: Date;
+    sender: {
+        id: string;
+        username: string;
+        picture: string | null;
+    };
+};
+
+export interface NotificationI {
+    id: string;
+    text: string;
+    type: string;
+    created_at: Date;
 };
 
 export interface UserI {
@@ -57,8 +78,9 @@ export interface UserI {
     name: string;
     username: string;
     email: string;
-    picture: string | undefined;
-    created_at: Date;
+    picture: string | null;
+    notifiactions: NotificationI[];
+    invitations: InvitationI[];
     contacts: ContactI[];
     groups: GroupI[];
 };
