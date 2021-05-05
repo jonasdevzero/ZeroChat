@@ -2,9 +2,11 @@ import Head from 'next/head';
 import { useRouter } from "next/router";
 import { useState, useEffect } from 'react';
 import { api, userService, socket } from "../services";
-import { UserI, ContactI, GroupI } from "../types/user";
+import { UserI } from "../types/user";
 import { useSetUserMaster } from "../utils";
 import Cookies from 'js-cookie';
+import { useSelector, useDispatch } from 'react-redux';
+import * as CallActions from '../store/actions/call'
 
 import {
     Container,
@@ -32,32 +34,20 @@ export default function Chat({ theme, setTheme }: ChatI) {
 
     const [currentContainer, setCurrentContainer] = useState<'profile' | "messages" | "addContact" | "createGroup">("messages");
 
-    const [currentRoom, setCurrentRoom] = useState<ContactI & GroupI>(undefined);
-    const [currentRoomType, setCurrentRoomType] = useState<"contact" | "group">("contact");
+    const startingOrReceivingCall = useSelector((state: any) => state.call.startingOrReceiving)
+    const currentRoom = useSelector((state: any) => state.currentRoom)
 
-    const router = useRouter();
+    const router = useRouter()
+    const dispatch = useDispatch()
 
     const [loading, setLoading] = useState(true);
-
-    const [startingOrReceivingCall, setStartingOrReceivingCall] = useState<'starting' | 'receiving'>(undefined);
-    const [userCall, setUserCall] = useState<ContactI>(undefined); // call from or call to
-    const [callerSignal, setCallerSignal] = useState(undefined);
-    const [callType, setCallType] = useState<'video' | 'audio'>(undefined);
-    const [callMinimized, setCallMinimized] = useState(false);
 
     useEffect(() => {
         const token = Cookies.get('token');
         if (!token) router.replace("/signin");
 
-        Cookies.remove('test')
-        socket.connect();
-        api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-
-        userService.auth()
-            .then(user => {
-                setUser(user);
-                setLoading(false);
-            })
+        userService.auth(token)
+            .then(user => setUser(user))
             .catch(() => router.replace('/signin'));
 
         return () => {
@@ -70,42 +60,22 @@ export default function Chat({ theme, setTheme }: ChatI) {
     }, []);
 
     useEffect(() => {
-        socket
-            .removeListener('private-message')
-            .removeListener('group-listener')
-            .removeListener('contact')
-            .removeListener('group')
-            .removeListener('call')
-
-        socket.once('ready', (contactsOnline) => {
-            console.log('contacts online', contactsOnline)
+        socket.once('ready', ({ contactsOnline }) => {
+            setLoading(false);
         })
 
-        socket.on("private-message", message => {
-            const sender = message.sender_id, receiver = message.contact.id;
-
-            const existsContact = user?.contacts?.find(c => c?.id === sender);
-            if (!existsContact && user?.id === receiver) {
-                api.get(`/contact/${sender}`).then(response => {
-                    const contact: ContactI = response.data.contact;
-
-                    socket.emit("user", { event: "addContact", contactId: contact.id }, (isOnline: boolean) => {
-                        contact.online = isOnline;
-                        setUserMaster.contacts.push(contact);
-                    });
-                });
-            } else {
-                const currentContactId = currentRoom?.id;
-                setUserMaster.contacts.pushMessage({ where: [sender, receiver], message, currentContactId });
-            };
+        socket.removeListener('private-message')
+        socket.on("private-message", data => {
+            const { receiver_id, message: { sender_id } } = data;
+            setUserMaster.contacts.pushMessage({ where: [sender_id, receiver_id], data, currentContactId: currentRoom.room?.id });
         });
 
-        socket.on("group-message", message => {
-            const group_id = message.group_id, currentGroupId = currentRoom?.id;
-
-            setUserMaster.groups.pushMessage({ where: group_id, message, currentGroupId });
+        socket.removeListener('group-message')
+        socket.on("group-message", data => {
+            setUserMaster.groups.pushMessage({ where: data.group_id, data, currentGroupId: currentRoom.room?.id });
         });
 
+        socket.removeListener('contact')
         socket.on("contact", ({ event, data }) => {
             switch (event) {
                 case "update":
@@ -115,6 +85,7 @@ export default function Chat({ theme, setTheme }: ChatI) {
             };
         });
 
+        socket.removeListener('group')
         socket.on("group", ({ event, group }) => {
             switch (event) {
                 case "new":
@@ -125,40 +96,12 @@ export default function Chat({ theme, setTheme }: ChatI) {
             };
         });
 
-        socket.on("call", ({ event, signal, callType, callFrom }) => {
-            switch (event) {
-                case 'request':
-                    setUserCall(user.contacts.find(contact => contact.id === callFrom));
-                    setCallerSignal(signal);
-                    setCallType(callType);
-                    setStartingOrReceivingCall('receiving');
-                    break
-                case 'finished':
-                    navigator.mediaDevices.getUserMedia({ video: false, audio: false }).then(() => {
-                        socket.removeListener('call-accepted');
-                        socket.removeListener('call-rejected');
-                        endCall();
-                    });
-                    break
-            }
+        socket.removeListener('call-request')
+        socket.on('call-request', ({ signal, callType, callFrom }) => {
+            const userCall = user.contacts.find(contact => contact.id === callFrom);
+            dispatch(CallActions.callRequest({ signal, callType, userCall }))
         });
-    }, [user, currentRoom]);
-
-    function startCall(contact: ContactI, type: 'video' | 'audio') {
-        setUserCall(contact);
-        setCallType(type);
-        setStartingOrReceivingCall('starting');
-    };
-
-    function endCall() {
-        setUserCall(undefined);
-        setCallType(undefined);
-        setStartingOrReceivingCall(undefined);
-    };
-
-    function rejectCall() {
-        socket.emit('call', { event: 'rejected', to: userCall.id }, () => endCall());
-    };
+    }, [user, currentRoom.room]);
 
     return (
         <Container>
@@ -172,12 +115,8 @@ export default function Chat({ theme, setTheme }: ChatI) {
                         user={user}
                         currentContainer={currentContainer}
                         setCurrentContainer={setCurrentContainer}
-                        setCurrentRoom={setCurrentRoom}
-                        setCurrentRoomType={setCurrentRoomType}
                         theme={theme}
                         setTheme={setTheme}
-                        callMinimized={callMinimized}
-                        setCallMinimized={setCallMinimized}
                     />
 
                     <Inner>
@@ -203,10 +142,7 @@ export default function Chat({ theme, setTheme }: ChatI) {
                                     return (
                                         <Messages
                                             user={user}
-                                            currentRoom={currentRoom}
-                                            currentRoomType={currentRoomType}
                                             setUserMaster={setUserMaster}
-                                            startCall={startCall}
                                             theme={theme}
                                         />
                                     );
@@ -215,8 +151,6 @@ export default function Chat({ theme, setTheme }: ChatI) {
                                         <AddContact
                                             user={user}
                                             setUserMaster={setUserMaster}
-                                            setCurrentRoom={setCurrentRoom}
-                                            setCurrentRoomType={setCurrentRoomType}
                                             setCurrentContainer={setCurrentContainer}
                                         />
                                     );
@@ -225,8 +159,6 @@ export default function Chat({ theme, setTheme }: ChatI) {
                                         <CreateGroup
                                             user={user}
                                             setUserMaster={setUserMaster}
-                                            setCurrentRoom={setCurrentRoom}
-                                            setCurrentRoomType={setCurrentRoomType}
                                             setCurrentContainer={setCurrentContainer}
                                             theme={theme}
                                         />
@@ -234,18 +166,7 @@ export default function Chat({ theme, setTheme }: ChatI) {
                             };
                         }()}
 
-                        {startingOrReceivingCall ? (
-                            <Call
-                                userCall={userCall}
-                                callerSignal={callerSignal}
-                                startingOrReceivingCall={startingOrReceivingCall}
-                                callType={callType}
-                                callMinimized={callMinimized}
-                                setCallMinimized={setCallMinimized}
-                                endCall={endCall}
-                                rejectCall={rejectCall}
-                            />
-                        ) : null}
+                        {startingOrReceivingCall ? (<Call />) : null}
                     </Inner>
                 </>
             ) : (<LoadingContainer theme={theme} />)}

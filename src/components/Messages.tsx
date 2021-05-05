@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { api, socket } from "../services";
-import { UserI, ContactI, GroupI } from "../types/user";
+import { UserI } from "../types/user";
 import { SetUserMasterI } from "../types/useSetUserMaster";
 import moment from "moment";
 import { orderMessages } from "../utils";
+import { useDispatch, useSelector } from 'react-redux'
+import { callStart } from '../store/actions/call'
 
 import { RoomInfo } from "../components";
 import {
@@ -33,14 +35,11 @@ import { Picker, BaseEmoji } from "emoji-mart";
 
 interface MessagesI {
     user: UserI;
-    currentRoom: ContactI & GroupI;
-    currentRoomType: "contact" | "group";
     setUserMaster: SetUserMasterI;
-    startCall(contact: ContactI, type: 'video' | 'audio'): void;
     theme: 'light' | 'dark';
 };
 
-export default function Messages({ user, currentRoom, currentRoomType, setUserMaster, startCall, theme }: MessagesI) {
+export default function Messages({ user, setUserMaster, theme }: MessagesI) {
     const [message, setMessage] = useState("");
 
     const messagesContainerRef = useRef(null);
@@ -51,13 +50,16 @@ export default function Messages({ user, currentRoom, currentRoomType, setUserMa
     const [showRoomDetail, setShowRoomDetail] = useState(false);
     const [showDropdown, setShowDropdown] = useState(false);
 
+    const dispatch = useDispatch()
+    const { room: currentRoom, type: currentRoomType } = useSelector((state: any) => state.currentRoom)
+
     useEffect(() => {
         const updateTag = currentRoomType === "contact" ? "contacts" : "groups";
 
-        if (!(currentRoom?.messages)) {
+        if (!currentRoom.messages.length) {
             setLoadingMessages(true);
 
-            api.get(`/${currentRoomType}/messages?${currentRoomType}_id=${currentRoom.id}`).then(response => {
+            api.get(`/${currentRoomType}/messages/${currentRoom.id}`).then(response => {
                 const { messages } = response.data;
                 setUserMaster[updateTag].update({ where: currentRoom.id, set: { messages } }).then(() => {
                     scrollToBottom();
@@ -67,7 +69,7 @@ export default function Messages({ user, currentRoom, currentRoomType, setUserMa
         };
 
         if (currentRoom.unread_messages > 0) {
-            api.put(`/${currentRoomType}/${currentRoom.id}?unread_messages=true`).then(() => {
+            api.put(`/${currentRoomType}/${currentRoom.id}?action=unread_messages`).then(() => {
                 setUserMaster[updateTag].update({ where: currentRoom.id, set: { unread_messages: 0 } });
             });
         };
@@ -95,15 +97,9 @@ export default function Messages({ user, currentRoom, currentRoomType, setUserMa
     function onScroll() {
         if (messagesContainerRef.current) {
             const { scrollTop, clientHeight, scrollHeight } = messagesContainerRef.current;
+            setShowScrollButton(!(scrollTop + 100 > scrollHeight - clientHeight))
 
-            if (!(scrollTop + 100 > scrollHeight - clientHeight)) {
-                setShowScrollButton(true);
-            } else {
-                setShowScrollButton(false);
-            };
-
-            // if the user scroll all to top, load more messages if exists
-            // ...
+            // if the user scroll all to top, load more messages if exists...
         };
     };
 
@@ -111,15 +107,10 @@ export default function Messages({ user, currentRoom, currentRoomType, setUserMa
         e.preventDefault();
 
         if (message.trim()) {
-            const tag = currentRoomType === "contact" ? "private" : "group";
-            const data = { message, receiver_id: currentRoom.id, group_id: currentRoom.id };
-
             setShowEmojiPicker(false);
-
-            await api.post(`/${currentRoomType}/message`, data).then(response => {
-                const { message } = response.data;
-                socket.emit(`${tag}-message`, message, () => setMessage(""));
-            });
+            const message_type = currentRoomType === "contact" ? "private" : "group";
+            await api.post(`/${currentRoomType}/messages`, { text: message, to: currentRoom.id })
+                .then(({ data }) => socket.emit(`${message_type}-message`, data, () => setMessage("")));
         };
     };
 
@@ -128,18 +119,18 @@ export default function Messages({ user, currentRoom, currentRoomType, setUserMa
             <Inner>
                 <Header>
                     <Room onClick={() => setShowRoomDetail(true)}>
-                        <Avatar src={currentRoom?.image} />
+                        <Avatar src={currentRoom.picture} />
 
                         <h2>{currentRoom?.username ? currentRoom?.username : currentRoom?.name}</h2>
                     </Room>
 
                     {currentRoomType === "contact" ? (
                         <>
-                            <IconButton onClick={() => startCall(currentRoom, 'audio')}>
+                            <IconButton onClick={() => dispatch(callStart(currentRoom, 'audio'))}>
                                 <CallIcon />
                             </IconButton>
 
-                            <IconButton onClick={() => startCall(currentRoom, 'video')}>
+                            <IconButton onClick={() => dispatch(callStart(currentRoom, 'video'))}>
                                 <VideocamIcon />
                             </IconButton>
                         </>
@@ -190,11 +181,11 @@ export default function Messages({ user, currentRoom, currentRoomType, setUserMa
 
                                 <Message.Inner className={msg?.sender_id === user.id && "sender"}>
                                     <Message.Text>
-                                        {msg.message}
+                                        {msg.text}
                                     </Message.Text>
 
                                     <Message.Time>
-                                        {moment(msg.posted_at).format("HH:mm A")}
+                                        {moment(msg.created_at).format("HH:mm A")}
                                     </Message.Time>
                                 </Message.Inner>
                             </Message>

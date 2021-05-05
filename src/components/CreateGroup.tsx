@@ -1,8 +1,10 @@
 import React, { useState, useEffect, Dispatch, SetStateAction } from "react";
-import { UserI, ContactI, GroupI } from "../types/user";
+import { UserI, ContactI } from "../types/user";
 import Fuse from "fuse.js";
 import { api, socket } from "../services";
 import { SetUserMasterI } from "../types/useSetUserMaster";
+import { useDispatch } from 'react-redux'
+import { setCurrentRoom } from '../store/actions/currentRoom'
 
 import {
     Container,
@@ -30,25 +32,24 @@ interface CreateGroupI {
     user: UserI;
     setUserMaster: SetUserMasterI;
     setCurrentContainer: Dispatch<SetStateAction<"profile" | "messages" | "addContact" | "createGroup">>;
-    setCurrentRoom: Dispatch<SetStateAction<ContactI & GroupI>>;
-    setCurrentRoomType: Dispatch<SetStateAction<"contact" | "group">>;
     theme: "light" | "dark";
 };
 
-export default function CreateGroup({ user, setUserMaster, setCurrentRoomType, setCurrentRoom, setCurrentContainer, theme }: CreateGroupI) {
+export default function CreateGroup({ user, setUserMaster, setCurrentContainer, theme }: CreateGroupI) {
     const [name, setName] = useState("");
     const [image, setImage] = useState<File>(undefined);
     const [description, setDescription] = useState("");
     const [members, setMembers] = useState<string[]>([]);
 
-    const [selectedContacts, setSelectedContacts] = useState<ContactI[]>([])
-
     const [search, setSearch] = useState("");
     const [searchResult, setSearchResult] = useState<ContactI[]>()
+    const [selectedContacts, setSelectedContacts] = useState<ContactI[]>([])
 
     const [imagePreview, setImagePreview] = useState("");
 
     const [loading, setLoading] = useState(false);
+
+    const dispatch = useDispatch()
 
     async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -70,8 +71,7 @@ export default function CreateGroup({ user, setUserMaster, setCurrentRoomType, s
             socket.emit("group", { event: "new", data: { event: "new", group, members } }, () => {
                 socket.emit("group", { event: "join", groupId: group.id }, () => {
                     setUserMaster.groups.push(group).then(() => {
-                        setCurrentRoomType("group");
-                        setCurrentRoom(group);
+                        dispatch(setCurrentRoom(group, 'group'))
                         setCurrentContainer("messages");
                     });
                 });
@@ -191,7 +191,7 @@ export default function CreateGroup({ user, setUserMaster, setCurrentRoomType, s
                                     {searchResult.map((contact, i) => {
                                         return (
                                             <FilteredContacts.Contact key={i} onClick={() => selectContact(contact)}>
-                                                <Avatar src={contact?.image} />
+                                                <Avatar src={contact.picture} />
 
                                                 <p>{contact.username}</p>
                                             </FilteredContacts.Contact>

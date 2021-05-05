@@ -2,8 +2,11 @@ import { useRouter } from "next/router";
 import { useState, useEffect, Dispatch, SetStateAction } from "react";
 import Fuse from "fuse.js";
 import Cookies from 'js-cookie';
+import { useSelector, useDispatch } from 'react-redux'
+import { toggleCallMinimized } from '../store/actions/call'
+import { setCurrentRoom, removeCurrentRoom } from '../store/actions/currentRoom'
 
-import { UserI, ContactI, GroupI } from "../types/user";
+import { UserI } from "../types/user";
 
 import {
     Container,
@@ -38,32 +41,27 @@ interface SidebarI {
     user: UserI;
     currentContainer: 'profile' | "messages" | "addContact" | "createGroup";
     setCurrentContainer: Dispatch<SetStateAction<'profile' | "messages" | "addContact" | "createGroup">>;
-    setCurrentRoom: Dispatch<SetStateAction<ContactI & GroupI>>;
-    setCurrentRoomType: Dispatch<SetStateAction<"contact" | "group">>;
     theme: "light" | "dark";
     setTheme: Dispatch<SetStateAction<"light" | "dark">>;
-    callMinimized: boolean;
-    setCallMinimized: Dispatch<SetStateAction<boolean>>;
 };
 
 export default function Sidebar({
     user,
     currentContainer,
     setCurrentContainer,
-    setCurrentRoom,
-    setCurrentRoomType,
     theme,
     setTheme,
-    callMinimized,
-    setCallMinimized,
 }: SidebarI) {
-    const [rooms, setRooms] = useState<any[]>(user.contacts);
-    const [search, setSearch] = useState("");
-    const [searchResult, setSearchResult] = useState<any[]>(undefined);
+    const [rooms, setRooms] = useState<any[]>(user.contacts)
+    const [search, setSearch] = useState("")
+    const [searchResult, setSearchResult] = useState<any[]>(undefined)
 
-    const [roomsType, setRoomsType] = useState<"contacts" | "groups">("contacts");
+    const callMinimized = useSelector((state: any) => state.call.minimized)
 
-    const router = useRouter();
+    const [roomsType, setRoomsType] = useState<"contacts" | "groups">("contacts")
+
+    const router = useRouter()
+    const dispatch = useDispatch()
 
     useEffect(() => {
         const fuse = new Fuse(rooms, { keys: ["name", "username"] });
@@ -71,20 +69,17 @@ export default function Sidebar({
         setSearchResult(result);
     }, [search, user.contacts, user.groups]);
 
-    useEffect(() => {
-        roomsType === "contacts" ? setRooms(user.contacts) : setRooms(user.groups);
-    }, [roomsType, user.contacts, user.groups]);
+    useEffect(() => roomsType === "contacts" ? setRooms(user.contacts) : setRooms(user.groups), [roomsType, user.contacts, user.groups]);
 
-    function changeContainer(option: 'profile' | "messages" | "addContact" | "createGroup", subOption?: "contacts" | "groups") {
-        option === "messages" ? setRoomsType(subOption) : setCurrentRoom(undefined);
+    function changeContainer(option: 'profile' | "messages" | "addContact" | "createGroup", type?: "contacts" | "groups") {
+        option === "messages" ? setRoomsType(type) : dispatch(removeCurrentRoom());
         setCurrentContainer(option);
     };
 
     function selectRoom(room: any, type: "contact" | "group") {
         setSearch("");
         setCurrentContainer("messages");
-        setCurrentRoom(room);
-        setCurrentRoomType(type);
+        dispatch(setCurrentRoom(room, type))
     };
 
     function toggleTheme() {
@@ -139,7 +134,7 @@ export default function Sidebar({
 
                     <div>
                         {callMinimized ? (
-                            <OptionButton className='option' onClick={() => setCallMinimized(false)}>
+                            <OptionButton className='option' onClick={() => dispatch(toggleCallMinimized())}>
                                 <CallIcon />
                             </OptionButton>
                         ) : null}
@@ -175,13 +170,8 @@ export default function Sidebar({
                                     <Avatar src={room.image} />
                                     <h3>{roomsType === "contacts" ? room.username : room.name}</h3>
 
-                                    {roomsType === "contacts" ? (
-                                        <Status className={room.online ? "online" : "offline"} />
-                                    ) : null}
-
-                                    {room.unread_messages > 0 ? (
-                                        <UnreadMessages>{room.unread_messages}</UnreadMessages>
-                                    ) : null}
+                                    {roomsType === "contacts" ? (<Status className={room.online ? "online" : "offline"} />) : null}
+                                    {room.unread_messages > 0 ? (<UnreadMessages>{room.unread_messages}</UnreadMessages>) : null}
                                 </Room>
                             );
                         })}

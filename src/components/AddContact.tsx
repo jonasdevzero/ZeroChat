@@ -1,8 +1,10 @@
-import { useState, useEffect, Dispatch, SetStateAction } from "react";
-import { UserI, ContactI, GroupI } from "../types/user";
+import { useState, Dispatch, SetStateAction } from "react";
+import { UserI } from "../types/user";
 import { SetUserMasterI } from "../types/useSetUserMaster";
 import { api, socket } from "../services";
 import useDebounce from '../hooks/useDebounce';
+import { useDispatch } from 'react-redux'
+import { setCurrentRoom } from '../store/actions/currentRoom'
 
 import {
     Container,
@@ -28,25 +30,23 @@ interface AddContactI {
     user: UserI;
     setUserMaster: SetUserMasterI;
     setCurrentContainer: Dispatch<SetStateAction<"profile" | "messages" | "addContact" | "createGroup">>;
-    setCurrentRoom: Dispatch<SetStateAction<ContactI & GroupI>>;
-    setCurrentRoomType: Dispatch<SetStateAction<"contact" | "group">>;
 };
 
-export default function AddContact({ user, setUserMaster, setCurrentContainer, setCurrentRoom, setCurrentRoomType }: AddContactI) {
+export default function AddContact({ user, setUserMaster, setCurrentContainer, }: AddContactI) {
     const [username, setUsername] = useState("");
     const [contacts, setContacts] = useState<UserI[]>();
+
+    const dispatch = useDispatch()
 
     async function add(contact: UserI) {
         await api.post(`/contact`, { contact_id: contact.id }).then(response => {
             const newContact = response.data.contact;
-            newContact.messages = [];
 
             socket.emit("contact", { contactId: newContact.id, event: "addContact" }, (isOnline: boolean) => {
                 newContact.online = isOnline;
 
                 setUserMaster.contacts.push(newContact).then(() => {
-                    setCurrentRoomType("contact");
-                    setCurrentRoom(newContact);
+                    dispatch(setCurrentRoom(newContact, 'contact'))
                     setCurrentContainer("messages");
                 });
             });

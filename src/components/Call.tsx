@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import Peer from "simple-peer";
-import { ContactI } from "../types/user";
 import { socket } from '../services';
+import { useSelector, useDispatch } from 'react-redux'
+import { toggleCallMinimized } from '../store/actions/call'
 
 import {
     Container,
@@ -27,46 +28,36 @@ import {
     ArrowDropDown as ArrowDropDownIcon,
 } from "@material-ui/icons";
 
-interface ICall {
-    userCall: ContactI
-    callerSignal: any;
-    startingOrReceivingCall: 'receiving' | 'starting';
-    callType: 'video' | 'audio';
-    callMinimized: boolean;
-    setCallMinimized: React.Dispatch<React.SetStateAction<boolean>>;
-    endCall(): void;
-    rejectCall(): void;
-};
-
-export default function Call({ userCall, callerSignal, startingOrReceivingCall, callType, callMinimized, setCallMinimized, endCall, rejectCall }: ICall) {
+export default function Call() {
     const myVideo = useRef(null);
     const userVideo = useRef(null);
+
+    const call = useSelector((state: any) => state.call)
+    const dispatch = useDispatch()
 
     const [mediaLoaded, setMediaLoaded] = useState(false);
     const [callAccepted, setCallAccepted] = useState(false);
 
     const [myStream, setMyStream] = useState<MediaStream>(undefined);
 
-    const [videoEnabled, setVideoEnabled] = useState(callType === 'video');
+    const [videoEnabled, setVideoEnabled] = useState(call?.type === 'video');
     const [audioEnabled, setAudioEnabled] = useState(true);
 
     const [callTime, setCallTime] = useState(0);
 
     const [alert, setAlert] = useState('');
 
-    useEffect(() => {
-        startingOrReceivingCall === 'starting' ? callUser() : null;
-    }, []);
+    useEffect(() => call.startingOrReceiving === 'starting' ? callUser() : null, []);
 
     function callUser() {
         navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
-            stream.getVideoTracks()[0].enabled = callType === 'video';
+            stream.getVideoTracks()[0].enabled = call.type === 'video';
             setMyStream(stream);
 
             const peer = new Peer({ initiator: true, stream, trickle: false });
 
             peer.on("signal", signal => {
-                socket.emit("call-request", { signal, to: userCall.id, callType }, () => setMediaLoaded(true));
+                socket.emit("call-request", { signal, to: call.userCall.id, callType: call.type }, () => setMediaLoaded(true));
             });
 
             peer.on('stream', stream => userVideo.current.srcObject = stream);
@@ -83,7 +74,6 @@ export default function Call({ userCall, callerSignal, startingOrReceivingCall, 
 
             socket.on('call-rejected', () => {
                 setAlert('Call rejected');
-                setTimeout(() => endCall(), 1500);
             });
         });
     };
@@ -92,7 +82,7 @@ export default function Call({ userCall, callerSignal, startingOrReceivingCall, 
         setCallAccepted(true);
 
         navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
-            stream.getVideoTracks()[0].enabled = callType === 'video';
+            stream.getVideoTracks()[0].enabled = call.type === 'video';
             setMediaLoaded(true);
             setMyStream(stream);
             myVideo.current.srcObject = stream;
@@ -100,7 +90,7 @@ export default function Call({ userCall, callerSignal, startingOrReceivingCall, 
             const peer = new Peer({ initiator: false, stream, trickle: false });
 
             peer.on("signal", signal => {
-                socket.emit("call-answer", { signal, to: userCall.id });
+                socket.emit("call-answer", { signal, to: call.userCall.id });
                 startCallTime();
             });
 
@@ -108,12 +98,12 @@ export default function Call({ userCall, callerSignal, startingOrReceivingCall, 
 
             peer.on('error', (error) => { });
 
-            peer.signal(callerSignal);
+            peer.signal(call.userSignal);
         });
     };
 
     function finishCall() {
-        socket.emit('call-finished', { to: userCall.id }, () => endCall());
+        socket.emit('call-finished', { to: call.userCall.id }, () => {});
     };
 
     function toggleMicStatus() {
@@ -146,10 +136,10 @@ export default function Call({ userCall, callerSignal, startingOrReceivingCall, 
     };
 
     return (
-        <Container minimized={callMinimized}>
+        <Container minimized={call.minimized}>
             <UsersContainer>
                 {function () {
-                    switch (startingOrReceivingCall) {
+                    switch (call.startingOrReceiving) {
                         case 'starting':
                             if (!mediaLoaded) {
                                 return (
@@ -161,11 +151,11 @@ export default function Call({ userCall, callerSignal, startingOrReceivingCall, 
                             } else if (mediaLoaded && !callAccepted) {
                                 return (
                                     <Calling>
-                                        <Avatar src={userCall?.image} />
-                                        <span>Calling to {userCall?.username}</span>
+                                        <Avatar src={call.userCall.picture} />
+                                        <span>Calling to {call.userCall.username}</span>
 
                                         <Buttons>
-                                            <Button onClick={() => endCall()}>
+                                            <Button onClick={() => { }}>
                                                 <CallEndIcon className='callend' />
                                             </Button>
                                         </Buttons>
@@ -176,16 +166,16 @@ export default function Call({ userCall, callerSignal, startingOrReceivingCall, 
                             if (!callAccepted) {
                                 return (
                                     <ReceivingCall>
-                                        <Avatar src={userCall?.image} />
+                                        <Avatar src={call.userCall.picture} />
 
-                                        <span>{userCall?.username} is calling</span>
+                                        <span>{call.userCall.username} is calling</span>
 
                                         <Buttons>
                                             <Button onClick={() => answerCall()}>
                                                 <CallIcon className="call" />
                                             </Button>
 
-                                            <Button onClick={() => rejectCall()}>
+                                            <Button onClick={() => { }}>
                                                 <CallEndIcon className="callend" />
                                             </Button>
                                         </Buttons>
@@ -216,7 +206,7 @@ export default function Call({ userCall, callerSignal, startingOrReceivingCall, 
 
             {callAccepted && mediaLoaded ? (
                 <InfoBar>
-                    <Button className='no-bg' onClick={() => setCallMinimized(true)}>
+                    <Button className='no-bg' onClick={() => dispatch(toggleCallMinimized())}>
                         <ArrowDropDownIcon fontSize='large' />
                     </Button>
 
