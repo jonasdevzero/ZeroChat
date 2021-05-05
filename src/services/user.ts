@@ -1,70 +1,20 @@
-import { ContactI } from '../types/user';
-import api from './api';
-import socket from './socket';
+import { api, socket } from './'
 import Cookies from 'js-cookie';
 
-interface ServiceConfig {
-    body: object | FormData | {}
-    query: string | object | {}
-    headers: object | {}
-    params: object | {}
-}
-
-interface LoginI extends ServiceConfig {
-    body: {
-        email: string
-        password: string
-    }
-}
-
-interface SubscribeI extends ServiceConfig {
-    body: {
-        name: string
-        username: string
-        email: string
-        password: string
-        confirmPassword: string
-    }
-}
-
 export default {
-    async auth() {
+    async auth(jwt: string) {
         try {
-            const { data: { user, token } } = await api.post(`/user/auth`)
+            const { data: { user, token } } = await api.get(`/user/auth`, { headers: { authorization: `Bearer ${jwt}` } })
 
-            api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+            api.defaults.headers.common["Authorization"] = `Bearer ${token}`
             Cookies.set('token', token)
+
+            socket.connect()
 
             return user;
         } catch (error) {
             Cookies.remove('token')
-            throw new Error(error);
+            throw new Error(error)
         }
-    },
-
-    async login({ body }: LoginI) {
-        const { data: { token } } = await api.post('/user/login', body)
-
-        Cookies.set('token', token)
-    },
-
-    async subscribe({ body }: SubscribeI) {
-        const { data: { token } } = await api.post('/user', body)
-        Cookies.set('token', token)
-    },
-
-    async update(data: { name, username }) {
-        const response = await api.put('/', data)
-
-    },
-
-    async updatePicture() {
-
-    },
-
-    async searchUsers({ username }) {
-        const response = await api.get(`/user?username=${username}`);
-
-        return response.data.contacts;
     },
 };
