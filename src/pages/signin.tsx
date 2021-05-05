@@ -26,7 +26,7 @@ import Warning from "../components/Warning";
 import { LoadingContainer } from "../components";
 
 export default function SignIn({ theme }) {
-    const [email, setEmail] = useState("");
+    const [reference, setReference] = useState("");
     const [password, setPassword] = useState("");
 
     const [error, setError] = useState<string | undefined>();
@@ -52,11 +52,11 @@ export default function SignIn({ theme }) {
 
         setLoadingRequest(true);
 
-        await api.post("/user/login", { email, password }).then(response => {
+        await api.post("/user/login", { reference, password }).then(response => {
             const { token } = response.data;
             Cookies.set('token', token);
 
-            setEmail("");
+            setReference("");
             setPassword("");
 
             setSuccessWarning(true);
@@ -101,14 +101,14 @@ export default function SignIn({ theme }) {
 
                         <Wrapper>
                             <Input
-                                value={email}
-                                onChange={e => setEmail(e.target.value)}
+                                value={reference}
+                                onChange={e => setReference(e.target.value)}
                                 required
                                 autoComplete="off"
                                 type="text"
                             />
                             <Label>
-                                <Span>Email</Span>
+                                <Span>Email or Username</Span>
                             </Label>
                         </Wrapper>
 
