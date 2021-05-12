@@ -1,54 +1,38 @@
-import Head from "next/head";
-import { useRouter } from "next/router";
-import { useState } from "react";
-import api from "../services/api";
-import { AxiosError } from "axios";
+import Head from "next/head"
+import Link from 'next/link'
+import { useRouter } from "next/router"
+import { useState } from "react"
+import api from "../services/api"
+import { AxiosError } from "axios"
 
+import { Header, Footer } from '../components'
 import {
     Container,
-    Form,
-    TitleContainer,
-    Title,
-    ArrowBackButton,
-    Wrapper,
-    Input,
+    InnerCenter,
+    FitForm,
+    FitFormTitle,
+    InputWrapper,
     Label,
+    Input,
     Submit,
-    Span,
-    Error,
-} from "../styles/components/Form";
-import ArrowBackIcon from "@material-ui/icons/ArrowBack";
-import Warning from "../components/Warning";
+    Links,
+    RedirectLink
+} from "../styles/pages/base"
 
-export default function forgotPassword({ theme }) {
-    const [email, setEmail] = useState("");
+export default function forgotPassword() {
+    const [email, setEmail] = useState("")
 
-    const [error, setError] = useState<string | undefined>("");
-    const [successWarning, setSuccessWarning] = useState(undefined);
-    const [loadingRequest, setLoadingRequest] = useState(false);
+    const [error, setError] = useState<string | undefined>("")
+    const [successWarning, setSuccessWarning] = useState(undefined)
+    const [loadingRequest, setLoadingRequest] = useState(false)
 
-    const router = useRouter();
+    const router = useRouter()
 
-    async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
 
-        setLoadingRequest(true);
-
-        await api.post("/user/forgot_password", { email }).then(response => {
-            setEmail("");
-
-            setSuccessWarning(true);
-            setTimeout(() => {
-                setSuccessWarning(undefined);
-            }, 2500);
-        }).catch((err: AxiosError) => {
-            const { message } = err.response.data;
-
-            setError(message);
-        });
-
-        setLoadingRequest(false);
-    };
+        //...
+    }
 
     return (
         <Container>
@@ -56,47 +40,28 @@ export default function forgotPassword({ theme }) {
                 <title>Zero | Forgot Password</title>
             </Head>
 
-            <Warning showWarning={successWarning}>
-                Check your email...
-            </Warning>
+            <Header />
 
-            <Form onSubmit={onSubmit}>
-                <TitleContainer>
-                    <ArrowBackButton type="button" onClick={() => router.back()}>
-                        <ArrowBackIcon />
-                    </ArrowBackButton>
+            <InnerCenter>
+                <FitForm onSubmit={handleSubmit}>
+                    <FitFormTitle>Forgot Password</FitFormTitle>
 
-                    <Title>Forgot Password</Title>
-                </TitleContainer>
+                    <InputWrapper>
+                        <Label htmlFor='email'>E-mail</Label>
+                        <Input id='email' type='text' value={email} onChange={e => setEmail(e.target.value)} />
+                    </InputWrapper>
 
-                {error ? (
-                    <Error>
-                        <strong>{error}</strong>
-                    </Error>
-                ) : null}
+                    <Submit type='submit'>Submit</Submit>
 
-                <Wrapper>
-                    <Input
-                        value={email}
-                        onChange={e => setEmail(e.target.value)}
-                        required
-                        autoComplete="off"
-                        type="text"
-                    />
-                    <Label>
-                        <Span>Email</Span>
-                    </Label>
-                </Wrapper>
+                    <Links>
+                        <Link href='/signin'>
+                            <RedirectLink>Remember your password?</RedirectLink>
+                        </Link>
+                    </Links>
+                </FitForm>
+            </InnerCenter>
 
-                <Submit type="submit">
-                    {loadingRequest ? (
-                        <img
-                            src={`/loading-${theme}.svg`}
-                            alt="loading"
-                        />
-                    ) : "Submit"}
-                </Submit>
-            </Form>
+            <Footer />
         </Container>
-    );
-};
+    )
+}

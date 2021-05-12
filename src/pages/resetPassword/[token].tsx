@@ -4,61 +4,30 @@ import { useState } from "react";
 import api from "../../services/api";
 import { AxiosError } from "axios";
 
+import { Header, Footer } from '../../components'
 import {
     Container,
-    Form,
-    TitleContainer,
-    Title,
-    ArrowBackButton,
-    Wrapper,
-    Input,
+    InnerCenter,
+    FitForm,
+    FitFormTitle,
+    InputWrapper,
     Label,
+    Input,
     Submit,
-    Span,
-    Error,
-} from "../../styles/components/Form";
-import Warning from "../../components/Warning";
+} from "../../styles/pages/base"
 
 export default function forgotPassword({ theme }) {
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
+    const [password, setPassword] = useState("")
+    const [confirmPassword, setConfirmPassword] = useState("")
 
-    const [error, setError] = useState<string | undefined>("");
-    const [successWarning, setSuccessWarning] = useState(undefined);
-    const [loadingRequest, setLoadingRequest] = useState(false);
-
-    const router = useRouter();
-    const { token } = router.query;
+    const router = useRouter()
+    const { token } = router.query
 
     async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
 
-        setLoadingRequest(true);
-
-        await api.put("/user/reset_password", {
-            resetToken: token,
-            password,
-            confirmPassword,
-        }).then(response => {
-            setPassword("");
-            setConfirmPassword("");
-
-            setSuccessWarning(true);
-
-            setTimeout(() => {
-                router.push("/signin");
-            }, 2000);
-        }).catch((err: AxiosError) => {
-            const { message } = err.response.data;
-
-            setPassword("");
-            setConfirmPassword("");
-
-            setError(message);
-        });
-
-        setLoadingRequest(false);
-    };
+        //...
+    }
 
     return (
         <Container>
@@ -66,55 +35,27 @@ export default function forgotPassword({ theme }) {
                 <title>Zero | Reset Password</title>
             </Head>
 
-            <Warning showWarning={successWarning}>
-                Successful password change, redirection...
-            </Warning>
+            <Header />
 
-            <Form onSubmit={onSubmit}>
-                <TitleContainer>
-                    <Title>Reset Password</Title>
-                </TitleContainer>
+            <InnerCenter>
+                <FitForm>
+                    <FitFormTitle>Reset Password</FitFormTitle>
 
-                {error ? (
-                    <Error>
-                        <strong>{error}</strong>
-                    </Error>
-                ) : null}
+                    <InputWrapper>
+                        <Label htmlFor='password'>Password</Label>
+                        <Input id='password' type='password' value={password} onChange={e => setPassword(e.target.value)} />
+                    </InputWrapper>
 
-                <Wrapper>
-                    <Input
-                        value={password}
-                        onChange={e => setPassword(e.target.value)}
-                        required
-                        autoComplete="off"
-                        type="password"
-                    />
-                    <Label>
-                        <Span>Password</Span>
-                    </Label>
-                </Wrapper>
-                <Wrapper>
-                    <Input
-                        value={confirmPassword}
-                        onChange={e => setConfirmPassword(e.target.value)}
-                        required
-                        autoComplete="off"
-                        type="password"
-                    />
-                    <Label>
-                        <Span>Confirm Password</Span>
-                    </Label>
-                </Wrapper>
+                    <InputWrapper>
+                        <Label htmlFor='confirmPassword'>Confirm Password</Label>
+                        <Input id='confirmPassword' type='password' value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
+                    </InputWrapper>
 
-                <Submit type="submit">
-                    {loadingRequest ? (
-                        <img
-                            src={`/loading-${theme}.svg`}
-                            alt="loading"
-                        />
-                    ) : "Submit"}
-                </Submit>
-            </Form>
+                    <Submit type='submit'>Submit</Submit>
+                </FitForm>
+            </InnerCenter>
+
+            <Footer />
         </Container>
     );
 };
