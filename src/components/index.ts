@@ -7,3 +7,5 @@ export { default as CreateGroup } from "./CreateGroup";
 export { default as Messages } from "./Messages";
 export { default as LoadingContainer } from "./LoadingContainer";
 export { default as RoomInfo } from "./RoomInfo";
+export { default as Footer } from './Footer';
+export { default as Header } from './Header';
