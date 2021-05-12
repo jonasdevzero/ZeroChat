@@ -1,216 +1,108 @@
-import { useState } from "react";
-import { useRouter } from "next/router";
-import Head from 'next/head';
-import Link from "next/link";
-import api from "../services/api";
-import { AxiosError } from "axios";
-import Cookies from 'js-cookie';
+import Head from 'next/head'
+import { useState } from "react"
+import { useRouter } from "next/router"
+import Link from "next/link"
+import { userService } from "../services"
 
+import { Header, Footer } from "../components"
 import {
     Container,
+    Inner,
     Form,
-    TitleContainer,
-    Title,
-    ArrowBackButton,
-    Wrapper,
-    WrapperInputs,
-    Input,
+    FormTitle,
+    InputWrapper,
     Label,
+    Input,
     Submit,
-    Span,
-    Error,
-    Info,
-    StyledLink,
-} from "../styles/components/Form";
-import ArrowBackIcon from "@material-ui/icons/ArrowBack";
-import Warning from "../components/Warning";
-import { LoadingContainer } from "../components";
+    Links,
+    RedirectLink,
+    FormStepProgress,
+    FormStepBack
+} from "../styles/pages/base"
+import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos';
 
-export default function SignUp({ theme }) {
-    const [name, setName] = useState("");
-    const [username, setUsername] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
+export default function SignUp() {
+    const [username, setUsername] = useState("")
+    const [password, setPassword] = useState("")
+    const [confirmPassword, setConfirmPassword] = useState("")
+    const [name, setName] = useState("")
+    const [email, setEmail] = useState("")
+    const [currentStep, setCurrentStep] = useState(0)
 
-    const [error, setError] = useState<string | undefined>();
-    const [loadingRequest, setLoadingRequest] = useState(false);
+    const router = useRouter()
 
-    const [successWarning, setSuccessWarning] = useState(false);
-
-    const router = useRouter();
-
-    const [loading, setLoading] = useState(false);
-
-    async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
 
-        setLoadingRequest(true);
-
-        await api.post("/user", {
-            name,
-            username,
-            email,
-            password,
-            confirmPassword,
-        }).then(response => {
-            const { token } = response.data;
-            Cookies.set('token', token);
-
-            setName("");
-            setUsername("");
-            setEmail("");
-            setPassword("");
-            setConfirmPassword("");
-
-            setSuccessWarning(true);
-
-            setTimeout(() => {
-                setLoading(true);
-                return router.push("/chat");
-            }, 2000);
-        }).catch((err: AxiosError) => {
-            const message = err?.response?.data?.message;
-            const fields = err?.response?.data?.fields;
-
-            fields?.forEach((field: string) => {
-                switch (field) {
-                    case "username":
-                        setUsername("");
-                        break;
-                    case "email":
-                        setEmail("");
-                        break;
-                    case "password":
-                        setPassword("");
-                        setConfirmPassword("");
-                };
-            });
-
-            setError(message);
-        });
-
-        setLoadingRequest(false);
-    };
+        userService.subscribe({ username, password, confirmPassword, name, email })
+            .then(() => router.push('/chat'))
+            .catch(error => { })
+    }
 
     return (
         <Container>
             <Head>
-                <title>Zero | SignUp</title>
+                <title>Zero | Sign Up</title>
             </Head>
 
-            {!loading ? (
-                <>
-                    <Warning showWarning={successWarning}>
-                        Welcome to Zero, redirecting...
-                    </Warning>
+            <Header />
 
-                    <Form onSubmit={onSubmit}>
-                        <TitleContainer>
-                            <ArrowBackButton type="button" onClick={() => router.back()}>
-                                <ArrowBackIcon />
-                            </ArrowBackButton>
+            <Inner>
+                <Form onSubmit={handleSubmit}>
+                    <FormTitle>Sign Up</FormTitle>
 
-                            <Title>SignUp</Title>
-                        </TitleContainer>
+                    {currentStep === 0 ? (
+                        <>
+                            <InputWrapper>
+                                <Label htmlFor='username'>Username</Label>
+                                <Input id='username' type='text' value={username} onChange={e => setUsername(e.target.value)} />
+                            </InputWrapper>
 
-                        {error ? (
-                            <Error>
-                                <strong>{error}</strong>
-                            </Error>
-                        ) : null}
+                            <InputWrapper>
+                                <Label htmlFor='password'>Password</Label>
+                                <Input id='password' type='password' value={password} onChange={e => setPassword(e.target.value)} />
+                            </InputWrapper>
 
-                        <WrapperInputs>
-                            <Wrapper>
-                                <Input
-                                    value={name}
-                                    onChange={e => setName(e.target.value)}
-                                    required
-                                    autoComplete="off"
-                                    type="text"
-                                />
-                                <Label>
-                                    <Span>Name</Span>
-                                </Label>
-                            </Wrapper>
+                            <InputWrapper>
+                                <Label htmlFor='confirmPassword'>Confirm Password</Label>
+                                <Input id='confirmPassword' type='password' value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
+                            </InputWrapper>
 
-                            <Wrapper>
-                                <Input
-                                    value={username}
-                                    onChange={e => setUsername(e.target.value)}
-                                    required
-                                    autoComplete="off"
-                                    type="text"
-                                />
-                                <Label>
-                                    <Span>Username</Span>
-                                </Label>
-                            </Wrapper>
-                        </WrapperInputs>
+                            <Submit type='button' onClick={() => setCurrentStep(1)}>Next</Submit>
+                        </>
+                    ) : currentStep === 1 ? (
+                        <>
+                            <InputWrapper>
+                                <Label htmlFor='name'>Name</Label>
+                                <Input id='name' type='text' value={name} onChange={e => setName(e.target.value)} />
+                            </InputWrapper>
 
-                        <Wrapper>
-                            <Input
-                                value={email}
-                                onChange={e => setEmail(e.target.value)}
-                                required
-                                autoComplete="off"
-                                type="text"
-                            />
-                            <Label>
-                                <Span>Email</Span>
-                            </Label>
-                        </Wrapper>
+                            <InputWrapper>
+                                <Label htmlFor='email'>E-mail</Label>
+                                <Input id='email' type='text' value={email} onChange={e => setEmail(e.target.value)} />
+                            </InputWrapper>
 
-                        <WrapperInputs>
-                            <Wrapper>
-                                <Input
-                                    value={password}
-                                    onChange={e => setPassword(e.target.value)}
-                                    required
-                                    autoComplete="off"
-                                    type="password"
-                                />
-                                <Label>
-                                    <Span>Password</Span>
-                                </Label>
-                            </Wrapper>
+                            <Submit type='submit'>Sign Up</Submit>
+                        </>
+                    ) : null}
 
-                            <Wrapper>
-                                <Input
-                                    value={confirmPassword}
-                                    onChange={e => setConfirmPassword(e.target.value)}
-                                    required
-                                    autoComplete="off"
-                                    type="password"
-                                />
-                                <Label>
-                                    <Span>Confirm Password</Span>
-                                </Label>
-                            </Wrapper>
-                        </WrapperInputs>
+                    <Links>
+                        <Link href='/signin'>
+                            <RedirectLink>Already a member?</RedirectLink>
+                        </Link>
+                    </Links>
 
-                        <Submit type="submit">
-                            {loadingRequest ? (
-                                <img
-                                    src={`/loading-${theme}.svg`}
-                                    alt="loading"
-                                />
-                            ) : "SignUp"}
-                        </Submit>
+                    {currentStep > 0 ? (
+                        <FormStepBack onClick={() => setCurrentStep(currentStep - 1)}>
+                            <ArrowBackIosIcon fontSize='large' />
+                        </FormStepBack>
+                    ) : null}
 
-                        <Info>
-                            Already have an account?
-                            <Link href="/signin">
-                                <StyledLink>
-                                    SignIn
-                                </StyledLink>
-                            </Link>
-                        </Info>
-                    </Form>
-                </>
-            ) : (
-                <LoadingContainer theme={theme} />
-            )}
+                    <FormStepProgress step={currentStep} />
+                </Form>
+            </Inner>
+
+            <Footer />
         </Container>
-    );
-};
+    )
+}

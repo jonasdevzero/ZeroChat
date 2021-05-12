@@ -1,161 +1,101 @@
-import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
-import Head from 'next/head';
-import Link from "next/link";
-import api from "../services/api";
-import { AxiosError } from "axios";
-import Cookies from 'js-cookie';
+import Head from 'next/head'
+import { useRouter } from 'next/router'
+import Link from 'next/link'
+import { useEffect, useState } from 'react'
+import Cookies from 'js-cookie'
+import { userService } from '../services'
+import { AxiosError } from 'axios'
 
+import { Header, Footer } from '../components'
 import {
     Container,
+    Inner,
     Form,
-    TitleContainer,
-    Title,
-    ArrowBackButton,
-    Wrapper,
-    Input,
+    FormTitle,
+    InputWrapper,
     Label,
+    Input,
+    RememberMe,
     Submit,
-    Span,
-    Error,
-    Info,
-    StyledLink,
-} from "../styles/components/Form";
-import ArrowBackIcon from "@material-ui/icons/ArrowBack";
-import Warning from "../components/Warning";
-import { LoadingContainer } from "../components";
+    Links,
+    RedirectLink
+} from "../styles/pages/base"
 
-export default function SignIn({ theme }) {
-    const [reference, setReference] = useState("");
-    const [password, setPassword] = useState("");
+export default function SignIn() {
+    const [reference, setReference] = useState('')
+    const [password, setPassword] = useState('')
+    const [rememberMe, setRememberMe] = useState(true)
 
-    const [error, setError] = useState<string | undefined>();
-    const [loadingRequest, setLoadingRequest] = useState(false);
+    const [loading, setLoading] = useState(true)
 
-    const [successWarning, setSuccessWarning] = useState(undefined);
-
-    const router = useRouter();
-
-    const [loading, setLoading] = useState(false);
+    const router = useRouter()
 
     useEffect(() => {
-        const token = Cookies.get('token');
+        const token = Cookies.get('token')
+        token ? router.push('/chat') : setLoading(false)
+    }, [])
 
-        if (token) {
-            setLoading(true);
-            router.push("/chat");
-        };
-    }, []);
+    function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault()
 
-    async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-        e.preventDefault();
+        userService.login({ reference, password, rememberMe })
+            .then(handleSuccess)
+            .catch(handleError)
+    }
 
-        setLoadingRequest(true);
+    function handleSuccess() {
+        setLoading(true)
+        router.push('/chat')
+    }
 
-        await api.post("/user/login", { reference, password }).then(response => {
-            const { token } = response.data;
-            Cookies.set('token', token);
-
-            setReference("");
-            setPassword("");
-
-            setSuccessWarning(true);
-            setTimeout(() => {
-                setLoading(true);
-                router.push("/chat");
-            }, 2000);
-        }).catch((err: AxiosError) => {
-            const { message } = err.response.data;
-            setError(message);
-        });
-
-        setLoadingRequest(false);
-    };
+    function handleError(error: AxiosError) {
+        //...
+    }
 
     return (
         <Container>
             <Head>
-                <title>Zero | SignIn</title>
+                <title>Zero | Sign In</title>
             </Head>
 
-            {!loading ? (
-                <>
-                    <Warning showWarning={successWarning}>
-                        Successful login, redirecting...
-                    </Warning>
+            <Header />
 
-                    <Form onSubmit={onSubmit}>
-                        <TitleContainer>
-                            <ArrowBackButton type="button" onClick={() => router.back()}>
-                                <ArrowBackIcon />
-                            </ArrowBackButton>
+            <Inner>
+                <Form onSubmit={handleSubmit}>
+                    <FormTitle>Sign In</FormTitle>
 
-                            <Title>SignIn</Title>
-                        </TitleContainer>
+                    <InputWrapper>
+                        <Label htmlFor='reference'>Username / email</Label>
 
-                        {error ? (
-                            <Error>
-                                <strong>{error}</strong>
-                            </Error>
-                        ) : null}
+                        <Input id='reference' type='text' value={reference} onChange={e => setReference(e.target.value)} />
+                    </InputWrapper>
 
-                        <Wrapper>
-                            <Input
-                                value={reference}
-                                onChange={e => setReference(e.target.value)}
-                                required
-                                autoComplete="off"
-                                type="text"
-                            />
-                            <Label>
-                                <Span>Email or Username</Span>
-                            </Label>
-                        </Wrapper>
+                    <InputWrapper>
+                        <Label htmlFor='password'>Password</Label>
 
-                        <Wrapper>
-                            <Input
-                                value={password}
-                                onChange={e => setPassword(e.target.value)}
-                                required
-                                autoComplete="off"
-                                type="password"
-                            />
-                            <Label>
-                                <Span>Password</Span>
-                            </Label>
-                        </Wrapper>
+                        <Input id='password' type='password' value={password} onChange={e => setPassword(e.target.value)} />
+                    </InputWrapper>
 
-                        <Submit type="submit">
-                            {loadingRequest ? (
-                                <img
-                                    src={`/loading-${theme}.svg`}
-                                    alt="loading"
-                                />
-                            ) : "SignIn"}
-                        </Submit>
+                    <RememberMe>
+                        <input id='remember_me' type='checkbox' checked={rememberMe} onChange={() => setRememberMe(!rememberMe)} />
+                        <label htmlFor="remember_me">Remember-me</label>
+                    </RememberMe>
 
-                        <Info>
-                            Forgot password?
-                            <Link href="/forgotPassword">
-                                <StyledLink>
-                                    Click here
-                                </StyledLink>
-                            </Link>
-                        </Info>
-                        <Info>
-                            Don't have an account?
-                            <Link href="/signup">
-                                <StyledLink>
-                                    SignUp
-                                </StyledLink>
-                            </Link>
-                        </Info>
-                    </Form>
-                </>
-            ) : (
-                <LoadingContainer theme={theme} />
-            )}
+                    <Submit>Sign In</Submit>
 
+                    <Links>
+                        <Link href='/signup'>
+                            <RedirectLink>Not a member?</RedirectLink>
+                        </Link>
+
+                        <Link href='/forgotPassword'>
+                            <RedirectLink>Forgot Password?</RedirectLink>
+                        </Link>
+                    </Links>
+                </Form>
+            </Inner>
+
+            <Footer />
         </Container>
-    );
-};
+    )
+}
