@@ -2,10 +2,9 @@ import Head from 'next/head'
 import Link from 'next/link'
 import { useEffect } from 'react'
 
+import { Header, Footer } from '../components'
 import {
     Container,
-    Header,
-    StyledLink,
     Section,
     Presentation,
     SubscribeLink,
@@ -30,23 +29,29 @@ import {
 export default function Home() {
     useEffect(() => {
         const elements = document.getElementsByClassName('onscroll__animate')
-        onScroll(elements)
-        window.addEventListener('scroll', () => onScroll(elements))
+        const iterableElements: Element[] = []
+
+        for (let i = 0; i < elements.length; i++) iterableElements.push(elements[i]);
+
+        window.addEventListener('scroll', () => onScroll(iterableElements))
     }, [])
 
     function elementInView(el: Element) {
-        const rect = el.getBoundingClientRect()
+        const { top, left, bottom, right, height } = el.getBoundingClientRect()
+        const { innerHeight, innerWidth } = window
 
-        const inView = ((rect.top + (rect.height / 2)) >= 0 && rect.left >= 0 &&
-            rect.bottom <= (window.innerHeight + (rect.height / 2)) &&
-            rect.right <= (window.innerWidth || document.documentElement.clientWidth))
+        const inView = (
+            top + (height / 2) >= 0
+            && left >= 0
+            && bottom <= (innerHeight + (height / 3))
+            && right <= innerWidth
+        )
 
         return inView
     }
 
-    function onScroll(elements: HTMLCollectionOf<Element>) {
-        for (let i = 0; i < elements.length; i++) {
-            const element = elements[i]
+    function onScroll(elements: Element[]) {
+        for (const element of elements) {
             const containsClassName = element.classList.contains('in-view')
 
             if (elementInView(element)) {
@@ -63,19 +68,8 @@ export default function Home() {
                 <link href="https://fonts.googleapis.com/css2?family=Raleway&display=swap" rel="stylesheet" />
                 <title>Zero Chat</title>
             </Head>
-            <Header>
-                <h1>Zero</h1>
 
-                <div>
-                    <Link href='/signin'>
-                        <StyledLink>SignIn</StyledLink>
-                    </Link>
-
-                    <Link href='/signup'>
-                        <StyledLink>SignUp</StyledLink>
-                    </Link>
-                </div>
-            </Header>
+            <Header showLinks={true} />
 
             <Section>
                 <Presentation>
@@ -109,7 +103,7 @@ export default function Home() {
             <Section>
                 <Inner>
                     <Features className='onscroll__animate'>
-                        <div className='flex'>
+                        <div className='row'>
                             <Feature>
                                 <div>
                                     <PersonIcon fontSize='large' />
@@ -132,7 +126,7 @@ export default function Home() {
                             </Feature>
                         </div>
 
-                        <div className='flex'>
+                        <div className='row'>
                             <Feature>
                                 <div>
                                     <AttachFileIcon className='rotate' fontSize='large' />
@@ -166,13 +160,15 @@ export default function Home() {
             <Section className='bg'>
                 <CallToActionCard className='onscroll__animate'>
                     <h3>Let's Go!</h3>
-                    <h3>Sign up now to chat with your frineds</h3>
+                    <h3>Sign up now to chat with your friends</h3>
 
                     <Link href='/signup'>
                         <SubscribeLink>Subscribe Now!</SubscribeLink>
                     </Link>
                 </CallToActionCard>
             </Section>
+
+            <Footer />
         </Container>
     );
 };

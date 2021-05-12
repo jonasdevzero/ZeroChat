@@ -7,46 +7,6 @@ export const Container = styled.div`
     background-color: #151515;
 `;
 
-export const Header = styled.header`
-    width: 100%;
-    height: fit-content;
-
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: absolute;
-    top: 0;
-    padding: 4rem 8rem;
-    z-index: 1;
-
-    h1 {
-        font-size: 4.8rem;
-        font-family: 'Noto Sans', sans-serif;
-        font-weight: 700;
-        margin-left: 2rem;
-    };
-`;
-
-export const StyledLink = styled.a`
-    font-size: 2.4rem;
-    font-weight: 400;
-    font-family: 'Noto Sans', sans-serif;
-
-    line-height: 2rem;
-    text-decoration: none;
-
-    padding: .9rem 2rem;
-    border-radius: .3rem;
-    cursor: pointer;
-
-    & + & {
-        margin-left: 2.5rem;
-    };
-    &:hover {
-        text-decoration: underline;
-    };
-`;
-
 export const Section = styled.section`
     width: 100%;
     height: 100vh;
@@ -188,7 +148,7 @@ export const Features = styled.div`
         transform: translateX(3rem);
     };
 
-    & > div.flex {
+    & > div.row {
         display: flex;
         justify-content: space-between;
         width: 100%;
@@ -254,7 +214,7 @@ export const CallToActionCard = styled.div`
     };
 
     h3 {
-        font-size: 6.4rem;
+        font-size: 5rem;
         font-family: 'Noto Sans', sans-serif;
         font-weight: 500;
     };
