@@ -3,7 +3,7 @@ const INITIAL_STATE = {
     userCall: undefined,
     userSignal: undefined,
     type: undefined,
-    minimized: false
+    minimized: true
 }
 
 export default function chat(state = INITIAL_STATE, action: any) {
