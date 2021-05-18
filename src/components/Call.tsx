@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import Peer from "simple-peer";
 import { socket } from '../services';
 import { useSelector, useDispatch } from 'react-redux'
-import { toggleCallMinimized } from '../store/actions/call'
+import * as CallActions from '../store/actions/call'
+import { ContactI } from "../types/user";
 
 import {
     Container,
@@ -29,6 +30,7 @@ import {
 } from "@material-ui/icons";
 
 export default function Call() {
+    const userContacts: ContactI[] = useSelector((state: any) => state.user.contacts)
     const myVideo = useRef(null);
     const userVideo = useRef(null);
 
@@ -47,7 +49,13 @@ export default function Call() {
 
     const [alert, setAlert] = useState('');
 
-    useEffect(() => call.startingOrReceiving === 'starting' ? callUser() : null, []);
+    useEffect(() => {
+        socket.removeListener('call-request')
+        socket.on('call-request', ({ signal, callType, callFrom }) => {
+            const userCall = userContacts.find(contact => contact.id === callFrom)
+            dispatch(CallActions.callRequest({ signal, callType, userCall }))
+        })
+    }, [userContacts])
 
     function callUser() {
         navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
@@ -57,14 +65,16 @@ export default function Call() {
             const peer = new Peer({ initiator: true, stream, trickle: false });
 
             peer.on("signal", signal => {
-                socket.emit("call-request", { signal, to: call.userCall.id, callType: call.type }, () => setMediaLoaded(true));
+                socket.emit("call-request", { signal, to: call.userCall.id, callType: call.type }, (error) => {
+                    error ? setAlert(error) : setMediaLoaded(true)
+                });
             });
 
             peer.on('stream', stream => userVideo.current.srcObject = stream);
 
             peer.on('error', (error) => { });
 
-            socket.on("call-accepted", signal => {
+            socket.once("call-accepted", signal => {
                 setCallAccepted(true);
                 startCallTime();
                 myVideo.current.srcObject = stream;
@@ -72,9 +82,15 @@ export default function Call() {
                 peer.signal(signal);
             });
 
-            socket.on('call-rejected', () => {
-                setAlert('Call rejected');
+            socket.once('call-refused', () => {
+                setAlert('Call refused');
+                setTimeout(() => dispatch(CallActions.callEnd()), 1500);
             });
+
+            socket.once('call-finished', () => {
+                setAlert('Call finished');
+                setTimeout(() => dispatch(CallActions.callEnd()), 1500);
+            })
         });
     };
 
@@ -89,22 +105,24 @@ export default function Call() {
 
             const peer = new Peer({ initiator: false, stream, trickle: false });
 
-            peer.on("signal", signal => {
-                socket.emit("call-answer", { signal, to: call.userCall.id });
-                startCallTime();
-            });
+            peer.on("signal", signal => socket.emit("answer-call", { signal, to: call.userCall.id }, () => startCallTime()));
 
             peer.on('stream', stream => userVideo.current.srcObject = stream);
 
             peer.on('error', (error) => { });
 
+            socket.once('call-finished', () => {
+                setAlert('Call finished');
+                setTimeout(() => dispatch(CallActions.callEnd()), 1500);
+            })
+
             peer.signal(call.userSignal);
         });
     };
 
-    function finishCall() {
-        socket.emit('call-finished', { to: call.userCall.id }, () => {});
-    };
+    const refuseCall = () => socket.emit('refuse-call', { to: call.userCall.id });
+
+    const finishCall = () => socket.emit('finish-call', { to: call.userCall.id }, () => { });
 
     function toggleMicStatus() {
         const enabled = myStream.getAudioTracks()[0].enabled;
@@ -175,7 +193,7 @@ export default function Call() {
                                                 <CallIcon className="call" />
                                             </Button>
 
-                                            <Button onClick={() => { }}>
+                                            <Button onClick={() => refuseCall()}>
                                                 <CallEndIcon className="callend" />
                                             </Button>
                                         </Buttons>
@@ -189,6 +207,12 @@ export default function Call() {
                                     </LoadingMedia>
                                 );
                             };
+                        default:
+                            return (
+                                <div>
+                                    Call component
+                                </div>
+                            )
                     };
                 }()}
 
@@ -206,7 +230,7 @@ export default function Call() {
 
             {callAccepted && mediaLoaded ? (
                 <InfoBar>
-                    <Button className='no-bg' onClick={() => dispatch(toggleCallMinimized())}>
+                    <Button className='no-bg' onClick={() => dispatch(CallActions.toggleCallMinimized())}>
                         <ArrowDropDownIcon fontSize='large' />
                     </Button>
 
