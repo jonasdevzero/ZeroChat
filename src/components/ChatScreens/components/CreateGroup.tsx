@@ -1,17 +1,18 @@
-import React, { useState, useEffect, Dispatch, SetStateAction } from "react";
-import { UserI, ContactI } from "../types/user";
+import { useState, useEffect } from "react";
+import { UserI, ContactI } from "../../../types/user";
 import Fuse from "fuse.js";
-import { api, socket } from "../services";
-import { SetUserMasterI } from "../types/useSetUserMaster";
-import { useDispatch } from 'react-redux'
-import { setCurrentRoom } from '../store/actions/currentRoom'
+import { groupService } from "../../../services";
+import { useDispatch, useSelector } from 'react-redux'
+import { setCurrentRoom } from '../../../store/actions/currentRoom'
+import * as UserActions from '../../../store/actions/user'
+import { setContainer } from '../../../store/actions/currentContainer'
 
 import {
     Container,
     Header,
     Inner,
     Form,
-} from "../styles/components/BaseContainer";
+} from "../../../styles/components/BaseContainer";
 import {
     InputContainer,
     SearchOrCloseButton,
@@ -20,7 +21,7 @@ import {
     SearchInputWrapper,
     FilteredContacts,
     SelectedContacts,
-} from "../styles/components/CreateGroup";
+} from "../../../styles/components/CreateGroup";
 import { Avatar } from "@material-ui/core";
 import {
     CloudUpload as CloudUploadIcon,
@@ -29,13 +30,11 @@ import {
 } from "@material-ui/icons";
 
 interface CreateGroupI {
-    user: UserI;
-    setUserMaster: SetUserMasterI;
-    setCurrentContainer: Dispatch<SetStateAction<"profile" | "messages" | "addContact" | "createGroup">>;
     theme: "light" | "dark";
 };
 
-export default function CreateGroup({ user, setUserMaster, setCurrentContainer, theme }: CreateGroupI) {
+export default function CreateGroup({ theme }: CreateGroupI) {
+    const user: UserI = useSelector((state: any) => state.user)
     const [name, setName] = useState("");
     const [image, setImage] = useState<File>(undefined);
     const [description, setDescription] = useState("");
@@ -52,33 +51,16 @@ export default function CreateGroup({ user, setUserMaster, setCurrentContainer, 
     const dispatch = useDispatch()
 
     async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-        e.preventDefault();
+        e.preventDefault()
+        setLoading(true)
 
-        const data = new FormData();
-        data.append("name", name);
-        data.append("image", image);
-        data.append("description", description);
-
-        members.forEach(member => data.append("members", member));
-
-        setLoading(true);
-
-        await api.post(`/group`, data).then(response => {
-            const group = response.data.group;
-            group.messages = [];
-            setLoading(false);
-
-            socket.emit("group", { event: "new", data: { event: "new", group, members } }, () => {
-                socket.emit("group", { event: "join", groupId: group.id }, () => {
-                    setUserMaster.groups.push(group).then(() => {
-                        dispatch(setCurrentRoom(group, 'group'))
-                        setCurrentContainer("messages");
-                    });
-                });
-            });
-        });
-
-    };
+        groupService.create({ name, description, picture: image, members }).then(group => {
+            dispatch(UserActions.pushRoom({ roomType: 'group', room: group })).then(() => {
+                dispatch(setCurrentRoom(group, 'group'))
+                dispatch(setContainer('messages'))
+            })
+        }).finally(() => setLoading(false))
+    }
 
     function handleSelectImage(e: React.ChangeEvent<HTMLInputElement>) {
         if (!e.target.files) return;
@@ -112,10 +94,8 @@ export default function CreateGroup({ user, setUserMaster, setCurrentContainer, 
         const fuse = new Fuse(user.contacts, { keys: ["username"] });
         let results: ContactI[] = [];
         fuse.search(search).map(({ item }) => item).forEach(contact => {
-            if (!(selectedContacts?.find(c => c.id === contact.id))) {
-                results.push(contact);
-            };
-        });
+            !(selectedContacts?.find(c => c.id === contact.id)) ? results.push(contact) : null
+        })
 
         setSearchResult(results);
     }, [search, user?.contacts])

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { useRouter } from "next/router";
-import { UserI } from "../types/user";
-import { api, socket } from "../services";
+import { UserI } from "../../../types/user";
+import { api, socket, userService } from "../../../services";
 import { AxiosError } from "axios";
-import { SetUserMasterI } from "../types/useSetUserMaster";
 import Cookies from 'js-cookie';
+import * as UserActions from '../../../store/actions/user';
 
 import {
     Info,
@@ -15,14 +16,14 @@ import {
     Screen,
     Fill,
     Close,
-} from "../styles/components/Profile";
+} from "../../../styles/components/Profile";
 import {
     Container,
     Header,
     Inner,
     Form,
-} from "../styles/components/BaseContainer";
-import Warning from "./Warning";
+} from "../../../styles/components/BaseContainer";
+import Warning from "../../Warning";
 import { Avatar } from "@material-ui/core";
 import {
     Visibility as VisibilityIcon,
@@ -32,12 +33,11 @@ import {
 } from '@material-ui/icons';
 
 interface ProfileI {
-    user: UserI;
-    setUserMaster: SetUserMasterI;
     theme: "light" | "dark";
 };
 
-export default function Profile({ user, setUserMaster, theme }: ProfileI) {
+export default function Profile({ theme }: ProfileI) {
+    const user: UserI = useSelector((state: any) => state.user)
     const [name, setName] = useState(user?.name);
     const [username, setUsername] = useState(user?.username);
     const [picture, setPicture] = useState(user?.picture);
@@ -59,6 +59,31 @@ export default function Profile({ user, setUserMaster, theme }: ProfileI) {
     const [currentRequest, setCurrentRequest] = useState<"data" | "email" | "password" | "delete">("data");
 
     const router = useRouter();
+    const dispatch = useDispatch();
+
+    function updateData(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault()
+
+        userService.update({ name, username })
+            .then(data => {
+                dispatch(UserActions.updateUser(data))
+            })
+            .catch(() => {})
+    }
+
+    function UpdatePicture(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault()
+
+        userService.updatePicture(newPicture)
+            .then(({ location }) => dispatch(UserActions.updateUser({ picture: location })))
+    }
+
+    function updateEmail(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault()
+
+        userService.updateEmail({ email, password })
+            .then(({ email }) => dispatch(UserActions.updateUser({ email })))
+    }
 
     async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -76,7 +101,7 @@ export default function Profile({ user, setUserMaster, theme }: ProfileI) {
             await api.put(`/user?without_image=${picture?.length === 0}`, data).then(response => {
                 const { user: { name, username, picture } } = response.data;
 
-                setUserMaster.update({ name, username, picture });
+                dispatch(UserActions.updateUser({ name, username, picture }))
                 setWarning("Updated with success!");
 
                 socket.emit("user", { event: "update", data: { where: user?.id, set: { username, image: picture } } }, () => { });
@@ -97,7 +122,7 @@ export default function Profile({ user, setUserMaster, theme }: ProfileI) {
         setError("");
 
         await api.put(`/user?update_email=true`, { email, password }).then(response => {
-            setUserMaster.update({ email });
+            dispatch(UserActions.updateUser({ email }))
 
             closeScreen();
             setWarning("Updated with success");
