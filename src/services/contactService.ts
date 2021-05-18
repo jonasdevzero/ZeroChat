@@ -2,6 +2,19 @@ import { api } from "."
 import ContactService from '../types/services/contactService'
 
 export default {
+    async search(username) {
+        try {
+            if (!username.length) return undefined;
+
+            const response = await api.get(`/user?username=${username}`)
+            const { user } = response.data
+
+            return user
+        } catch (error) {
+            throw new Error(error)
+        }
+    },
+
     invite(contact_id: string) {
         return new Promise(async (resolve, reject) => {
             try {

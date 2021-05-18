@@ -1,4 +1,4 @@
-import { api } from "."
+import { api, socket } from "."
 import GroupService from '../types/services/groupService'
 
 interface CreateGroupI {
@@ -22,7 +22,7 @@ export default {
                 const response = await api.post('/group', data)
                 const { group } = response.data
 
-                resolve(group)
+                socket.emit('new-group', { group, members }, () => resolve(group))
             } catch (error) {
                 reject(error)
             }

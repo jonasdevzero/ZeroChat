@@ -4,17 +4,6 @@ import UserService from '../types/services/userService'
 import { UserI } from '../types/user'
 
 export default {
-    async index(username) {
-        try {
-            const response = await api.get(`/user?username=${username}`)
-            const { user } = response.data
-
-            return user
-        } catch (error) {
-            throw new Error(error)
-        }
-    },
-
     auth() {
         return new Promise(async (resolve, reject) => {
             try {
@@ -23,8 +12,8 @@ export default {
 
                 socket.connect()
 
-                socket.once('ready', (error: any, user: UserI) => {
-                    if (error) reject(error);
+                socket.once('ready', (user: UserI) => {
+                    if (!user) reject('Cannot connect to the server!');
 
                     api.defaults.headers.common["Authorization"] = `Bearer ${jwt}`
                     resolve(user)
@@ -64,11 +53,13 @@ export default {
         })
     },
 
-    update({ name, username }) {
+    update(data) {
         return new Promise(async (resolve, reject) => {
             try {
-                const response = await api.put('/user', { name, username })
-                return response.data
+                const response = await api.put('/user', data)
+                const { id, name, username } = response.data
+
+                socket.emit('update', { action: 'UPDATE_ROOM', where: id, set: { name, username }, roomType: 'contact' }, () => resolve({ name, username }))
             } catch (error) {
                 reject(error)
             }
@@ -82,7 +73,9 @@ export default {
                 data.append('picture', picture)
 
                 const response = await api.patch('/user/picture', data)
-                resolve(response.data)
+                const { id, location } = response.data
+
+                socket.emit('update', { action: 'UPDATE_ROOM', where: id, set: { picture: location }, roomType: 'contact' }, () => resolve(response.data))
             } catch (error) {
                 reject(error)
             }
