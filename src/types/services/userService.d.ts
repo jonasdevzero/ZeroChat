@@ -30,8 +30,6 @@ interface ResetPasswordI {
 }
 
 export default interface UserService {
-    index(username: string): Promise<{ id: string, username: string, picture: string  }[]>
-
     auth(): Promise<UserI>
 
     login(data: LogInI): Promise<string>

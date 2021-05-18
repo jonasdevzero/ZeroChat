@@ -48,10 +48,8 @@ export interface GroupI {
     picture: string | null;
     description: string;
     created_at: Date;
-    me: {
-        unread_messages: number;
-        role: string;
-    };
+    unread_messages: number;
+    role: string;
     users: GroupUserI[];
     messages: GroupMessageI[]
 };
