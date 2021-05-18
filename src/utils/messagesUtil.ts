@@ -29,7 +29,7 @@ function messagesDay(messages: GroupMessageI[] & ContactMessageI[]) {
     }, {});
 };
 
-export default function orderMessages(messages: GroupMessageI[] & ContactMessageI[]) {
+function orderMessages(messages: GroupMessageI[] & ContactMessageI[]) {
     if (!messages) return [];
 
     const days = messagesDay(messages);
@@ -44,3 +44,7 @@ export default function orderMessages(messages: GroupMessageI[] & ContactMessage
 
     return items;
 };
+
+export default {
+    orderMessages,
+}
