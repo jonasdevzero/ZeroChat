@@ -7,7 +7,7 @@ import {
     GroupDashboard
 } from './components'
 
-function ChatContainers({ theme }) {
+function ChatScreens({ theme }) {
     const currentContainer = useSelector((state: any) => state.currentContainer)
 
     return (
@@ -30,4 +30,4 @@ function ChatContainers({ theme }) {
     )
 }
 
-export default ChatContainers
+export default ChatScreens

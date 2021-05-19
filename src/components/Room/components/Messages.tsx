@@ -2,7 +2,15 @@ import { useSelector } from 'react-redux'
 import { messagesUtil } from '../../../utils'
 import moment from 'moment'
 
-import { Message } from '../../../styles/components/Messages'
+import {
+    Message,
+    Inner,
+    Text,
+    Time,
+    Day,
+    User,
+    Username
+} from '../../../styles/components/Room/components/Messages'
 import { Avatar } from "@material-ui/core"
 
 function Messages({ messages }) {
@@ -13,30 +21,22 @@ function Messages({ messages }) {
         <>
             {messagesUtil.orderMessages(messages).map((msg, i, arr) => {
                 if (msg.type && msg.type === "day") {
-                    return <Message.Day key={i}>{msg.date}</Message.Day>
+                    return <Day key={i}>{msg.date}</Day>
                 };
 
                 return (
                     <Message key={i} className={msg?.sender_id === arr[i - 1]?.sender_id && "concat"}>
                         {roomType === 'group' && msg?.sender_id !== userId && msg?.sender_id !== arr[i - 1]?.sender_id ? (
-                            <Message.User>
+                            <User>
                                 <Avatar src={msg.sender.image} />
-
-                                <Message.User.Username>
-                                    {msg.sender.username}
-                                </Message.User.Username>
-                            </Message.User>
+                                <Username>{msg.sender.username}</Username>
+                            </User>
                         ) : null}
 
-                        <Message.Inner className={msg?.sender_id === userId && "sender"}>
-                            <Message.Text>
-                                {msg.text}
-                            </Message.Text>
-
-                            <Message.Time>
-                                {moment(msg.created_at).format("HH:mm A")}
-                            </Message.Time>
-                        </Message.Inner>
+                        <Inner className={msg?.sender_id === userId && "sender"}>
+                            <Text>{msg.text}</Text>
+                            <Time>{moment(msg.created_at).format("HH:mm A")}</Time>
+                        </Inner>
                     </Message>
                 );
             })}

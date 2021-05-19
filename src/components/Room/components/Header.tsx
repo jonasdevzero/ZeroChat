@@ -4,10 +4,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import *  as CallActions from '../../../store/actions/call'
 
 import Dropdown from '../../../styles/components/Dropdown'
-import {
-    Header,
-    Room
-} from '../../../styles/components/Messages'
+import { Header, Room } from '../../../styles/components/Room/components/Header'
 import { Avatar, IconButton } from "@material-ui/core";
 import {
     MoreVert as MoreVertIcon,

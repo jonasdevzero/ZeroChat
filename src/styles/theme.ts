@@ -1,4 +1,4 @@
-export const light = {
+const light = {
     textColor: '#000',
 
     pages: {
@@ -58,7 +58,7 @@ export const light = {
     },
 };
 
-export const dark = {
+const dark = {
     textColor: '#eee',
 
     pages: {
@@ -117,3 +117,12 @@ export const dark = {
         }
     },
 };
+
+const themes = {
+    light,
+    dark,
+}
+
+export const allowedThemes = Object.keys(themes)
+
+export default themes

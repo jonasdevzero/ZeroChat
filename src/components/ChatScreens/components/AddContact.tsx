@@ -7,7 +7,7 @@ import {
     Container,
     Header,
     Inner,
-} from "../../../styles/components/BaseContainer"
+} from "../../../styles/components/ChatScreens/BaseScreen"
 import {
     Form,
     Input,
@@ -16,7 +16,7 @@ import {
     Submit,
     WrapperAvatar,
     Initial,
-} from "../../../styles/components/AddContact"
+} from "../../../styles/components/ChatScreens/AddContact"
 import { Avatar } from "@material-ui/core"
 import {
     Search as SearchIcon,

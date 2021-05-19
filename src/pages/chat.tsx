@@ -5,7 +5,7 @@ import { userService, socket } from "../services"
 import { useDispatch } from 'react-redux'
 import { setUser } from '../store/actions/user'
 
-import { Container } from '../styles/pages/chat';
+import { Container } from '../styles/pages/chat'
 import {
     Sidebar,
     Room,
@@ -43,5 +43,5 @@ export default function Chat({ theme, setTheme }) {
                 </>
             ) : (<LoadingContainer theme={theme} />)}
         </Container>
-    );
-};
+    )
+}

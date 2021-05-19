@@ -1,15 +1,22 @@
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { messagesService } from '../../../services'
-import { Picker, BaseEmoji } from "emoji-mart";
+import { Picker, BaseEmoji } from "emoji-mart"
 
-import { Form } from '../../../styles/components/Messages'
+import {
+    Container,
+    Inner,
+    Input,
+    Submit,
+    IconButton,
+    EmojiPickerContainer,
+} from '../../../styles/components/Room/components/Form'
 import {
     Send as SendIcon,
     InsertEmoticon as InsertEmoticonIcon,
     Mic as MicIcon,
     AttachFile as AttachFileIcon,
-} from "@material-ui/icons";
+} from "@material-ui/icons"
 
 function MessageForm() {
     const { room, type: roomType } = useSelector((state: any) => state.currentRoom)
@@ -27,23 +34,23 @@ function MessageForm() {
     }
 
     return (
-        <Form onSubmit={handleMessage}>
+        <Container onSubmit={handleMessage}>
             {showEmojiPicker ? (
-                <Form.EmojiPickerContainer>
+                <EmojiPickerContainer>
                     <Picker onSelect={(emoji: BaseEmoji) => setMessage(message.concat(emoji.native))} />
-                </Form.EmojiPickerContainer>
+                </EmojiPickerContainer>
             ) : null}
 
-            <Form.IconButton type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)}>
+            <IconButton type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)}>
                 <InsertEmoticonIcon fontSize="large" />
-            </Form.IconButton>
+            </IconButton>
 
-            <Form.IconButton type="button" onClick={() => { }}>
+            <IconButton type="button" onClick={() => { }}>
                 <AttachFileIcon fontSize="large" />
-            </Form.IconButton>
+            </IconButton>
 
-            <Form.Inner>
-                <Form.Input
+            <Inner>
+                <Input
                     type="text"
                     value={message}
                     onChange={e => setMessage(e.target.value)}
@@ -51,15 +58,15 @@ function MessageForm() {
                     onFocus={() => setShowEmojiPicker(false)}
                 />
 
-                <Form.Submit type="submit">
+                <Submit type="submit">
                     <SendIcon fontSize="large" />
-                </Form.Submit>
-            </Form.Inner>
+                </Submit>
+            </Inner>
 
-            <Form.IconButton type="button" onClick={() => { }}>
+            <IconButton type="button" onClick={() => { }}>
                 <MicIcon fontSize="large" />
-            </Form.IconButton>
-        </Form>
+            </IconButton>
+        </Container>
     )
 }
 

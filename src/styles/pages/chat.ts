@@ -14,13 +14,3 @@ export const Inner = styled.div`
 
     position: relative;
 `;
-
-export const ContainerWithoutChat = styled.div`
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    background-color: #303030;
-`;

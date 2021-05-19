@@ -16,13 +16,13 @@ import {
     Screen,
     Fill,
     Close,
-} from "../../../styles/components/Profile";
+} from "../../../styles/components/ChatScreens/Profile";
 import {
     Container,
     Header,
     Inner,
     Form,
-} from "../../../styles/components/BaseContainer";
+} from "../../../styles/components/ChatScreens/BaseScreen";
 import Warning from "../../Warning";
 import { Avatar } from "@material-ui/core";
 import {

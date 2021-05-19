@@ -12,7 +12,7 @@ import {
     ScrollToBottom,
     LoadingMessages,
     ContainerWithoutChat
-} from "../../styles/components/Messages";
+} from "../../styles/components/Room";
 import {
     KeyboardArrowDown as KeyboardArrowDownIcon,
 } from "@material-ui/icons";

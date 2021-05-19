@@ -12,7 +12,7 @@ import {
     Header,
     Inner,
     Form,
-} from "../../../styles/components/BaseContainer";
+} from "../../../styles/components/ChatScreens/BaseScreen";
 import {
     InputContainer,
     SearchOrCloseButton,
@@ -21,7 +21,7 @@ import {
     SearchInputWrapper,
     FilteredContacts,
     SelectedContacts,
-} from "../../../styles/components/CreateGroup";
+} from "../../../styles/components/ChatScreens/CreateGroup";
 import { Avatar } from "@material-ui/core";
 import {
     CloudUpload as CloudUploadIcon,

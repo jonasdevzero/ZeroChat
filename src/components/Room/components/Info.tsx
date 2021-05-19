@@ -1,6 +1,5 @@
 import { Dispatch, SetStateAction } from "react"
 import { useSelector } from 'react-redux'
-import { UserI } from "../../../types/user"
 
 import {
     Container,
@@ -9,7 +8,7 @@ import {
     GroupDescription,
     GroupUsers,
     EditGroupContainer,
-} from "../../../styles/components/RoomInfo"
+} from "../../../styles/components/Room/components/Info"
 import { IconButton, Avatar } from "@material-ui/core"
 import {
     Close as CloseIcon,
@@ -20,7 +19,7 @@ interface DetailsI {
     setShowRoomDetail: Dispatch<SetStateAction<boolean>>
 }
 
-export default function RoomInfo({ setShowRoomDetail }: DetailsI) {
+export default function Info({ setShowRoomDetail }: DetailsI) {
     const userId = useSelector((state: any) => state.user.id)
     const { room, type: roomType } = useSelector((state: any) => state.currentRoom)
 
@@ -38,7 +37,7 @@ export default function RoomInfo({ setShowRoomDetail }: DetailsI) {
 
                 {roomType === "contact" ? (
                     <>
-
+                        {/* Contact Options, ex: Block, Clear Messages... */}
                     </>
                 ) : (
                     <>
@@ -52,7 +51,6 @@ export default function RoomInfo({ setShowRoomDetail }: DetailsI) {
 
                         <GroupDescription>
                             <h4>Description</h4>
-
                             <p>{room.description}</p>
                         </GroupDescription>
 
