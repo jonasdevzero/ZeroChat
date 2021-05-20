@@ -23,7 +23,6 @@ import {
     Inner,
     Form,
 } from "../../../styles/components/ChatScreens/BaseScreen";
-import Warning from "../../Warning";
 import { Avatar } from "@material-ui/core";
 import {
     Visibility as VisibilityIcon,
@@ -51,8 +50,6 @@ export default function Profile({ theme }: ProfileI) {
 
     const [updateEmailScreen, setUpdateEmailScreen] = useState(false);
     const [deleteAccountScreen, setDeleteAccountScreen] = useState(false);
-
-    const [warning, setWarning] = useState("");
 
     const [error, setError] = useState("");
     const [loadingRequest, setLoadingRequest] = useState(false);
@@ -102,7 +99,6 @@ export default function Profile({ theme }: ProfileI) {
                 const { user: { name, username, picture } } = response.data;
 
                 dispatch(UserActions.updateUser({ name, username, picture }))
-                setWarning("Updated with success!");
 
                 socket.emit("user", { event: "update", data: { where: user?.id, set: { username, image: picture } } }, () => { });
             }).catch((error: AxiosError) => {
@@ -125,7 +121,6 @@ export default function Profile({ theme }: ProfileI) {
             dispatch(UserActions.updateUser({ email }))
 
             closeScreen();
-            setWarning("Updated with success");
         }).catch((error: AxiosError) => {
             const { message } = error?.response?.data;
             setError(message);
@@ -140,7 +135,6 @@ export default function Profile({ theme }: ProfileI) {
 
         await api.post("user/forgot_password", { email }).then(response => {
             setLoadingRequest(false);
-            setWarning(response.data.message);
         });
     };
 
@@ -152,7 +146,6 @@ export default function Profile({ theme }: ProfileI) {
         setError("");
 
         await api.post(`/user/delete`, { password }).then(_ => {
-            setWarning("Deleted with success, redirecting...");
             Cookies.remove('token');
             closeScreen();
 
@@ -198,10 +191,6 @@ export default function Profile({ theme }: ProfileI) {
     useEffect(() => {
         let timeout: NodeJS.Timeout;
 
-        if (warning.length > 0) {
-            setTimeout(() => setWarning(""), 2000);
-        };
-
         if (showMessage) {
             timeout = setTimeout(() => setShowMessage(false), 3000);
         };
@@ -209,7 +198,7 @@ export default function Profile({ theme }: ProfileI) {
         return () => {
             clearTimeout(timeout);
         }
-    }, [warning, showMessage]);
+    }, [showMessage]);
 
     return (
         <Container>
@@ -420,10 +409,6 @@ export default function Profile({ theme }: ProfileI) {
                     <Fill onClick={() => closeScreen()} />
                 </WrapperScreen>
             ) : null}
-
-            <Warning showWarning={warning?.length > 0}>
-                {warning}
-            </Warning>
         </Container>
     );
 };

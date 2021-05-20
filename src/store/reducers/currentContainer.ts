@@ -1,4 +1,4 @@
-const INITIAL_STATE: 'profile' | 'addContact' | 'createGroup' | 'groupDashboard' = undefined
+const INITIAL_STATE: 'profile' | 'addContact' | 'createGroup' | 'groupDashboard' | '' = ''
 
 export default function currentContainer(state = INITIAL_STATE, action: any) {
     switch(action.type) {
