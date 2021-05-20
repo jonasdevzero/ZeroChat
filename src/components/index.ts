@@ -1,4 +1,4 @@
-export { default as Warning } from "./Warning"
+export { default as Warn } from "./Warn"
 export { default as Sidebar } from "./Sidebar"
 export { default as Call } from "./Call"
 export { default as LoadingContainer } from "./LoadingContainer"

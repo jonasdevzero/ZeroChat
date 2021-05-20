@@ -1,17 +1,12 @@
 import styled from "styled-components";
 
-interface ContainerI {
-    show: boolean;
-    load: boolean;
-};
-
-export const Container = styled.div<ContainerI>`
+export const Container = styled.div`
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     position: fixed;
-    top: ${({ show }) => show ? "2rem" : "-12rem"};
+    top: 2rem;
     right: 5rem;
 
     transition: top .5s ease;
@@ -29,7 +24,7 @@ export const Container = styled.div<ContainerI>`
         content: "";
         position: absolute;
         top: -.3rem;
-        right: ${({ load }) => load ? "0rem" : "25rem"};
+        right: 0;
         transition: right 1.5s ease;
 
         width: 25rem;
