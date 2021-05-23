@@ -1,36 +1,58 @@
 import styled from "styled-components";
 
-export const Container = styled.div`
+interface ItemI {
+    position: number;
+    loadbar: boolean;
+    fadeOutPreRemove: boolean;
+}
+
+export const Item = styled.div<ItemI>`
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    position: fixed;
-    top: 2rem;
-    right: 5rem;
-
-    transition: top .5s ease;
 
     width: 25rem;
     height: 12rem;
     padding: 1rem;
 
-    background-color: ${({ theme }) => theme.components.warning.backgroundColor};
-
+    background-color: #252525;
     border-radius: .3rem;
+    transition: top .5s ease, opacity .2s ease;
     overflow: hidden;
+
+    position: absolute;
+    top: ${({ position }) => position === 1 ? '2rem' : `${position * 13 - 13}rem`};
+    right: 5rem;
+    opacity: ${({ fadeOutPreRemove }) => fadeOutPreRemove ? 0 : 1};
+
 
     &::after {
         content: "";
         position: absolute;
-        top: -.3rem;
-        right: 0;
+        top: -.35rem;
+        right: ${({ loadbar }) => loadbar ? "0rem" : "25rem"};
         transition: right 1.5s ease;
 
         width: 25rem;
         height: 12rem;
-        border-bottom: solid .3rem ${({ theme }) => theme.components.warning.loadingBarColor};
+        border-bottom: solid .35rem green;
     };
+
+    & + & {
+        margin-top: 1.5rem;
+    }
+
+    @keyframes item {
+        0% {
+            opacity: .65;
+        }
+        100% {
+            opacity: 1;
+        }
+    }
+    animation-name: item;
+    animation-duration: .4s;
 `;
 
 export const Message = styled.p`

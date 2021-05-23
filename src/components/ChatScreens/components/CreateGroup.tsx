@@ -1,11 +1,9 @@
-import { useState, useEffect } from "react";
-import { UserI, ContactI } from "../../../types/user";
-import Fuse from "fuse.js";
-import { groupService } from "../../../services";
+import { useState, useEffect } from "react"
+import { UserI, ContactI } from "../../../types/user"
+import Fuse from "fuse.js"
+import { groupService } from "../../../services"
 import { useDispatch, useSelector } from 'react-redux'
-import { setCurrentRoom } from '../../../store/actions/currentRoom'
-import * as UserActions from '../../../store/actions/user'
-import { setContainer } from '../../../store/actions/currentContainer'
+import * as Actions from '../../../store/actions'
 
 import {
     Container,
@@ -35,6 +33,7 @@ interface CreateGroupI {
 
 export default function CreateGroup({ theme }: CreateGroupI) {
     const user: UserI = useSelector((state: any) => state.user)
+
     const [name, setName] = useState("");
     const [image, setImage] = useState<File>(undefined);
     const [description, setDescription] = useState("");
@@ -54,12 +53,13 @@ export default function CreateGroup({ theme }: CreateGroupI) {
         e.preventDefault()
         setLoading(true)
 
-        groupService.create({ name, description, picture: image, members }).then(group => {
-            dispatch(UserActions.pushRoom({ roomType: 'group', room: group })).then(() => {
-                dispatch(setCurrentRoom(group, 'group'))
-                dispatch(setContainer('messages'))
+        groupService.create({ name, description, picture: image, members })
+            .then(group => {
+                dispatch(Actions.user.pushRoom({ roomType: 'group', room: group }))
+                dispatch(Actions.room.setRoom(group, 'group'))
+                dispatch(Actions.screen.setScreen(undefined))
             })
-        }).finally(() => setLoading(false))
+            .then(() => setLoading(false))
     }
 
     function handleSelectImage(e: React.ChangeEvent<HTMLInputElement>) {

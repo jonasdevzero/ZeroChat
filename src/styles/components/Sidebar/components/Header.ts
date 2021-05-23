@@ -15,7 +15,7 @@ export const Title = styled.h2`
     font-family: 'Noto Sans', sans-serif;
 `;
 
-export const UnreadMessages = styled.span`
+export const Pending = styled.span`
     display: flex;
     align-items: center;
     justify-content: center;
@@ -27,6 +27,6 @@ export const UnreadMessages = styled.span`
     background-color: #202020;
     color: #fff;
 
-    margin-left: auto;
-    margin-right: 1rem;
+    margin-left: 1rem;
+    margin-right: auto;
 `;

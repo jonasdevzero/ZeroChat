@@ -34,7 +34,7 @@ export default function AddContact() {
 
     useDebounce(() => {
         contactService.search(username)
-            .then(users => setContacts(users.filter(u => u.id !== userId && !(userContacts.find(c => c.id === u.id)))))
+            .then(users => setContacts(users?.filter(u => u.id !== userId && !(userContacts.find(c => c.id === u.id)))))
     }, [username], 500)
 
     return (

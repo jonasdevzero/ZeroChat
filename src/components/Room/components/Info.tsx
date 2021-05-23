@@ -21,7 +21,7 @@ interface DetailsI {
 
 export default function Info({ setShowRoomDetail }: DetailsI) {
     const userId = useSelector((state: any) => state.user.id)
-    const { room, type: roomType } = useSelector((state: any) => state.currentRoom)
+    const { room, roomType } = useSelector(({ room }: any) => ({ room: room.current, roomType: room.type }))
 
     return (
         <Container>

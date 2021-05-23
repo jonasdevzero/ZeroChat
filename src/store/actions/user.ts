@@ -49,7 +49,7 @@ export function updateRoom(data: UpdateRoomI) {
     }
 }
 
-export async function pushRoom(data: RoomI) {
+export function pushRoom(data: RoomI) {
     return {
         type: 'PUSH_ROOM',
         ...data
@@ -61,4 +61,12 @@ export function removeRoom(data: RoomI) {
         type: 'REMOVE_ROOM',
         ...data
     }
+}
+
+export default {
+    setUser,
+    updateUser,
+    updateRoom,
+    pushRoom,
+    removeRoom,
 }

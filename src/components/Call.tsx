@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from "react";
-import Peer from "simple-peer";
-import { socket } from '../services';
+import { useEffect, useRef, useState } from "react"
+import Peer from "simple-peer"
+import { socket } from '../services'
 import { useSelector, useDispatch } from 'react-redux'
 import * as CallActions from '../store/actions/call'
-import { ContactI } from "../types/user";
+import { dateUtil } from '../utils'
+import { ContactI } from "../types/user"
 
 import {
     Container,
@@ -146,13 +147,6 @@ export default function Call() {
         }, 1000);
     };
 
-    function convertSeconds(time: number) {
-        const measuredTime = new Date(null);
-        measuredTime.setSeconds(time);
-
-        return measuredTime.toISOString().substr(11, 8);
-    };
-
     return (
         <Container minimized={call.minimized}>
             <UsersContainer>
@@ -248,7 +242,7 @@ export default function Call() {
                         </Button>
                     </Buttons>
 
-                    <CallTime>{convertSeconds(callTime)}</CallTime>
+                    <CallTime>{dateUtil.convertSeconds(callTime)}</CallTime>
                 </InfoBar>
             ) : null}
         </Container>

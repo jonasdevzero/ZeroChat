@@ -30,7 +30,7 @@ export default function Room({ theme }: MessagesI) {
     const [showScrollButton, setShowScrollButton] = useState(false)
     const [showRoomDetail, setShowRoomDetail] = useState(false)
 
-    const { room, type: roomType } = useSelector((state: any) => state.currentRoom)
+    const { room, roomType } = useSelector(({ room }: any) => ({ room: room.current, roomType: room.type }))
     const dispatch = useDispatch()
 
     useEffect(() => {

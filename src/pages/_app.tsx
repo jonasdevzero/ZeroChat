@@ -4,10 +4,10 @@ import Themes from '../styles/theme'
 import { Provider } from 'react-redux'
 import store from '../store'
 import { usePersistedState } from '../hooks'
-import WarnProvider from '../components/Warn'
+import { WarnProvider } from '../contexts'
 
 function MyApp({ Component, pageProps }) {
-    const [theme, setTheme] = usePersistedState('theme', 'dark')
+    const [theme, setTheme] = usePersistedState<'light' | 'dark'>('theme', 'dark')
 
     return (
         <ThemeProvider theme={Themes[theme]}>

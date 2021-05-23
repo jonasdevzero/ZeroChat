@@ -1,13 +1,13 @@
 import { combineReducers } from 'redux';
 
 import call from './call'
-import currentRoom from './currentRoom'
+import room from './room'
 import user from './user'
-import currentContainer from './currentContainer'
+import screen from './screen'
 
 export default combineReducers({
     call,
-    currentRoom,
+    room,
     user,
-    currentContainer
+    screen
 });

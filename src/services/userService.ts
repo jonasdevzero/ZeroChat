@@ -8,12 +8,15 @@ export default {
         return new Promise(async (resolve, reject) => {
             try {
                 const jwt = Cookies.get('token')
-                if (!jwt) throw new Error('Unounterized');
+                if (!jwt) reject('Unounterized');
 
                 socket.connect()
 
                 socket.once('ready', (user: UserI) => {
-                    if (!user) reject('Cannot connect to the server!');
+                    if (!user) {
+                        Cookies.remove('token')
+                        reject('Token invalid or expired!')
+                    }
 
                     api.defaults.headers.common["Authorization"] = `Bearer ${jwt}`
                     resolve(user)

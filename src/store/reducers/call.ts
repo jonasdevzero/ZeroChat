@@ -6,7 +6,7 @@ const INITIAL_STATE = {
     minimized: true
 }
 
-export default function chat(state = INITIAL_STATE, action: any) {
+export default function callReducer(state = INITIAL_STATE, action: any) {
     switch(action.type) {
         case 'CALL_REQUEST':
             return {

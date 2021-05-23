@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import Cookies from 'js-cookie'
 import { userService } from '../services'
 import { AxiosError } from 'axios'
+import { useWarn } from '../hooks'
 
 import { Header, Footer } from '../components'
 import {
@@ -29,6 +30,7 @@ export default function SignIn() {
     const [loading, setLoading] = useState(true)
 
     const router = useRouter()
+    const warn = useWarn()
 
     useEffect(() => {
         const token = Cookies.get('token')
@@ -44,8 +46,11 @@ export default function SignIn() {
     }
 
     function handleSuccess() {
-        setLoading(true)
-        router.push('/chat')
+        warn.success('LogIn made with success, redirecting...')
+        setTimeout(() => {
+            setLoading(true)
+            router.push('/chat')
+        }, 2500)
     }
 
     function handleError(error: AxiosError) {

@@ -1,5 +1,5 @@
 import { useSelector } from 'react-redux'
-import { messagesUtil } from '../../../utils'
+import { roomUtil } from '../../../utils'
 import moment from 'moment'
 
 import {
@@ -15,11 +15,11 @@ import { Avatar } from "@material-ui/core"
 
 function Messages({ messages }) {
     const userId = useSelector((state: any) => state.user.id)
-    const roomType = useSelector((state: any) => state.currentRoom.type)
+    const roomType = useSelector((state: any) => state.room.type)
 
     return (
         <>
-            {messagesUtil.orderMessages(messages).map((msg, i, arr) => {
+            {roomUtil.orderMessages(messages).map((msg, i, arr) => {
                 if (msg.type && msg.type === "day") {
                     return <Day key={i}>{msg.date}</Day>
                 };

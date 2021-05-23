@@ -1,6 +1,6 @@
-import store from '../'
-import { api } from "../../services"
+import { messagesService } from "../../services"
 import { ContactI, GroupI, UserI } from "../../types/user"
+import { roomUtil } from "../../utils"
 
 const INITIAL_STATE = {
     name: '',
@@ -13,18 +13,13 @@ const INITIAL_STATE = {
     invitations: []
 } as unknown as UserI
 
-export default function user(state = INITIAL_STATE, action: any) {
+export default function userReducer(state = INITIAL_STATE, action: any) {
     action.roomType ? action.roomType = `${action.roomType}s` : null
 
     const reducer = reducers[action.type]
     if (!reducer) return state;
 
     return reducer(state, action)
-}
-
-function orderRoomsByLastMessage<T extends any[]>(arr: T, from: number, to: number) {
-    arr?.splice(to, 0, arr?.splice(from, 1)[0]);
-    return arr;
 }
 
 const reducers = {
@@ -87,15 +82,16 @@ const reducers = {
                 position = i
                 room.messages.push(data.message)
 
+
                 currentRoom === data.to ?
-                    api.put(`/${roomType}/${currentRoom}?action=unread_messages`).then(() => room.unread_messages = undefined)
+                    messagesService.viewed({ roomType, roomId: currentRoom }).then(() => room.unread_messages = undefined)
                     : room.unread_messages ? room.unread_messages++ : room.unread_messages = 1;
             }
 
             return room
         })
 
-        return { ...state, [roomType]: orderRoomsByLastMessage(rooms, position, 0) }
+        return { ...state, [roomType]: roomUtil.orderRooms(rooms, position, 0) }
     },
 
     'REMOVE_MESSAGE'(state: UserI, action: any) {

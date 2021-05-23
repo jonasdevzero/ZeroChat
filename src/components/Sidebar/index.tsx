@@ -1,13 +1,11 @@
-import { useState, useEffect, Dispatch, SetStateAction } from "react";
-import { useRouter } from "next/router";
-import Cookies from 'js-cookie';
+import { useState, useEffect, Dispatch, SetStateAction } from "react"
+import { useRouter } from "next/router"
+import Cookies from 'js-cookie'
 import { useSelector, useDispatch } from 'react-redux'
 import { socket } from '../../services'
-import * as UserActions from '../../store/actions/user'
-import * as CallActions from '../../store/actions/call'
-import { UserI } from "../../types/user";
+import * as Actions from '../../store/actions'
 
-import { Header, Rooms, Notifications, Invitations } from './components'
+import { Header, Rooms, Notifications } from './components'
 import {
     Container,
     Options,
@@ -26,7 +24,6 @@ import {
     PowerSettingsNew as PowerSettingsNewIcon,
     CallRounded as CallIcon,
     NotificationsRounded as NotificationsIcon,
-    EmailRounded as InvitationsIcon
 } from "@material-ui/icons";
 
 interface SidebarI {
@@ -35,7 +32,7 @@ interface SidebarI {
 };
 
 export default function Sidebar({ theme, setTheme }: SidebarI) {
-    const user: UserI = useSelector((state: any) => state.user)
+    const userPicture = useSelector((state: any) => state.user.picture)
     const [optionSelected, setOptionSelected] = useState('contacts')
 
     const router = useRouter()
@@ -44,7 +41,7 @@ export default function Sidebar({ theme, setTheme }: SidebarI) {
     useEffect(() => {
         socket.on("new-group", (group) => {
             socket.emit("join-group", group.id)
-            dispatch(UserActions.pushRoom({ roomType: 'group', room: group }))
+            dispatch(Actions.user.pushRoom({ roomType: 'group', room: group }))
         })
         socket.on('update', action => dispatch(action))
     }, [])
@@ -57,8 +54,8 @@ export default function Sidebar({ theme, setTheme }: SidebarI) {
     return (
         <Container>
             <Options>
-                <User>
-                    <Avatar src={user.picture} />
+                <User onClick={() => dispatch(Actions.screen.setScreen('profile'))}>
+                    <Avatar src={userPicture} />
                 </User>
 
                 <OptionsInner>
@@ -74,11 +71,7 @@ export default function Sidebar({ theme, setTheme }: SidebarI) {
                         <NotificationsIcon />
                     </Option>
 
-                    <Option onClick={() => setOptionSelected("invitations")}>
-                        <InvitationsIcon />
-                    </Option>
-
-                    <Option onClick={() => dispatch(CallActions.toggleCallMinimized())}>
+                    <Option onClick={() => dispatch(Actions.call.toggleCallMinimized())}>
                         <CallIcon />
                     </Option>
                 </OptionsInner>
@@ -103,8 +96,6 @@ export default function Sidebar({ theme, setTheme }: SidebarI) {
                             return <Rooms roomsType={optionSelected} />
                         case 'notifications':
                             return <Notifications />
-                        case 'invitations':
-                            return <Invitations />
                     }
                 }()}
             </Inner>

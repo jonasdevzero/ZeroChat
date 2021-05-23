@@ -18,7 +18,7 @@ interface RoomHeaderI {
 
 function RoomHeader({ setShowRoomDetail }: RoomHeaderI) {
     const [showDropdown, setShowDropdown] = useState(false)
-    const { room, type: roomType } = useSelector((state: any) => state.currentRoom)
+    const { room, roomType } = useSelector(({ room }: any) => ({ room: room.current, roomType: room.type }))
 
     const dispatch = useDispatch()
 

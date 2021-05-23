@@ -11,6 +11,7 @@ export default createGlobalStyle`
     };
     body {
         color: ${({ theme }) => theme.textColor};
+        background-color: ${({ theme }) => theme.backgroundColor};
         font-family: 'Roboto', sans-serif;
     };
     #root {

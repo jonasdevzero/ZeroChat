@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import { useSelector, useDispatch } from "react-redux"
 import { usePersistedState } from "../../../hooks"
 import Fuse from "fuse.js"
-import * as CurrentRoomActions from '../../../store/actions/currentRoom'
+import * as RoomActions from '../../../store/actions/room'
 
 import {
     Search,
@@ -37,7 +37,7 @@ function Rooms({ roomsType }: { roomsType: string }) {
     function selectRoom(room: any) {
         const roomType = roomsType === 'contacts' ? 'contact' : 'group'
         setSearch('')
-        dispatch(CurrentRoomActions.setCurrentRoom(room, roomType))
+        dispatch(RoomActions.setRoom(room, roomType))
     }
 
     return (

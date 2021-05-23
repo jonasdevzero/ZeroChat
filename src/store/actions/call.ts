@@ -26,3 +26,10 @@ export function toggleCallMinimized() {
         type: 'TOGGLE_CALL_MINIMIZED'
     }
 }
+
+export default {
+    callRequest,
+    callStart,
+    callEnd,
+    toggleCallMinimized
+}

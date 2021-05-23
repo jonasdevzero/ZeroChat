@@ -1,5 +1,6 @@
-const light = {
+export const light = {
     textColor: '#000',
+    backgroundColor: '#eee',
 
     pages: {
         landing: {
@@ -58,8 +59,9 @@ const light = {
     },
 };
 
-const dark = {
+export const dark = {
     textColor: '#eee',
+    backgroundColor: '#151515',
 
     pages: {
         landing: {
@@ -108,7 +110,7 @@ const dark = {
         },
 
         warning: {
-            backgroundColor: '#151515',
+            backgroundColor: '#171717',
             loadingBarColor: '#eee'
         },
 
