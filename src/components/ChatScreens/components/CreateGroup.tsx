@@ -4,13 +4,14 @@ import Fuse from "fuse.js"
 import { groupService } from "../../../services"
 import { useDispatch, useSelector } from 'react-redux'
 import * as Actions from '../../../store/actions'
+import { useTheme } from '../../../hooks'
 
 import {
     Container,
     Header,
     Inner,
     Form,
-} from "../../../styles/components/ChatScreens/BaseScreen";
+} from "../../../styles/components/ChatScreens/BaseScreen"
 import {
     InputContainer,
     SearchOrCloseButton,
@@ -19,20 +20,17 @@ import {
     SearchInputWrapper,
     FilteredContacts,
     SelectedContacts,
-} from "../../../styles/components/ChatScreens/CreateGroup";
-import { Avatar } from "@material-ui/core";
+} from "../../../styles/components/ChatScreens/CreateGroup"
+import { Avatar } from "@material-ui/core"
 import {
     CloudUpload as CloudUploadIcon,
     Close as CloseIcon,
     Search as SearchIcon,
-} from "@material-ui/icons";
+} from "@material-ui/icons"
 
-interface CreateGroupI {
-    theme: "light" | "dark";
-};
-
-export default function CreateGroup({ theme }: CreateGroupI) {
+export default function CreateGroup() {
     const user: UserI = useSelector((state: any) => state.user)
+    const [theme] = useTheme()
 
     const [name, setName] = useState("");
     const [image, setImage] = useState<File>(undefined);

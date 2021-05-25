@@ -14,7 +14,7 @@ import {
     Call,
 } from "../components"
 
-export default function Chat({ theme, setTheme }) {
+export default function Chat() {
     const [loading, setLoading] = useState(true)
     const router = useRouter()
     const dispatch = useDispatch()
@@ -36,12 +36,12 @@ export default function Chat({ theme, setTheme }) {
 
             {!loading ? (
                 <>
-                    <Sidebar theme={theme} setTheme={setTheme} />
-                    <Room theme={theme} />
-                    <ChatScreens theme={theme} />
+                    <Sidebar />
+                    <Room />
+                    <ChatScreens />
                     <Call />
                 </>
-            ) : (<LoadingContainer theme={theme} />)}
+            ) : (<LoadingContainer />)}
         </Container>
     )
 }

@@ -2,8 +2,6 @@ import Head from "next/head"
 import Link from 'next/link'
 import { useRouter } from "next/router"
 import { useState } from "react"
-import api from "../services/api"
-import { AxiosError } from "axios"
 
 import { Header, Footer } from '../components'
 import {

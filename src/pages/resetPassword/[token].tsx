@@ -1,8 +1,6 @@
-import Head from "next/head";
-import { useRouter } from "next/router";
-import { useState } from "react";
-import api from "../../services/api";
-import { AxiosError } from "axios";
+import Head from "next/head"
+import { useRouter } from "next/router"
+import { useState } from "react"
 
 import { Header, Footer } from '../../components'
 import {
@@ -16,7 +14,7 @@ import {
     Submit,
 } from "../../styles/pages/base"
 
-export default function forgotPassword({ theme }) {
+export default function forgotPassword() {
     const [password, setPassword] = useState("")
     const [confirmPassword, setConfirmPassword] = useState("")
 
@@ -57,5 +55,5 @@ export default function forgotPassword({ theme }) {
 
             <Footer />
         </Container>
-    );
-};
+    )
+}

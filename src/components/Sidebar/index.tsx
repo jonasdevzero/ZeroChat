@@ -1,9 +1,10 @@
-import { useState, useEffect, Dispatch, SetStateAction } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/router"
 import Cookies from 'js-cookie'
 import { useSelector, useDispatch } from 'react-redux'
 import { socket } from '../../services'
 import * as Actions from '../../store/actions'
+import { useTheme } from '../../hooks'
 
 import { Header, Rooms, Notifications } from './components'
 import {
@@ -26,14 +27,11 @@ import {
     NotificationsRounded as NotificationsIcon,
 } from "@material-ui/icons";
 
-interface SidebarI {
-    theme: "light" | "dark";
-    setTheme: Dispatch<SetStateAction<"light" | "dark">>;
-};
-
-export default function Sidebar({ theme, setTheme }: SidebarI) {
+export default function Sidebar() {
     const userPicture = useSelector((state: any) => state.user.picture)
     const [optionSelected, setOptionSelected] = useState('contacts')
+
+    const [theme, setTheme] = useTheme()
 
     const router = useRouter()
     const dispatch = useDispatch()

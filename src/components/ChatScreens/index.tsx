@@ -10,8 +10,7 @@ import {
 import { Container, CloseButton } from '../../styles/components/ChatScreens'
 import CloseIcon from '@material-ui/icons/Close'
 
-
-function ChatScreens({ theme }) {
+function ChatScreens() {
     const screen = useSelector((state: any) => state.screen.current)
     const dispatch = useDispatch()
 
@@ -26,11 +25,11 @@ function ChatScreens({ theme }) {
                     {function () {
                         switch (screen) {
                             case 'profile':
-                                return <Profile theme={theme} />
+                                return <Profile />
                             case 'addContact':
                                 return <AddContact />
                             case 'createGroup':
-                                return <CreateGroup theme={theme} />
+                                return <CreateGroup />
                             case 'groupDashboard':
                                 return <GroupDashboard />
                             default:

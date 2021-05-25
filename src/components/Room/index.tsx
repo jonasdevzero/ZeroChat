@@ -3,6 +3,7 @@ import { socket, messagesService } from "../../services";
 import { UserI } from "../../types/user";
 import { useSelector, useDispatch } from 'react-redux'
 import * as UserActions from '../../store/actions/user'
+import { useTheme } from '../../hooks'
 
 import { Header, Messages, Form, Info } from './components'
 import {
@@ -17,12 +18,10 @@ import {
     KeyboardArrowDown as KeyboardArrowDownIcon,
 } from "@material-ui/icons";
 
-interface MessagesI {
-    theme: 'light' | 'dark';
-};
 
-export default function Room({ theme }: MessagesI) {
+export default function Room() {
     const user: UserI = useSelector((state: any) => state.user)
+    const [theme] = useTheme()
 
     const messagesContainerRef = useRef(null)
     const [loadingMessages, setLoadingMessages] = useState(false)

@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { useRouter } from "next/router";
-import { UserI } from "../../../types/user";
-import { api, socket, userService } from "../../../services";
-import { AxiosError } from "axios";
+import React, { useState, useEffect } from "react"
+import { useSelector, useDispatch } from "react-redux"
+import { useRouter } from "next/router"
+import { UserI } from "../../../types/user"
+import { api, socket, userService } from "../../../services"
+import { AxiosError } from "axios"
 import Cookies from 'js-cookie';
-import * as UserActions from '../../../store/actions/user';
+import * as UserActions from '../../../store/actions/user'
+import { useTheme } from '../../../hooks'
 
 import {
     Info,
@@ -16,7 +17,7 @@ import {
     Screen,
     Fill,
     Close,
-} from "../../../styles/components/ChatScreens/Profile";
+} from "../../../styles/components/ChatScreens/Profile"
 import {
     Container,
     Header,
@@ -31,12 +32,10 @@ import {
     CloudUpload as CloudUploadIcon,
 } from '@material-ui/icons';
 
-interface ProfileI {
-    theme: "light" | "dark";
-};
-
-export default function Profile({ theme }: ProfileI) {
+export default function Profile() {
     const user: UserI = useSelector((state: any) => state.user)
+    const [theme] = useTheme()
+
     const [name, setName] = useState(user?.name);
     const [username, setUsername] = useState(user?.username);
     const [picture, setPicture] = useState(user?.picture);
