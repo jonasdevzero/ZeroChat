@@ -126,5 +126,6 @@ const themes = {
 }
 
 export const allowedThemes = Object.keys(themes)
+export type ThemeType = 'light' | 'dark'
 
 export default themes
