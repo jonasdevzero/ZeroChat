@@ -1,4 +1,4 @@
-import { combineReducers } from 'redux';
+import { combineReducers } from 'redux'
 
 import call from './call'
 import room from './room'
@@ -10,4 +10,4 @@ export default combineReducers({
     room,
     user,
     screen
-});
+})

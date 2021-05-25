@@ -10,7 +10,7 @@ function Providers({ children }) {
     const [theme, setTheme] = usePersistedState<ThemeType>('theme', 'dark', allowedThemes)
 
     return (
-        <ThemeProvider theme={Themes['dark']}>
+        <ThemeProvider theme={Themes[theme]}>
             <ReduxProvider store={store}>
                 <MyThemeProvider themeConfig={{ theme, setTheme }}>
                     <WarnProvider>{children}</WarnProvider>

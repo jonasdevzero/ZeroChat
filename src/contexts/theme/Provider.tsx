@@ -1,10 +1,11 @@
 import Context from './context'
+import { ThemeType } from '../../styles/theme'
 
 interface MyThemeProviderI {
     children: React.ReactChild
     themeConfig: {
-        theme: 'light' | 'dark',
-        setTheme: React.Dispatch<React.SetStateAction<'light' | 'dark'>>
+        theme: ThemeType,
+        setTheme: React.Dispatch<React.SetStateAction<ThemeType>>
     }
 }
 
