@@ -53,7 +53,7 @@ export default function AddContact() {
     function acceptInvite(invitationId: string) {
         contactService.acceptInvite(invitationId)
             .then(contact => {
-                dispatch(UserActions.pushRoom({ roomType: "contact", room: contact }))
+                dispatch(UserActions.pushData(contact, 'contacts'))
                 warn.success('User accepted')
             })
             .catch((error: AxiosError) => {

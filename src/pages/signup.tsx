@@ -3,6 +3,7 @@ import { useState } from "react"
 import { useRouter } from "next/router"
 import Link from "next/link"
 import { userService } from "../services"
+import { useWarn } from '../hooks'
 
 import { Header, Footer } from "../components"
 import {
@@ -17,9 +18,11 @@ import {
     Links,
     RedirectLink,
     FormStepProgress,
-    FormStepBack
+    FormStepBack,
+    ErrorMessage,
 } from "../styles/pages/base"
 import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos';
+import { AxiosError } from 'axios'
 
 export default function SignUp() {
     const [username, setUsername] = useState("")
@@ -27,16 +30,31 @@ export default function SignUp() {
     const [confirmPassword, setConfirmPassword] = useState("")
     const [name, setName] = useState("")
     const [email, setEmail] = useState("")
+
     const [currentStep, setCurrentStep] = useState(0)
+    const [error, setError] = useState(undefined)
 
     const router = useRouter()
+    const warn = useWarn()
 
     function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
 
+        setError(undefined)
         userService.subscribe({ username, password, confirmPassword, name, email })
-            .then(() => router.push('/chat'))
-            .catch(error => { })
+            .then(handleSucess)
+            .catch(handleError)
+    }
+
+    function handleSucess() {
+        warn.success('Welcome to  Zero')
+        setTimeout(() => router.push('/chat'), 3000)
+    }
+
+    function handleError(error: AxiosError) {
+        const { message } = error.response.data
+        setError(message)
+        setCurrentStep(0)
     }
 
     return (
@@ -50,6 +68,8 @@ export default function SignUp() {
             <Inner>
                 <Form onSubmit={handleSubmit}>
                     <FormTitle>Sign Up</FormTitle>
+
+                    {error && (<ErrorMessage>{error}</ErrorMessage>)}
 
                     {currentStep === 0 ? (
                         <>

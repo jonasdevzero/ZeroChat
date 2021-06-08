@@ -1,6 +1,4 @@
-import { useEffect } from 'react'
 import { useSelector } from 'react-redux'
-import { userService } from '../../../services'
 import { NotificationI } from '../../../types/user'
 
 import {
@@ -12,8 +10,6 @@ import { Avatar } from '@material-ui/core'
 
 function Notifications() {
     const notifications: NotificationI[] = useSelector((state: any) => state.user.notifications)
-
-    useEffect(() => userService.clearNotifications(), [notifications.length])
 
     return (
         <Container>

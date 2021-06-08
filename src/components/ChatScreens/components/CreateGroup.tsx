@@ -52,7 +52,7 @@ export default function CreateGroup() {
 
         groupService.create({ name, description, picture: image, members })
             .then(group => {
-                dispatch(Actions.user.pushRoom({ roomType: 'group', room: group }))
+                dispatch(Actions.user.pushData(group, 'groups'))
                 dispatch(Actions.room.setRoom(group, 'group'))
                 dispatch(Actions.screen.setScreen(undefined))
             })
