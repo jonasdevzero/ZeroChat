@@ -67,6 +67,7 @@ export interface InvitationI {
 export interface NotificationI {
     id: string;
     text: string;
+    image: string;
     type: string;
     created_at: Date;
 };

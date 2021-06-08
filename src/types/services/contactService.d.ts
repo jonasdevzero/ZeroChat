@@ -8,6 +8,8 @@ interface UpdateI {
 export default interface ContactService {
     search(username: string): Promise<{ id: string, username: string, picture: string  }[]>
 
+    show(contact_id: string): Promise<ContactI>
+
     invite(contact_id: string): Promise<string>
 
     acceptInvite(invitation_id: string): Promise<ContactI>

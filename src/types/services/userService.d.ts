@@ -30,15 +30,15 @@ interface ResetPasswordI {
 }
 
 export default interface UserService {
-    auth(): Promise<UserI>
+    connect(): Promise<UserI>
 
     login(data: LogInI): Promise<string>
 
     subscribe(data: SubscribeI): Promise<string>
 
-    update(data: UpdateI): Promise<UpdateI>
+    update(id: string, data: UpdateI): Promise<UpdateI>
 
-    updatePicture(picture: File | undefined): Promise<{ location: string }>
+    updatePicture(id: string, picture: File | undefined): Promise<{ location: string }>
 
     updateEmail(data: UpdateEmailI): Promise<{ email: string }>
 
@@ -46,5 +46,7 @@ export default interface UserService {
 
     resetPassword(data: ResetPasswordI): Promise<string>
 
-    clearNotifications(): void
+    delete(id: string, password: string): Promise<string>
+
+    restore(username: string, password: string): Promise<string>
 }
