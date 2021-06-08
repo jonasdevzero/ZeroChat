@@ -1,5 +1,5 @@
-import { Dispatch, SetStateAction } from "react"
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
+import * as RoomActions from '../../../store/actions/room'
 
 import {
     Container,
@@ -8,25 +8,22 @@ import {
     GroupDescription,
     GroupUsers,
     EditGroupContainer,
-} from "../../../styles/components/Room/components/Info"
+} from "../../../styles/components/Room/Info"
 import { IconButton, Avatar } from "@material-ui/core"
 import {
     Close as CloseIcon,
     Edit as EditIcon,
 } from '@material-ui/icons';
 
-interface DetailsI {
-    setShowRoomDetail: Dispatch<SetStateAction<boolean>>
-}
-
-export default function Info({ setShowRoomDetail }: DetailsI) {
+export default function Info() {
     const userId = useSelector((state: any) => state.user.id)
     const { room, roomType } = useSelector(({ room }: any) => ({ room: room.current, roomType: room.type }))
+    const dispatch = useDispatch()
 
     return (
         <Container>
             <Header>
-                <IconButton onClick={() => setShowRoomDetail(false)}>
+                <IconButton onClick={() => dispatch(RoomActions.toggleShowInfo())}>
                     <CloseIcon fontSize="large" />
                 </IconButton>
             </Header>

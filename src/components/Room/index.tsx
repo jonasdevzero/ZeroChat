@@ -1,40 +1,39 @@
-import { useState, useEffect } from "react"
+import { useEffect } from "react"
 import { socket } from "../../services"
-import { UserI } from "../../types/user"
 import { useSelector, useDispatch } from 'react-redux'
 
 import { Header, Messages, Form, Info } from './components'
 import { Container, Inner, ContainerWithoutChat } from "../../styles/components/Room"
 
-
 export default function Room() {
-    const user: UserI = useSelector((state: any) => state.user)
-    const room = useSelector(({ room }: any) => room.current)
-
-    const [showRoomDetail, setShowRoomDetail] = useState(false)
-
+    const { room, showInfo } = useSelector(({ room }: any) => ({ room: room.current, showInfo: room.showInfo }))
     const dispatch = useDispatch()
 
     useEffect(() => {
         socket.removeListener('message')
         socket.on('message', action => dispatch({ ...action, currentRoom: room?.id }))
-    }, [room, user])
+    }, [room])
 
     return (
         <Container>
             {room ? (
                 <>
                     <Inner>
-                        <Header setShowRoomDetail={setShowRoomDetail} />
+                        <Header />
                         <Messages />
                         <Form />
                     </Inner>
 
-                    {showRoomDetail ? (<Info setShowRoomDetail={setShowRoomDetail} />) : null}
+                    {showInfo && (<Info />)}
                 </>
             ) : (
                 <ContainerWithoutChat>
-                    <h1>Select a room to chat</h1>
+                    <img src="/logo-background.svg" />
+                    <span>Select a room to chat</span>
+                    <p>
+                        No Have anyone to chat?
+                        <button>Play a game</button>
+                    </p>
                 </ContainerWithoutChat>
             )}
         </Container>

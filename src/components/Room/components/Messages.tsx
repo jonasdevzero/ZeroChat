@@ -17,7 +17,7 @@ import {
     Day,
     User,
     Username
-} from '../../../styles/components/Room/components/Messages'
+} from '../../../styles/components/Room/Messages'
 import { Avatar } from "@material-ui/core"
 import KeyboardArrowDownIcon from "@material-ui/icons/KeyboardArrowDown"
 

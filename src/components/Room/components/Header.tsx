@@ -1,22 +1,18 @@
 import { socket } from '../../../services'
 import { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import *  as CallActions from '../../../store/actions/call'
+import * as Actions from '../../../store/actions'
 
 import Dropdown from '../../../styles/components/Dropdown'
-import { Header, Room } from '../../../styles/components/Room/components/Header'
-import { Avatar, IconButton } from "@material-ui/core";
+import { Header, Room } from '../../../styles/components/Room/Header'
+import { Avatar, IconButton } from "@material-ui/core"
 import {
     MoreVert as MoreVertIcon,
     Call as CallIcon,
     Videocam as VideocamIcon,
-} from "@material-ui/icons";
+} from "@material-ui/icons"
 
-interface RoomHeaderI {
-    setShowRoomDetail: React.Dispatch<React.SetStateAction<boolean>>
-}
-
-function RoomHeader({ setShowRoomDetail }: RoomHeaderI) {
+function RoomHeader() {
     const [showDropdown, setShowDropdown] = useState(false)
     const { room, roomType } = useSelector(({ room }: any) => ({ room: room.current, roomType: room.type }))
 
@@ -25,12 +21,12 @@ function RoomHeader({ setShowRoomDetail }: RoomHeaderI) {
     useEffect(() => setShowDropdown(false))
 
     function startCall(room, type: 'audio' | 'video') {
-        socket.emit('is-online', room.id, (_, isOnline) => isOnline ? dispatch(CallActions.callStart(room, type)) : null)
+        socket.emit('is-online', room.id, (_, isOnline) => isOnline ? dispatch(Actions.call.callStart(room, type)) : null)
     }
 
     return (
         <Header>
-            <Room onClick={() => setShowRoomDetail(true)}>
+            <Room onClick={() => dispatch(Actions.room.toggleShowInfo())}>
                 <Avatar src={room.picture} />
 
                 <h2>{roomType === 'contact' ? room.username : room.name}</h2>
