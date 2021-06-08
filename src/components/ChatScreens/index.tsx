@@ -5,37 +5,51 @@ import {
     Profile,
     AddContact,
     CreateGroup,
-    GroupDashboard
+    GroupDashboard,
+    Settings,
 } from './components'
-import { Container, CloseButton } from '../../styles/components/ChatScreens'
+import {
+    Container,
+    Header,
+    Title,
+    Close,
+    Content
+} from '../../styles/components/ChatScreens'
 import CloseIcon from '@material-ui/icons/Close'
 
 function ChatScreens() {
-    const screen = useSelector((state: any) => state.screen.current)
+    const screen: string = useSelector((state: any) => state.screen.current)
     const dispatch = useDispatch()
+
+    function getScreen() {
+        switch (screen) {
+            case 'Profile':
+                return <Profile />
+            case 'Add Contact':
+                return <AddContact />
+            case 'Create Group':
+                return <CreateGroup />
+            case 'Group Dashboard':
+                return <GroupDashboard />
+            case 'Settings':
+                return <Settings />
+            default:
+                return null
+        }
+    }
 
     return (
         <>
             {screen ? (
                 <Container>
-                    <CloseButton onClick={() => dispatch(ScreenActions.setScreen(undefined))}>
-                        <CloseIcon fontSize='large' />
-                    </CloseButton>
+                    <Header>
+                        <Title>{screen}</Title>
+                        <Close onClick={() => dispatch(ScreenActions.removeScreen())}>
+                            <CloseIcon fontSize='large' />
+                        </Close>
+                    </Header>
 
-                    {function () {
-                        switch (screen) {
-                            case 'profile':
-                                return <Profile />
-                            case 'addContact':
-                                return <AddContact />
-                            case 'createGroup':
-                                return <CreateGroup />
-                            case 'groupDashboard':
-                                return <GroupDashboard />
-                            default:
-                                return null
-                        }
-                    }()}
+                    <Content>{getScreen()}</Content>
                 </Container>
             ) : null}
         </>

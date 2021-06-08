@@ -68,6 +68,7 @@ export const RoomsContainer = styled.div`
     width: 100%;
     height: 100%;
     overflow-y: scroll;
+    position: relative;
 `;
 
 export const Room = styled.div`
@@ -124,4 +125,39 @@ export const UnreadMessages = styled.span`
 
     margin-left: auto;
     margin-right: 1rem;
+`;
+
+export const PlusButton = styled.button`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 5.5rem;
+    height: 5.5rem;
+    border: none;
+    outline: none;
+    border-radius: 50%;
+    background-color: #070707;
+    position: absolute;
+    bottom: 2rem;
+    right: .5rem;
+    cursor: pointer;
+
+    .MuiSvgIcon-root {
+        color: #fff;
+        font-size: 3.5rem;
+    };
+`;
+
+export const PendingInvitations = styled.span`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    position: absolute;
+    top: -1rem;
+    right: -.5rem;
+    background-color: #000;
+    color: #fff;
+    border-radius: 50%;
 `;

@@ -16,10 +16,11 @@ export const Item = styled.div<ItemI>`
     height: 12rem;
     padding: 1rem;
 
-    background-color: #252525;
+    background-color: #191818;
     border-radius: .3rem;
     transition: top .5s ease, opacity .2s ease;
     overflow: hidden;
+    z-index: 1000000000000000000000000;
 
     position: absolute;
     top: ${({ position }) => position === 1 ? '2rem' : `${position * 13 - 13}rem`};
@@ -36,7 +37,7 @@ export const Item = styled.div<ItemI>`
 
         width: 25rem;
         height: 12rem;
-        border-bottom: solid .35rem green;
+        border-bottom: solid .35rem #fff;
     };
 
     & + & {
@@ -45,7 +46,7 @@ export const Item = styled.div<ItemI>`
 
     @keyframes item {
         0% {
-            opacity: .65;
+            opacity: .5;
         }
         100% {
             opacity: 1;

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { useDispatch } from 'react-redux'
-import { socket } from '../../services'
+import { socket, contactService } from '../../services'
 import * as UserActions from '../../store/actions/user'
 
 import { Options, Header, Rooms, Notifications } from './components'
@@ -11,12 +11,19 @@ export default function Sidebar() {
     const dispatch = useDispatch()
 
     useEffect(() => {
-        socket.on("new-group", (group) => {
-            socket.emit("join-group", group.id)
-            dispatch(UserActions.pushRoom({ roomType: 'group', room: group }))
-        })
         socket.on('update', action => dispatch(action))
+        socket.on('new-group', group => socket.emit("join-group", group.id, () => pushData(group, 'groups')))
+        socket.on('invite-accepted', contactId => {
+            socket.emit('new-contact', contactId, (_error, online: boolean) => {
+                contactService.show(contactId).then(contact => {
+                    contact.online = online
+                    pushData(contact, 'contact')
+                })
+            })
+        })
     }, [])
+
+    const pushData = (data, dataType) => dispatch(UserActions.pushData(data, dataType))
 
     return (
         <Container>
@@ -24,15 +31,7 @@ export default function Sidebar() {
 
             <Inner>
                 <Header optionSelected={optionSelected} />
-
-                {function() {
-                    switch(optionSelected) {
-                        case 'contacts' || 'groups':
-                            return <Rooms roomsType={optionSelected} />
-                        case 'notifications':
-                            return <Notifications />
-                    }
-                }()}
+                {optionSelected === 'notifications' ? (<Notifications />) : (<Rooms roomsType={optionSelected} />)}
             </Inner>
         </Container>
     );

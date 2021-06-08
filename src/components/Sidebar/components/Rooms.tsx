@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import { useSelector, useDispatch } from "react-redux"
 import { usePersistedState } from "../../../hooks"
 import Fuse from "fuse.js"
-import * as RoomActions from '../../../store/actions/room'
+import * as Actions from '../../../store/actions'
 
 import {
     Search,
@@ -15,12 +15,18 @@ import {
     Room,
     Status,
     UnreadMessages,
-} from "../../../styles/components/Sidebar/components/Rooms"
+    PlusButton,
+    PendingInvitations
+} from "../../../styles/components/Sidebar/Rooms"
 import { Avatar } from "@material-ui/core"
-import { Search as SearchIcon } from "@material-ui/icons"
+import {
+    Search as SearchIcon,
+    Add as AddIcon
+} from "@material-ui/icons"
 
 function Rooms({ roomsType }: { roomsType: string }) {
     const userRooms = useSelector(({ user }: any) => ({ contacts: user.contacts, groups: user.groups }))
+    const pendingInvitations = useSelector(({ user }: any) => user.invitations.length)
 
     const [rooms, setRooms] = useState<any[]>(userRooms.contacts)
     const [search, setSearch] = useState("")
@@ -37,7 +43,12 @@ function Rooms({ roomsType }: { roomsType: string }) {
     function selectRoom(room: any) {
         const roomType = roomsType === 'contacts' ? 'contact' : 'group'
         setSearch('')
-        dispatch(RoomActions.setRoom(room, roomType))
+        dispatch(Actions.room.setRoom(room, roomType))
+    }
+
+    function onClickPlus() {
+        const screen = roomsType === 'contacts' ? 'Add Contact' : 'Create Group'
+        dispatch(Actions.screen.setScreen(screen))
     }
 
     return (
@@ -84,6 +95,14 @@ function Rooms({ roomsType }: { roomsType: string }) {
                         </Room>
                     );
                 })}
+
+                <PlusButton onClick={() => onClickPlus()}>
+                    <AddIcon fontSize='large' />
+
+                    {roomsType === 'contacts' && pendingInvitations ? (
+                        <PendingInvitations>{pendingInvitations}</PendingInvitations>
+                    ) : null}
+                </PlusButton>
             </RoomsContainer>
         </>
     )

@@ -12,12 +12,12 @@ export const Container = styled.form`
     bottom: 0;
     padding: 0 1rem;
 
-    background-color: #2a2a2a;
+    background-color: #171717;
 
     .MuiSvgIcon-root {
-        color: #fff;
+        color: #aaa;
         cursor: pointer;
-        font-size: 2.5rem;
+        font-size: 3rem;
     };
 `;
 
@@ -36,10 +36,10 @@ export const Input = styled.input`
     border-radius: 0;
 
     color: #fff;
-    background-color: #555;
+    background-color: #252525;
     margin: 0 1rem;
-    padding: 0 3.5rem 0 1rem;
-    border-radius: .4rem;
+    padding: 0 3.5rem 0 1.5rem;
+    border-radius: 10rem;
 `;
 
 export const Submit = styled.button`
@@ -54,7 +54,9 @@ export const Submit = styled.button`
     background-color: transparent;
 
     position: absolute;
-    right: 1.5rem;
+    top: 50%;
+    right: 2rem;
+    transform: translateY(-50%);
 `;
 
 export const IconButton = styled.button`

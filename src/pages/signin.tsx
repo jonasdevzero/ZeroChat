@@ -5,9 +5,9 @@ import { useEffect, useState } from 'react'
 import Cookies from 'js-cookie'
 import { userService } from '../services'
 import { AxiosError } from 'axios'
-import { useWarn } from '../hooks'
+import { useWarn, useTheme } from '../hooks'
 
-import { Header, Footer } from '../components'
+import { Header, Footer, LoadingContainer } from '../components'
 import {
     Container,
     Inner,
@@ -19,7 +19,8 @@ import {
     RememberMe,
     Submit,
     Links,
-    RedirectLink
+    RedirectLink,
+    ErrorMessage
 } from "../styles/pages/base"
 
 export default function SignIn() {
@@ -28,9 +29,12 @@ export default function SignIn() {
     const [rememberMe, setRememberMe] = useState(true)
 
     const [loading, setLoading] = useState(true)
+    const [loadingRequest, setLoadingRequest] = useState(false)
+    const [error, setError] = useState<string>(undefined)
 
     const router = useRouter()
     const warn = useWarn()
+    const [theme] = useTheme()
 
     useEffect(() => {
         const token = Cookies.get('token')
@@ -40,13 +44,16 @@ export default function SignIn() {
     function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault()
 
+        setError(undefined)
+        setLoadingRequest(true)
         userService.login({ reference, password, rememberMe })
             .then(handleSuccess)
             .catch(handleError)
+            .then(() => setLoadingRequest(false))
     }
 
     function handleSuccess() {
-        warn.success('LogIn made with success, redirecting...')
+        warn.success('Success, redirecting...')
         setTimeout(() => {
             setLoading(true)
             router.push('/chat')
@@ -54,7 +61,8 @@ export default function SignIn() {
     }
 
     function handleError(error: AxiosError) {
-        //...
+        const { message } = error.response.data
+        setError(message)
     }
 
     return (
@@ -68,6 +76,8 @@ export default function SignIn() {
             <Inner>
                 <Form onSubmit={handleSubmit}>
                     <FormTitle>Sign In</FormTitle>
+
+                    {error && <ErrorMessage>{error}</ErrorMessage>}
 
                     <InputWrapper>
                         <Label htmlFor='reference'>Username / email</Label>
@@ -86,7 +96,9 @@ export default function SignIn() {
                         <label htmlFor="remember_me">Remember-me</label>
                     </RememberMe>
 
-                    <Submit>Sign In</Submit>
+                    <Submit>
+                        {!loadingRequest ? 'Sign In' : (<img src={`/loading-${theme === 'dark' ? 'light' : 'dark'}.svg`} />)}
+                    </Submit>
 
                     <Links>
                         <Link href='/signup'>
@@ -101,6 +113,8 @@ export default function SignIn() {
             </Inner>
 
             <Footer />
+
+            {loading && (<LoadingContainer />)}
         </Container>
     )
 }

@@ -1,7 +1,6 @@
 import { useSelector, useDispatch } from 'react-redux'
 import { useRouter } from 'next/router'
 import * as Actions from '../../../store/actions'
-import { useTheme } from '../../../hooks'
 import Cookies from 'js-cookie'
 
 import {
@@ -10,23 +9,21 @@ import {
     OptionsInner,
     OptionsPlus,
     Option,
-} from "../../../styles/components/Sidebar/components/Options"
+} from "../../../styles/components/Sidebar/Options"
 import { Avatar } from "@material-ui/core"
 import {
     PersonRounded as PersonIcon,
     GroupRounded as GroupIcon,
-    Brightness3 as Brightness3Icon,
-    Brightness7 as Brightness7Icon,
     PowerSettingsNew as PowerSettingsNewIcon,
     CallRounded as CallIcon,
     NotificationsRounded as NotificationsIcon,
+    Settings as SettingsIcon
 } from "@material-ui/icons"
 
 function Options({ setOptionSelected }) {
     const userPicture = useSelector((state: any) => state.user.picture)
 
     const router = useRouter()
-    const [theme, setTheme] = useTheme()
     const dispatch = useDispatch()
 
     function logOut() {
@@ -36,7 +33,7 @@ function Options({ setOptionSelected }) {
 
     return (
         <Container>
-            <User onClick={() => dispatch(Actions.screen.setScreen('profile'))}>
+            <User onClick={() => dispatch(Actions.screen.setScreen('Profile'))}>
                 <Avatar src={userPicture} />
             </User>
 
@@ -59,8 +56,8 @@ function Options({ setOptionSelected }) {
             </OptionsInner>
 
             <OptionsPlus>
-                <Option onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')} >
-                    {theme === "dark" ? (<Brightness3Icon />) : (<Brightness7Icon />)}
+                <Option onClick={() => dispatch(Actions.screen.setScreen('Settings'))}>
+                    <SettingsIcon />
                 </Option>
 
                 <Option onClick={() => logOut()} >

@@ -3,7 +3,7 @@ import {
     Container,
     Title,
     Pending
-} from '../../../styles/components/Sidebar/components/Header'
+} from '../../../styles/components/Sidebar/Header'
 
 function Header({ optionSelected }: { optionSelected: string }) {
     const pending = useSelector(({ user }: any) => ({

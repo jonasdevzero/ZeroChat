@@ -39,8 +39,8 @@ export  const OptionsInner = styled.div`
 `;
 
 export const Option = styled.button`
-    width: 4.5rem;
-    min-height: 4.5rem;
+    width: 4.8rem;
+    min-height: 4.8rem;
 
     border: none;
     outline: none;

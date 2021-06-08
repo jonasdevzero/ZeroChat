@@ -8,7 +8,6 @@ import { useTheme } from '../../../hooks'
 
 import {
     Container,
-    Header,
     Inner,
     Form,
 } from "../../../styles/components/ChatScreens/BaseScreen"
@@ -100,9 +99,6 @@ export default function CreateGroup() {
 
     return (
         <Container>
-            <Header>
-                <h1>Create Group</h1>
-            </Header>
 
             <Inner>
                 <Form onSubmit={onSubmit}>

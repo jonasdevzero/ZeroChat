@@ -20,7 +20,7 @@ export default function Chat() {
     const dispatch = useDispatch()
 
     useEffect(() => {
-        userService.auth()
+        userService.connect()
             .then(user => dispatch(setUser(user)))
             .then(() => setLoading(false))
             .catch(() => router.replace('/signin'))

@@ -1,19 +1,31 @@
+import { useEffect } from 'react'
 import { useSelector } from 'react-redux'
+import { userService } from '../../../services'
 import { NotificationI } from '../../../types/user'
+
+import {
+    Container,
+    Notification,
+    Text
+} from '../../../styles/components/Sidebar/Notifications'
+import { Avatar } from '@material-ui/core'
 
 function Notifications() {
     const notifications: NotificationI[] = useSelector((state: any) => state.user.notifications)
 
+    useEffect(() => userService.clearNotifications(), [notifications.length])
+
     return (
-        <div>
+        <Container>
             {notifications.map(n => {
                 return (
-                    <div key={n.id}>
-                        <p>{n.text}</p>
-                    </div>
+                    <Notification key={n.id}>
+                        <Avatar src={n.image} />
+                        <Text>{n.text}</Text>
+                    </Notification>
                 )
             })}
-        </div>
+        </Container>
     )
 }
 

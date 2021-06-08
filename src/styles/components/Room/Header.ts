@@ -7,11 +7,11 @@ export const Header = styled.header`
     display: flex;
     align-items: center;
 
-    background-color: #1e1e1e;
+    background-color: #171717;
     padding: 0 1rem;
 
     .MuiSvgIcon-root {
-        font-size: 2.5rem !important;
+        font-size: 3rem;
         color: #fff;
     };
 `;
@@ -25,12 +25,12 @@ export const Room = styled.div`
     cursor: pointer;
 
     h2 {
-        font-size: 1.6rem;
+        font-size: 1.8rem;
         font-weight: 500;
         margin-left: 1rem;
     };
     .MuiAvatar-root {
-        width: 4.5rem;
-        height: 4.5rem;
+        width: 5rem;
+        height: 5rem;
     };
 `;

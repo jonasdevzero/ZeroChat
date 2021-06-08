@@ -122,6 +122,11 @@ export const Submit = styled.button`
     ${InputWrapper} + & {
         margin-top: 2rem;
     };
+
+    img {
+        width: 3.5rem;
+        height: 3.5rem;
+    };
 `;
 
 export const Links = styled.div`
@@ -139,6 +144,22 @@ export const RedirectLink = styled.a`
         margin-left: 1rem;
     };
 `;
+
+export const ErrorMessage = styled.strong`
+    width: 100%;
+    height: 4.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 1.5rem;
+    border-radius: .4rem;
+
+    background-color: red;
+    font-size: 1.6rem;
+    font-family: 'Red Hat Text', sans-serif;
+    font-weight: 500;
+`
 
 export const FormStepProgress = styled.div<{ step: number }>`
     position: absolute;
