@@ -1,5 +1,6 @@
-import { api, socket } from "."
-import MessagesService from '../types/services/messageService'
+import { api, socket } from ".."
+import MessagesService from '../../types/services/messageService'
+import { pushMessage } from '../../store/actions/user'
 
 export default {
     get({ roomType, roomId }) {
@@ -18,7 +19,7 @@ export default {
     create({ roomType, to, text, medias }) {
         return new Promise(async (resolve, reject) => {
             try {
-                if (!text.trim() || !medias.length) reject(null);
+                if (!text.trim()) return reject('Invalid message');
 
                 const multipartData = new FormData()
                 multipartData.append('text', text),
@@ -31,7 +32,7 @@ export default {
 
                 const where = roomType === 'contact' ? [data.message.sender_id, data.to] : data.to
 
-                socket.emit('message', { type: 'PUSH_MESSAGE', where, data, roomType }, () => resolve('ok'))
+                socket.emit('message', pushMessage({ where, data, roomType }), () => { resolve('ok') })
             } catch (error) {
                 reject(error)
             }

@@ -1,15 +1,17 @@
-import { api, socket } from '.'
+import { api, socket } from '..'
 import Cookies from 'js-cookie'
-import UserService from '../types/services/userService'
-import { UserI } from '../types/user'
+import UserService from '../../types/services/userService'
+import { UserI } from '../../types/user'
+import { updateRoom, removeRoom } from '../../store/actions/user'
 
 export default {
-    auth() {
-        return new Promise(async (resolve, reject) => {
+    connect() {
+        return new Promise((resolve, reject) => {
             try {
                 const jwt = Cookies.get('token')
                 if (!jwt) reject('Unounterized');
 
+                socket.io.opts.query = `token=Bearer ${jwt}`
                 socket.connect()
 
                 socket.once('ready', (user: UserI) => {
@@ -34,7 +36,7 @@ export default {
                 const response = await api.post('/user/login', { reference, password })
                 const { token } = response.data
 
-                Cookies.set('token', token, { expires: rememberMe ? undefined : 1 })
+                Cookies.set('token', token, { expires: rememberMe ? 1 : undefined })
                 resolve('ok')
             } catch (error) {
                 reject(error)
@@ -56,29 +58,29 @@ export default {
         })
     },
 
-    update(data) {
+    update(id, data) {
         return new Promise(async (resolve, reject) => {
             try {
                 const response = await api.put('/user', data)
-                const { id, name, username } = response.data
+                const { name, username } = response.data
 
-                socket.emit('update', { action: 'UPDATE_ROOM', where: id, set: { name, username }, roomType: 'contact' }, () => resolve({ name, username }))
+                socket.emit('update', updateRoom({ where: id, set: { name, username }, roomType: 'contact' }), () => { resolve({ name, username }) })
             } catch (error) {
                 reject(error)
             }
         })
     },
 
-    updatePicture(picture) {
+    updatePicture(id, picture) {
         return new Promise(async (resolve, reject) => {
             try {
                 const data = new FormData()
                 data.append('picture', picture)
 
                 const response = await api.patch('/user/picture', data)
-                const { id, location } = response.data
+                const { location } = response.data
 
-                socket.emit('update', { action: 'UPDATE_ROOM', where: id, set: { picture: location }, roomType: 'contact' }, () => resolve(response.data))
+                socket.emit('update', updateRoom({ where: id, set: { picture: location }, roomType: 'contact' }), () => { resolve(response.data) })
             } catch (error) {
                 reject(error)
             }
@@ -89,7 +91,7 @@ export default {
         return new Promise(async (resolve, reject) => {
             try {
                 const response = await api.patch('/user/email', { email, password })
-                return response.data
+                resolve(response.data)
             } catch (error) {
                 reject(error)
             }
@@ -118,7 +120,25 @@ export default {
         })
     },
 
-    clearNotifications() {
+    delete(id, password) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                await api.post('/delete', { password })
+                socket.emit('update', removeRoom({ roomType: 'contact', roomId: id }), () => { resolve('ok') })
+            } catch (error) {
+                reject(error)
+            }
+        })
+    },
 
+    restore(username, password) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                await api.post('/restore', { username, password })
+                resolve('ok')
+            } catch (error) {
+                reject(error)
+            }
+        })
     },
 } as UserService

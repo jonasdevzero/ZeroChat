@@ -1,5 +1,5 @@
-import { api, socket } from "."
-import GroupService from '../types/services/groupService'
+import { api, socket } from ".."
+import GroupService from '../../types/services/groupService'
 
 interface CreateGroupI {
     name: string
@@ -32,7 +32,7 @@ export default {
     update({ groupId, name, description }) {
         return new Promise(async (resolve, reject) => {
             try {
-                const response = await api.put(`/group/${groupId}`, { name, description })
+                const response = await api.put(`/group`, { name, description, group_id: groupId })
                 resolve(response.data)
             } catch (error) {
                 reject(error)
@@ -59,6 +59,7 @@ export default {
         return new Promise(async (resolve, reject) => {
             try {
                 await api.delete(`/group/${groupId}`)
+                socket.emit('update', { type: 'REMOVE_ROOM', roomType: 'group', roomId: groupId }, () => { resolve('ok') })
                 resolve('ok')
             } catch (error) {
                 reject(error)
