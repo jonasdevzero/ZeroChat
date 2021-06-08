@@ -1,13 +1,15 @@
-export function setScreen(screen: 'profile' | 'addContact' | 'createGroup' | 'groupDashboard') {
+type Screen = 'Profile' | 'Settings' | 'Add Contact' | 'Create Group' | 'Group Dashboard'
+
+export function setScreen(screen: Screen) {
     return {
         type: 'SET_SCREEN',
-        screen
+        screen,
     }
 }
 
 export function removeScreen() {
     return {
-        type: 'SET_SCREEN',
+        type: 'REMOVE_SCREEN',
         screen: undefined
     }
 }

@@ -14,7 +14,14 @@ export function removeRoom() {
     }
 }
 
+export function toggleShowInfo() {
+    return {
+        type: 'TOGGLE_SHOW_ROOM_INFO'
+    }
+}
+
 export default {
     setRoom,
-    removeRoom
+    removeRoom,
+    toggleShowInfo
 }

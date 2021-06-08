@@ -67,6 +67,12 @@ const reducers = {
         return { ...state, [roomType]: rooms }
     },
 
+    'REMOVE_ROOM'(state: UserI, action: any) {
+        const { roomType, roomId } = action
+        state[roomType].filter(room => room.id !== roomId)
+        return state
+    },
+
     'PUSH_MESSAGE'(state: UserI, action: any) {
         const { where, data, roomType, currentRoom } = action
         if (!where || !data || !roomType || !currentRoom) return state;
@@ -84,7 +90,8 @@ const reducers = {
 
 
                 currentRoom === data.to ?
-                    messagesService.viewed({ roomType, roomId: currentRoom }).then(() => room.unread_messages = undefined)
+                    messagesService.viewed({ roomType: roomType === 'contacts' ? 'contact' : 'group', roomId: currentRoom })
+                        .then(() => room.unread_messages = undefined)
                     : room.unread_messages ? room.unread_messages++ : room.unread_messages = 1;
             }
 
@@ -95,18 +102,21 @@ const reducers = {
     },
 
     'REMOVE_MESSAGE'(state: UserI, action: any) {
+        const { where, messageId, roomType } = action
+
+        const rooms = state[roomType]
+        if (!rooms) return state;
+
+        rooms.map(room => {
+            if (room.id === where) room.messages.filter(m => m.id !== messageId);
+            return room
+        })
+
         return { ...state }
     },
 
-    'PUSH_ROOM'(state: UserI, action: any) {
-        const { roomType, room } = action
-        state[roomType].unshift(room)
-        return state
-    },
-
-    'REMOVE_ROOM'(state: UserI, action: any) {
-        const { roomType, roomId } = action
-        state[roomType].filter(room => room.id !== roomId)
+    'PUSH_NEW_USER_DATA'(state: UserI, action: any) {
+        state[action.dataType].unshift(action.data)
         return state
     },
 }

@@ -1,32 +1,5 @@
-import { ContactI, GroupI, UserI } from "../../types/user"
-
-interface UpdateUserI {
-    name?: string
-    username?: string
-    picture?: string
-    email?: string
-}
-
-interface UpdateRoomI {
-    where: string | string[]
-    set: {
-        name?: string
-        username?: string
-        picture?: string
-        messages?: []
-        unread_messages?: number
-        description?: string
-        block?: boolean
-        you_block?: boolean
-        online?: boolean
-    }
-    roomType: 'contacts' | 'groups'
-}
-
-interface RoomI {
-    roomType: 'contact' | 'group',
-    room: ContactI | GroupI
-}
+import { UserI } from "../../types/user"
+import { UpdateUser, UpdateRoom, RemoveRoom, PushMessage, RemoveMessage, PushData, PushDataType } from '../../types/actions/user'
 
 export function setUser(user: UserI) {
     return {
@@ -35,31 +8,46 @@ export function setUser(user: UserI) {
     }
 }
 
-export function updateUser(set: UpdateUserI) {
+export function updateUser(set: UpdateUser) {
     return {
         type: 'UPDATE_USER',
         set
     }
 }
 
-export function updateRoom(data: UpdateRoomI) {
+export function updateRoom(data: UpdateRoom) {
     return {
         type: 'UPDATE_ROOM',
         ...data
     }
 }
 
-export function pushRoom(data: RoomI) {
+export function removeRoom(data: RemoveRoom) {
     return {
-        type: 'PUSH_ROOM',
+        type: 'REMOVE_ROOM',
         ...data
     }
 }
 
-export function removeRoom(data: RoomI) {
+export function pushMessage(data: PushMessage) {
     return {
-        type: 'REMOVE_ROOM',
+        type: 'PUSH_MESSAGE',
         ...data
+    }
+}
+
+export function removeMessage(data: RemoveMessage) {
+    return {
+        type: 'REMOVE_MESSAGE',
+        ...data
+    }
+}
+
+export function pushData(data: PushData, dataType: PushDataType) {
+    return {
+        type: 'PUSH_NEW_USER_DATA',
+        data,
+        dataType
     }
 }
 
@@ -67,6 +55,8 @@ export default {
     setUser,
     updateUser,
     updateRoom,
-    pushRoom,
     removeRoom,
+    pushMessage,
+    removeMessage,
+    pushData,
 }
