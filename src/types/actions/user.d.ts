@@ -21,6 +21,7 @@ export interface UpdateRoom {
         block?: boolean
         you_block?: boolean
         online?: boolean
+        loaded_messages?: boolean
     }
     roomType: RoomType
 }

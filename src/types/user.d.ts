@@ -1,4 +1,4 @@
-export interface ContactMessageI {
+export interface ContactMessage {
     id: number;
     text: string;
     medias: [];
@@ -10,7 +10,7 @@ export interface ContactMessageI {
     date?: string;
 };
 
-export interface ContactI {
+export interface Contact {
     id: string;
     username: string;
     picture: string;
@@ -19,9 +19,10 @@ export interface ContactI {
     blocked: boolean;
     you_blocked: boolean;
     online: boolean;
+    loaded_messages: boolean;
 };
 
-export interface GroupMessageI {
+export interface GroupMessage {
     id: string;
     text: string;
     created_at: Date;
@@ -32,7 +33,7 @@ export interface GroupMessageI {
     };
 };
 
-export interface GroupUserI {
+export interface GroupUser {
     id: number;
     role: "user" | "admim";
     user: {
@@ -42,7 +43,7 @@ export interface GroupUserI {
     };
 };
 
-export interface GroupI {
+export interface Group {
     id: string;
     name: string;
     picture: string | null;
@@ -51,10 +52,11 @@ export interface GroupI {
     unread_messages: number;
     role: string;
     users: GroupUserI[];
-    messages: GroupMessageI[]
+    messages: GroupMessageI[];
+    loaded_messages: boolean;
 };
 
-export interface InvitationI {
+export interface Invite {
     id: string;
     created_at: Date;
     sender: {
@@ -64,15 +66,16 @@ export interface InvitationI {
     };
 };
 
-export interface NotificationI {
+export interface Notification {
     id: string;
     text: string;
     image: string;
     type: string;
+    viewed: boolean;
     created_at: Date;
 };
 
-export interface UserI {
+export interface User {
     id: string;
     name: string;
     username: string;

@@ -36,9 +36,9 @@ export default interface UserService {
 
     subscribe(data: SubscribeI): Promise<string>
 
-    update(id: string, data: UpdateI): Promise<UpdateI>
+    update(data: UpdateI): Promise<UpdateI>
 
-    updatePicture(id: string, picture: File | undefined): Promise<{ location: string }>
+    updatePicture(picture: File | undefined): Promise<{ location: string }>
 
     updateEmail(data: UpdateEmailI): Promise<{ email: string }>
 
@@ -46,7 +46,8 @@ export default interface UserService {
 
     resetPassword(data: ResetPasswordI): Promise<string>
 
-    delete(id: string, password: string): Promise<string>
+    delete(password: string): Promise<string>
 
     restore(username: string, password: string): Promise<string>
+
 }
