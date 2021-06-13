@@ -9,10 +9,7 @@ export default function Room() {
     const { room, showInfo } = useSelector(({ room }: any) => ({ room: room.current, showInfo: room.showInfo }))
     const dispatch = useDispatch()
 
-    useEffect(() => {
-        socket.removeListener('message')
-        socket.on('message', action => dispatch(action))
-    }, [])
+    useEffect(() => { socket.on('message', action => dispatch(action)) }, [])
 
     return (
         <Container>

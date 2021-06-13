@@ -5,6 +5,7 @@ import moment from 'moment'
 import { messagesService } from '../../../services'
 import * as UserActions from '../../../store/actions/user'
 import { useTheme } from '../../../hooks'
+import { Contact, Group } from '../../../types/user'
 
 import {
     Container,
@@ -21,8 +22,13 @@ import {
 import { Avatar } from "@material-ui/core"
 import KeyboardArrowDownIcon from "@material-ui/icons/KeyboardArrowDown"
 
+interface Room {
+    room: Contact | Group
+    roomType: 'contact' | 'group'
+}
+
 function Messages() {
-    const { room, roomType } = useSelector(({ room }: any) => ({ room: room.current, roomType: room.type }))
+    const { room, roomType }: Room = useSelector(({ room }: any) => ({ room: room.current, roomType: room.type }))
     const userId = useSelector((state: any) => state.user.id)
     const [theme] = useTheme()
 
@@ -52,7 +58,7 @@ function Messages() {
         }
 
         scrollToBottom(true)
-    }, [room.messages?.length])
+    }, [room?.messages?.length])
 
     function onScroll() {
         if (!messagesContainerRef.current) return;

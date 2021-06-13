@@ -1,4 +1,3 @@
-import { messagesService } from "../../services"
 import { Contact, Group, User } from "../../types/user"
 import { roomUtil } from "../../utils"
 
