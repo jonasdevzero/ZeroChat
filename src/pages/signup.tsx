@@ -3,7 +3,7 @@ import { useState } from "react"
 import { useRouter } from "next/router"
 import Link from "next/link"
 import { userService } from "../services"
-import { useWarn } from '../hooks'
+import { useWarn, useTheme } from '../hooks'
 
 import { Header, Footer } from "../components"
 import {
@@ -21,8 +21,7 @@ import {
     FormStepBack,
     ErrorMessage,
 } from "../styles/pages/base"
-import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos';
-import { AxiosError } from 'axios'
+import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos'
 
 export default function SignUp() {
     const [username, setUsername] = useState("")
@@ -33,28 +32,32 @@ export default function SignUp() {
 
     const [currentStep, setCurrentStep] = useState(0)
     const [error, setError] = useState(undefined)
+    const [loadingRequest, setLoadingRequest] = useState(false)
 
     const router = useRouter()
     const warn = useWarn()
+    const [theme] = useTheme()
 
     function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
 
         setError(undefined)
+        setLoadingRequest(true)
         userService.subscribe({ username, password, confirmPassword, name, email })
             .then(handleSucess)
             .catch(handleError)
+            .then(() => setLoadingRequest(false))
     }
 
     function handleSucess() {
+        setCurrentStep(3)
         warn.success('Welcome to  Zero')
-        setTimeout(() => router.push('/chat'), 3000)
+        setTimeout(() => router.push('/chat'), 2500)
     }
 
-    function handleError(error: AxiosError) {
-        const { message } = error.response.data
+    function handleError(message: string) {
         setError(message)
-        setCurrentStep(0)
+        message.split(' ')[0].toLowerCase() == 'email' ? setCurrentStep(1) : setCurrentStep(0)
     }
 
     return (
@@ -75,34 +78,36 @@ export default function SignUp() {
                         <>
                             <InputWrapper>
                                 <Label htmlFor='username'>Username</Label>
-                                <Input id='username' type='text' value={username} onChange={e => setUsername(e.target.value)} />
+                                <Input required id='username' type='text' value={username} onChange={e => setUsername(e.target.value)} />
                             </InputWrapper>
 
                             <InputWrapper>
                                 <Label htmlFor='password'>Password</Label>
-                                <Input id='password' type='password' value={password} onChange={e => setPassword(e.target.value)} />
+                                <Input required id='password' type='password' value={password} onChange={e => setPassword(e.target.value)} />
                             </InputWrapper>
 
                             <InputWrapper>
                                 <Label htmlFor='confirmPassword'>Confirm Password</Label>
-                                <Input id='confirmPassword' type='password' value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
+                                <Input required id='confirmPassword' type='password' value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
                             </InputWrapper>
 
                             <Submit type='button' onClick={() => setCurrentStep(1)}>Next</Submit>
                         </>
-                    ) : currentStep === 1 ? (
+                    ) : currentStep >= 1 ? (
                         <>
                             <InputWrapper>
                                 <Label htmlFor='name'>Name</Label>
-                                <Input id='name' type='text' value={name} onChange={e => setName(e.target.value)} />
+                                <Input required id='name' type='text' value={name} onChange={e => setName(e.target.value)} />
                             </InputWrapper>
 
                             <InputWrapper>
                                 <Label htmlFor='email'>E-mail</Label>
-                                <Input id='email' type='text' value={email} onChange={e => setEmail(e.target.value)} />
+                                <Input required id='email' type='text' value={email} onChange={e => setEmail(e.target.value)} />
                             </InputWrapper>
 
-                            <Submit type='submit'>Sign Up</Submit>
+                            <Submit type='submit'>
+                                {!loadingRequest ? 'Sign Up' : (<img src={`/loading-${theme === 'dark' ? 'light' : 'dark'}.svg`} />)}
+                            </Submit>
                         </>
                     ) : null}
 

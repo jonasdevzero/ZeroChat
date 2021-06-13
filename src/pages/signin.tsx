@@ -7,7 +7,7 @@ import { userService } from '../services'
 import { AxiosError } from 'axios'
 import { useWarn, useTheme } from '../hooks'
 
-import { Header, Footer, LoadingContainer } from '../components'
+import { Header, Footer } from '../components'
 import {
     Container,
     Inner,
@@ -28,7 +28,6 @@ export default function SignIn() {
     const [password, setPassword] = useState('')
     const [rememberMe, setRememberMe] = useState(true)
 
-    const [loading, setLoading] = useState(true)
     const [loadingRequest, setLoadingRequest] = useState(false)
     const [error, setError] = useState<string>(undefined)
 
@@ -36,10 +35,7 @@ export default function SignIn() {
     const warn = useWarn()
     const [theme] = useTheme()
 
-    useEffect(() => {
-        const token = Cookies.get('token')
-        token ? router.push('/chat') : setLoading(false)
-    }, [])
+    useEffect(() => { Cookies.get('token') ? router.push('/chat') : null }, [])
 
     function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault()
@@ -54,10 +50,7 @@ export default function SignIn() {
 
     function handleSuccess() {
         warn.success('Success, redirecting...')
-        setTimeout(() => {
-            setLoading(true)
-            router.push('/chat')
-        }, 2500)
+        setTimeout(() => router.push('/chat'), 2500)
     }
 
     function handleError(error: AxiosError) {
@@ -113,8 +106,6 @@ export default function SignIn() {
             </Inner>
 
             <Footer />
-
-            {loading && (<LoadingContainer />)}
         </Container>
     )
 }
