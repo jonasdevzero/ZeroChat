@@ -3,17 +3,19 @@ import ContactService from '../../types/services/contactService'
 import { pushData } from '../../store/actions/user'
 
 export default {
-    async search(username) {
-        try {
-            if (!username.length) return undefined;
+    search(username) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                if (!username.trim()) resolve([])
 
-            const response = await api.get(`/user/search?username=${username}`)
-            const { user } = response.data
+                const response = await api.get(`/user/search?username=${username}`)
+                const { user } = response.data
 
-            return user
-        } catch (error) {
-            throw new Error(error)
-        }
+                resolve(user)
+            } catch (error) {
+                reject(error)
+            }
+        })
     },
 
     show(contact_id) {
@@ -31,7 +33,7 @@ export default {
     invite(contact_id) {
         return new Promise(async (resolve, reject) => {
             try {
-                const { data } = await api.post('/contact/invite', { contact_id })
+                const { data } = await api.post(`/contact/invite/${contact_id}`)
                 const { invite } = data
                 socket.emit('invite', pushData(invite, 'invitations'), () => { resolve('Invite sent') })
             } catch (error) {
@@ -46,7 +48,10 @@ export default {
                 const { data } = await api.post(`/contact/invite/accept/${invitation_id}`)
                 const { contact } = data
 
-                socket.emit('invite-accepted', contact.id, () => { resolve(contact) })
+                socket.emit('invite-accepted', contact.id, (_error: any,  isOnline: boolean) => {
+                    contact.online = isOnline
+                    resolve(contact)
+                })
             } catch (error) {
                 reject(error)
             }

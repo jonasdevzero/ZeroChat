@@ -7,9 +7,9 @@ export default {
         return new Promise(async (resolve, reject) => {
             try {
                 const response = await api.get(`/${roomType}/messages/${roomId}`)
-                const { messages } = response.data
+                const { message } = response.data
 
-                resolve(messages)
+                resolve(message)
             } catch (error) {
                 reject(error)
             }
