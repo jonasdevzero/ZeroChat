@@ -4,7 +4,7 @@ import { socket } from '../services'
 import { useSelector, useDispatch } from 'react-redux'
 import * as CallActions from '../store/actions/call'
 import { dateUtil } from '../utils'
-import { ContactI } from "../types/user"
+import { Contact } from "../types/user"
 
 import {
     Container,
@@ -31,7 +31,7 @@ import {
 } from "@material-ui/icons";
 
 export default function Call() {
-    const userContacts: ContactI[] = useSelector((state: any) => state.user.contacts)
+    const userContacts: Contact[] = useSelector((state: any) => state.user.contacts)
     const myVideo = useRef(null);
     const userVideo = useRef(null);
 

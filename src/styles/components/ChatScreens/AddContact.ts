@@ -2,8 +2,23 @@ import styled from "styled-components";
 
 export const Container = styled.div`
     display: flex;
+    flex-direction: column;
     width: 100%;
+    height: 100%;
     justify-content: center;
+`
+
+export const Content = styled.main`
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 5rem;
+`
+
+export const Buttons = styled.div`
+    display: flex;
+    align-items: center;
 `
 
 export const Invitations = styled.div`
@@ -11,6 +26,7 @@ export const Invitations = styled.div`
     flex-direction: column;
     width: 38rem;
     max-height: 40rem;
+    height: 100%;
     background-color: #171717;
     padding: 2.5rem;
     margin-right: 5rem;
@@ -27,9 +43,10 @@ export const InvitationsTitle = styled.div`
     margin-bottom: .5rem;
 
     h2 {
-        font-size: 2rem;
+        font-size: 2.5rem;
         font-family: 'Roboto', sans-serif;
-        color: #aaa;
+        font-weight: 500;
+        color: #fff;
     };
 `
 
@@ -74,18 +91,17 @@ export const Invitation = styled.div`
 export  const SearchUsers = styled.div`
     display: flex;
     flex-direction: column;
-    width: 50rem;
+    width: 45rem;
     max-height: 40rem;
-    padding: 2.5rem;
+    height: 100%;
+    padding: 2rem;
     background-color: #171717;
     border-radius: .7rem;
 `
 
 export const Form = styled.form`
     width: 100%;
-    padding: 0 2rem 2rem 2rem;
-
-    border-bottom: solid .2rem #252525;
+    margin-top: 1rem;
 `;
 
 export const InputWrapper = styled.div`
@@ -123,8 +139,7 @@ export const Users = styled.div`
     flex-direction: column;
 
     width: 100%;
-    margin-top: 3rem;
-    padding: 0 2rem;
+    margin-top: 2rem;
 
     overflow-y: scroll;
 `;
@@ -135,32 +150,30 @@ export const User = styled.div`
     justify-content: space-between;
 
     margin-bottom: .2rem;
-    padding: 1.5rem;
+    padding: 1rem;
     border-radius: .7rem;
 
-    background-color: #252525;
-    transition: background-color .3s ease;
+    background-color: #202020;
+    transition: opacity .3s ease;
 
-    cursor: pointer;
+    h3 {
+        margin-left: 1rem;
+        font-size: 1.7rem;
+        font-weight: 400;
+    };
 
     .MuiAvatar-root {
         width: 5rem;
         height: 5rem;
     };
 
-    h3 {
-        margin-left: 1rem;
-        font-size: 1.7rem;
-        color: #aaa;
-    };
-
-    & > .MuiSvgIcon-root {
-        color: #aaa;
-        font-size: 2.5rem;
+    .MuiSvgIcon-root {
+        color: #fff;
+        font-size: 3rem;
     };
 
     &:hover {
-        background-color: #282828;
+        opacity: .7;
     };
 `;
 
@@ -169,18 +182,16 @@ export const WrapperAvatar = styled.div`
     align-items: center;
 `;
 
-export const NotFound = styled.div`
+export const Initial = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
-
     width: 100%;
+    margin-top: 2rem;
 
-    strong {
-        color: #aaa;
-        font-size: 1.6rem;
-        font-family: 'Roboto', sans-serif;
+    span {
+        color: #777;
+        font-size: 1.8rem;
+        font-family: 'Red Hat Text', sans-serif;
     };
-`;
-
-export const Initial = styled(NotFound)``;
+`
