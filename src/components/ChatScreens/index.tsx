@@ -1,5 +1,4 @@
-import { useSelector, useDispatch } from 'react-redux'
-import * as ScreenActions from '../../store/actions/screen'
+import { useSelector } from 'react-redux'
 
 import {
     Profile,
@@ -8,18 +7,10 @@ import {
     GroupDashboard,
     Settings,
 } from './components'
-import {
-    Container,
-    Header,
-    Title,
-    Close,
-    Content
-} from '../../styles/components/ChatScreens'
-import CloseIcon from '@material-ui/icons/Close'
+import { Container } from '../../styles/components/ChatScreens'
 
 function ChatScreens() {
     const screen: string = useSelector((state: any) => state.screen.current)
-    const dispatch = useDispatch()
 
     function getScreen() {
         switch (screen) {
@@ -38,22 +29,7 @@ function ChatScreens() {
         }
     }
 
-    return (
-        <>
-            {screen ? (
-                <Container>
-                    <Header>
-                        <Title>{screen}</Title>
-                        <Close onClick={() => dispatch(ScreenActions.removeScreen())}>
-                            <CloseIcon fontSize='large' />
-                        </Close>
-                    </Header>
-
-                    <Content>{getScreen()}</Content>
-                </Container>
-            ) : null}
-        </>
-    )
+    return screen ? (<Container>{getScreen()}</Container>) : null
 }
 
 export default ChatScreens

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { UserI, ContactI } from "../../../types/user"
+import { User, Contact } from "../../../types/user"
 import Fuse from "fuse.js"
 import { groupService } from "../../../services"
 import { useDispatch, useSelector } from 'react-redux'
@@ -28,7 +28,7 @@ import {
 } from "@material-ui/icons"
 
 export default function CreateGroup() {
-    const user: UserI = useSelector((state: any) => state.user)
+    const user: User = useSelector((state: any) => state.user)
     const [theme] = useTheme()
 
     const [name, setName] = useState("");
@@ -37,8 +37,8 @@ export default function CreateGroup() {
     const [members, setMembers] = useState<string[]>([]);
 
     const [search, setSearch] = useState("");
-    const [searchResult, setSearchResult] = useState<ContactI[]>()
-    const [selectedContacts, setSelectedContacts] = useState<ContactI[]>([])
+    const [searchResult, setSearchResult] = useState<Contact[]>()
+    const [selectedContacts, setSelectedContacts] = useState<Contact[]>([])
 
     const [imagePreview, setImagePreview] = useState("");
 
@@ -75,21 +75,21 @@ export default function CreateGroup() {
         setImage(undefined);
     };
 
-    function selectContact(contact: ContactI) {
+    function selectContact(contact: Contact) {
         setMembers([...members, contact.id]);
         selectedContacts.push(contact);
 
         setSearch("");
     };
 
-    function removeSelectedContact(contact: ContactI) {
+    function removeSelectedContact(contact: Contact) {
         setMembers(members.filter(member => member !== contact.id));
         setSelectedContacts(selectedContacts.filter(selectedContact => selectedContact.id !== contact.id));
     };
 
     useEffect(() => {
         const fuse = new Fuse(user.contacts, { keys: ["username"] });
-        let results: ContactI[] = [];
+        let results: Contact[] = [];
         fuse.search(search).map(({ item }) => item).forEach(contact => {
             !(selectedContacts?.find(c => c.id === contact.id)) ? results.push(contact) : null
         })

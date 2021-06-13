@@ -13,19 +13,40 @@ export const Container = styled.div`
 
 export const Header = styled.header`
     display: flex;
-    align-items: flex-end;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2.5rem 8rem;
+    background-color: rgba(0, 0, 0, .15);
 
-    padding: 0 3rem;
-    margin: 0 9rem;
-    margin-top: 4.6rem;
-    border-bottom: solid .1rem #777;
+    .MuiSvgIcon-root {
+        font-size: 3.2rem;
+    }
+`
 
-    h1 {
-        font-size: 4rem;
-        font-weight: 700;
-        margin-bottom: 2rem;
-    };
-`;
+export const Title = styled.h1`
+    color: #fff;
+    font-size: 3.6rem;
+    font-weight: 400;
+`
+
+export const Button = styled.button`
+    border: none;
+    outline: none;
+    background-color: transparent;
+    cursor: pointer;
+    z-index: 1;
+    color: #fff;
+    font-size: 1.6rem;
+
+    & + & {
+        margin-left: 2rem;
+    }
+
+    .MuiSvgIcon-root {
+        color: #fff;
+        font-size: 2.8rem;
+    }
+`
 
 export const Inner = styled.div`
     width: 60rem;
