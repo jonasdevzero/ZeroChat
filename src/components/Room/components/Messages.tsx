@@ -33,47 +33,47 @@ function Messages() {
     const dispatch = useDispatch()
 
     useEffect(() => {
-        if (room) {
-            if (!room.messages.length) {
-                setLoadingMessages(true);
+        if (!room.loaded_messages) {
+            setLoadingMessages(true)
 
-                messagesService.get({ roomId: room.id, roomType })
-                    .then(messages => dispatch(UserActions.updateRoom({ where: room.id, set: { messages }, roomType })))
-                    .then(() => scrollToBottom())
-                    .then(() => setLoadingMessages(false))
-            }
-
-            room.unread_messages > 0 ? messagesService.viewed({ roomId: room.id, roomType })
-                .then(() => dispatch(UserActions.updateRoom({ where: room.id, set: { unread_messages: undefined }, roomType })))
-                : null
-
-            scrollToBottom()
+            messagesService.get({ roomId: room.id, roomType })
+                .then(messages => dispatch(UserActions.updateRoom({ where: room.id, set: { messages, loaded_messages: true }, roomType })))
+                .then(() => setLoadingMessages(false))
+                .then(() => scrollToBottom())
         }
+
+        scrollToBottom()
     }, [room, roomType])
 
-    useEffect(() => scrollToBottom(true), [room?.messages?.length])
+    useEffect(() => {
+        if (room.unread_messages > 0) {
+            messagesService.viewed({ roomId: room.id, roomType })
+                .then(() => dispatch(UserActions.updateRoom({ where: room.id, set: { unread_messages: 0 }, roomType })))
+        }
+
+        scrollToBottom(true)
+    }, [room.messages?.length])
 
     function onScroll() {
-        if (messagesContainerRef.current) {
-            const { scrollTop, clientHeight, scrollHeight } = messagesContainerRef.current
-            setShowScrollButton(!(scrollTop + 100 > scrollHeight - clientHeight))
+        if (!messagesContainerRef.current) return;
+        const { scrollTop, clientHeight, scrollHeight } = messagesContainerRef.current
 
-            // if the user scroll all to top, load more messages if exists...
-        }
+        setShowScrollButton(!(scrollTop + 100 > scrollHeight - clientHeight))
+
+        // if the user scroll all to top, load more messages if exists...
     }
 
     function scrollToBottom(newMessage?: boolean) {
-        if (messagesContainerRef.current) {
-            const { scrollTop, clientHeight, scrollHeight } = messagesContainerRef.current;
-            const scroll = scrollHeight - clientHeight;
+        if (!messagesContainerRef.current) return;
+        const { scrollTop, clientHeight, scrollHeight } = messagesContainerRef.current;
+        const scroll = scrollHeight - clientHeight;
 
-            if (newMessage) {
-                if (scrollTop + 200 > scrollHeight - clientHeight) {
-                    messagesContainerRef.current.scrollTo(0, scroll);
-                };
-            } else {
+        if (newMessage) {
+            if (scrollTop + 200 > scrollHeight - clientHeight) {
                 messagesContainerRef.current.scrollTo(0, scroll);
-            }
+            };
+        } else {
+            messagesContainerRef.current.scrollTo(0, scroll);
         }
     }
 
@@ -85,7 +85,7 @@ function Messages() {
                 </LoadingMessages>
             ) : null}
 
-            {roomUtil.orderMessages(room.messages).map((msg, i, arr) => {
+            {roomUtil.orderMessages(room.messages)?.map((msg, i, arr) => {
                 if (msg.type && msg.type === "day") {
                     return <Day key={i}>{msg.date}</Day>
                 };

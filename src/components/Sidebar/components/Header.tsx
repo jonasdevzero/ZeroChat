@@ -16,7 +16,6 @@ function Header({ optionSelected }: { optionSelected: string }) {
     return (
         <Container>
             <Title>{optionSelected}</Title>
-
             {pending[optionSelected] ? (<Pending>{pending[optionSelected]}</Pending>) : null}
         </Container>
     )

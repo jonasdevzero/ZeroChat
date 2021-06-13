@@ -1,24 +1,24 @@
 import { useSelector } from 'react-redux'
-import { NotificationI } from '../../../types/user'
+import { Notification } from '../../../types/user'
 
 import {
     Container,
-    Notification,
+    Item,
     Text
 } from '../../../styles/components/Sidebar/Notifications'
 import { Avatar } from '@material-ui/core'
 
 function Notifications() {
-    const notifications: NotificationI[] = useSelector((state: any) => state.user.notifications)
+    const notifications: Notification[] = useSelector((state: any) => state.user.notifications)
 
     return (
         <Container>
             {notifications.map(n => {
                 return (
-                    <Notification key={n.id}>
+                    <Item key={n.id}>
                         <Avatar src={n.image} />
                         <Text>{n.text}</Text>
-                    </Notification>
+                    </Item>
                 )
             })}
         </Container>

@@ -17,7 +17,7 @@ export default function Sidebar() {
             socket.emit('new-contact', contactId, (_error, online: boolean) => {
                 contactService.show(contactId).then(contact => {
                     contact.online = online
-                    pushData(contact, 'contact')
+                    pushData(contact, 'contacts')
                 })
             })
         })

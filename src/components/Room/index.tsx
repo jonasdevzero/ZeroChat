@@ -11,8 +11,8 @@ export default function Room() {
 
     useEffect(() => {
         socket.removeListener('message')
-        socket.on('message', action => dispatch({ ...action, currentRoom: room?.id }))
-    }, [room])
+        socket.on('message', action => dispatch(action))
+    }, [])
 
     return (
         <Container>
