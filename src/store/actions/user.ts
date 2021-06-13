@@ -1,7 +1,7 @@
-import { UserI } from "../../types/user"
+import { User } from "../../types/user"
 import { UpdateUser, UpdateRoom, RemoveRoom, PushMessage, RemoveMessage, PushData, PushDataType } from '../../types/actions/user'
 
-export function setUser(user: UserI) {
+export function setUser(user: User) {
     return {
         type: 'SET_USER',
         user
@@ -51,6 +51,14 @@ export function pushData(data: PushData, dataType: PushDataType) {
     }
 }
 
+export function removeData(dataType: PushDataType, whereId: string) {
+    return {
+        type: 'REMOVE_USER_DATA',
+        dataType,
+        whereId
+    }
+}
+
 export default {
     setUser,
     updateUser,
@@ -59,4 +67,5 @@ export default {
     pushMessage,
     removeMessage,
     pushData,
+    removeData
 }

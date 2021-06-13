@@ -3,6 +3,8 @@ import Cookies from 'js-cookie'
 import UserService from '../../types/services/userService'
 import { UserI } from '../../types/user'
 import { updateRoom, removeRoom } from '../../store/actions/user'
+import store from '../../store'
+import { AxiosError } from 'axios'
 
 export default {
     connect() {
@@ -53,17 +55,18 @@ export default {
                 Cookies.set('token', token)
                 resolve('ok')
             } catch (error) {
-                reject(error)
+                reject(error?.response?.data?.message || error)
             }
         })
     },
 
-    update(id, data) {
+    update(data) {
         return new Promise(async (resolve, reject) => {
             try {
                 const response = await api.put('/user', data)
                 const { name, username } = response.data
 
+                const id = store.getState().user.id
                 socket.emit('update', updateRoom({ where: id, set: { name, username }, roomType: 'contact' }), () => { resolve({ name, username }) })
             } catch (error) {
                 reject(error)
@@ -71,7 +74,7 @@ export default {
         })
     },
 
-    updatePicture(id, picture) {
+    updatePicture(picture) {
         return new Promise(async (resolve, reject) => {
             try {
                 const data = new FormData()
@@ -80,6 +83,7 @@ export default {
                 const response = await api.patch('/user/picture', data)
                 const { location } = response.data
 
+                const id = store.getState().user.id
                 socket.emit('update', updateRoom({ where: id, set: { picture: location }, roomType: 'contact' }), () => { resolve(response.data) })
             } catch (error) {
                 reject(error)
@@ -120,10 +124,12 @@ export default {
         })
     },
 
-    delete(id, password) {
+    delete(password) {
         return new Promise(async (resolve, reject) => {
             try {
                 await api.post('/delete', { password })
+
+                const id = store.getState().user.id
                 socket.emit('update', removeRoom({ roomType: 'contact', roomId: id }), () => { resolve('ok') })
             } catch (error) {
                 reject(error)
