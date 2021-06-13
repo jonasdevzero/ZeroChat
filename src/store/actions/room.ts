@@ -1,6 +1,6 @@
-import { ContactI, GroupI } from "../../types/user";
+import { Contact, Group } from "../../types/user";
 
-export function setRoom(room: ContactI | GroupI | undefined, roomType: 'contact' | 'group') {
+export function setRoom(room: Contact | Group | undefined, roomType: 'contact' | 'group') {
     return {
         type: 'SET_ROOM',
         room,

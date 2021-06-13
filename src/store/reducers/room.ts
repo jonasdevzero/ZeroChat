@@ -1,4 +1,4 @@
-import { ContactI, GroupI } from "../../types/user"
+import { Contact, Group } from "../../types/user"
 
 const INITIAL_STATE = {
     type: undefined,
@@ -6,7 +6,7 @@ const INITIAL_STATE = {
     showInfo: false
 } as {
     type: 'contact' | 'group',
-    current: ContactI & GroupI,
+    current: Contact & Group,
     showInfo: boolean,
 }
 

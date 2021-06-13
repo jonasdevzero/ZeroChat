@@ -1,4 +1,4 @@
-import { UserI } from "../user";
+import { User } from "../user";
 
 interface LogInI {
     reference: string
@@ -30,7 +30,7 @@ interface ResetPasswordI {
 }
 
 export default interface UserService {
-    connect(): Promise<UserI>
+    connect(): Promise<User>
 
     login(data: LogInI): Promise<string>
 

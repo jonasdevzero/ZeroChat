@@ -1,10 +1,9 @@
 import { api, socket } from '..'
 import Cookies from 'js-cookie'
 import UserService from '../../types/services/userService'
-import { UserI } from '../../types/user'
+import { User } from '../../types/user'
 import { updateRoom, removeRoom } from '../../store/actions/user'
 import store from '../../store'
-import { AxiosError } from 'axios'
 
 export default {
     connect() {
@@ -16,7 +15,7 @@ export default {
                 socket.io.opts.query = `token=Bearer ${jwt}`
                 socket.connect()
 
-                socket.once('ready', (user: UserI) => {
+                socket.once('ready', (user: User) => {
                     if (!user) {
                         Cookies.remove('token')
                         reject('Token invalid or expired!')

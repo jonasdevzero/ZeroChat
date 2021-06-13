@@ -1,4 +1,4 @@
-import { GroupI } from "../user";
+import { Group } from "../user";
 
 interface CreateGroupI {
     name: string
@@ -24,7 +24,7 @@ interface GroupUserI {
 }
 
 export default interface GroupService {
-    create(data: CreateGroupI): Promise<GroupI>
+    create(data: CreateGroupI): Promise<Group>
 
     update(data: UpdateGroupI): Promise<{ name: string, description: string }>
 

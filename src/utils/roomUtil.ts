@@ -1,6 +1,6 @@
 import moment from "moment"
 import dateUtil from './dateUtil'
-import { GroupMessageI, ContactMessageI } from "../types/user"
+import { GroupMessage, ContactMessage } from "../types/user"
 
 /*
     Takes the messages and returns an object with the key equal to the day of the messages
@@ -13,7 +13,7 @@ import { GroupMessageI, ContactMessageI } from "../types/user"
         '2021-05-23': [...messages],
     }
 */
-function messagesDay(messages: GroupMessageI[] & ContactMessageI[]) {
+function messagesDay(messages: GroupMessage[] & ContactMessage[]) {
     return messages.reduce((acc, crr) => {
         const messageDay = moment(crr.created_at).format("YYYY-MM-DD");
         return acc[messageDay] ? { ...acc, [messageDay]: acc[messageDay].concat([crr]) } : { ...acc, [messageDay]: [crr] };
@@ -24,7 +24,7 @@ function messagesDay(messages: GroupMessageI[] & ContactMessageI[]) {
     Receive the messages, separate them using the messages Day function,
     sort the messages, and put everything together in a single array
 */
-function orderMessages(messages: GroupMessageI[] & ContactMessageI[]) {
+function orderMessages(messages: GroupMessage[] & ContactMessage[]) {
     if (!messages) return [];
 
     const days = messagesDay(messages)

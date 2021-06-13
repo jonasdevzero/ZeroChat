@@ -1,4 +1,4 @@
-import { ContactI, GroupI, NotificationI, InvitationI } from '../user'
+import { Contact, Group, Notification, Invite } from '../user'
 
 export interface UpdateUser {
     name?: string
@@ -43,5 +43,5 @@ export interface RemoveMessage {
     roomType: RoomType
 }
 
-export type PushData = ContactI | GroupI | NotificationI | InvitationI
+export type PushData = Contact | Group | Notification | Invite
 export type PushDataType = 'contacts' | 'groups' | 'notifications' | 'invitations'
