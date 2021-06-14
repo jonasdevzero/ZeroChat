@@ -23,7 +23,7 @@ import { Avatar } from "@material-ui/core"
 import KeyboardArrowDownIcon from "@material-ui/icons/KeyboardArrowDown"
 
 interface Room {
-    room: Contact | Group
+    room: Contact & Group
     roomType: 'contact' | 'group'
 }
 
