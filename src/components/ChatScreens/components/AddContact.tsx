@@ -39,7 +39,7 @@ import {
 
 export default function AddContact() {
     const invitations = useSelector(({ user }: any) => user.invitations)
-    const [currentOption, setCurrentOption] = useState<'invites' | 'search'>('search')
+    const [currentOption, setCurrentOption] = useState<'invites' | 'search'>(invitations.length > 0 ? 'invites' : 'search')
 
     const [username, setUsername] = useState("")
     const [users, setUsers] = useState([])

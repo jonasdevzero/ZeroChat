@@ -2,13 +2,15 @@ import { useSelector, useDispatch } from 'react-redux'
 import { useRouter } from 'next/router'
 import * as Actions from '../../../store/actions'
 import Cookies from 'js-cookie'
+import { User } from '../../../types/user'
 
 import {
     Container,
-    User,
+    User as UserPicture,
     OptionsInner,
     OptionsPlus,
     Option,
+    Pending
 } from "../../../styles/components/Sidebar/Options"
 import { Avatar } from "@material-ui/core"
 import {
@@ -22,6 +24,11 @@ import {
 
 function Options({ setOptionSelected }) {
     const userPicture = useSelector((state: any) => state.user.picture)
+    const pending = useSelector(({ user }: { user: User }) => ({
+        contacts: !!user.contacts.find(c => c.unread_messages > 0) || !!user.invitations.length,
+        groups: !!user.groups.find(g => g.unread_messages > 0),
+        notifications: !!user.notifications.length,
+    }))
 
     const router = useRouter()
     const dispatch = useDispatch()
@@ -33,20 +40,23 @@ function Options({ setOptionSelected }) {
 
     return (
         <Container>
-            <User onClick={() => dispatch(Actions.screen.setScreen('Profile'))}>
+            <UserPicture onClick={() => dispatch(Actions.screen.setScreen('Profile'))}>
                 <Avatar src={userPicture} />
-            </User>
+            </UserPicture>
 
             <OptionsInner>
                 <Option onClick={() => setOptionSelected("contacts")}>
+                    {pending.contacts && (<Pending />)}
                     <PersonIcon />
                 </Option>
 
                 <Option onClick={() => setOptionSelected("groups")}>
+                    {pending.groups && (<Pending />)}
                     <GroupIcon />
                 </Option>
 
                 <Option onClick={() => setOptionSelected("notifications")}>
+                    {pending.notifications && (<Pending />)}
                     <NotificationsIcon />
                 </Option>
 

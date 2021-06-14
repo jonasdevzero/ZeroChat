@@ -110,7 +110,14 @@ const reducers = {
     },
 
     'PUSH_NEW_USER_DATA'(state: User, action: any) {
-        state[action.dataType]?.unshift(action.data)
+        const { data, dataType } = action
+
+        const items: any[] = state[dataType]
+        if (!items) return state;
+
+        Array.isArray(data) ? data.forEach(d => items.unshift(d)) : items.unshift(data)
+        state[dataType] = items
+
         return state
     },
 

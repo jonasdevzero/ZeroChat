@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { useDispatch } from 'react-redux'
-import { socket, contactService } from '../../services'
+import { socket, contactService, notificationsService } from '../../services'
 import * as UserActions from '../../store/actions/user'
 
 import { Options, Header, Rooms, Notifications } from './components'
@@ -11,8 +11,15 @@ export default function Sidebar() {
     const dispatch = useDispatch()
 
     useEffect(() => {
-        socket.on('update', action => dispatch(action))
+        socket.on('update', action => {
+            dispatch(action)
+            notificationsService.get()
+                .then(notifications => dispatch(UserActions.pushData(notifications, 'notifications')))
+                .then(() => console.log('Getting more notifications'))
+        })
+
         socket.on('new-group', group => socket.emit("join-group", group.id, () => pushData(group, 'groups')))
+
         socket.on('invite-accepted', contactId => {
             socket.emit('new-contact', contactId, (_error, online: boolean) => {
                 contactService.show(contactId).then(contact => {
@@ -34,5 +41,5 @@ export default function Sidebar() {
                 {optionSelected === 'notifications' ? (<Notifications />) : (<Rooms roomsType={optionSelected} />)}
             </Inner>
         </Container>
-    );
-};
+    )
+}
