@@ -138,7 +138,7 @@ const reducers = {
     },
 
     'VIEW_NOTIFICATIONS'(state: User, _action: any) {
-        state.notifiactions.map(n => {
+        state.notifications.map(n => {
             n.viewed = true
             return n
         })
