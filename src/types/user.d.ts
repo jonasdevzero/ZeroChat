@@ -14,7 +14,7 @@ export interface Contact {
     id: string;
     username: string;
     picture: string;
-    messages: ContactMessageI[];
+    messages: ContactMessage[];
     unread_messages: number | undefined;
     blocked: boolean;
     you_blocked: boolean;
@@ -51,8 +51,8 @@ export interface Group {
     created_at: Date;
     unread_messages: number;
     role: string;
-    users: GroupUserI[];
-    messages: GroupMessageI[];
+    users: GroupUser[];
+    messages: GroupMessage[];
     loaded_messages: boolean;
 };
 
@@ -81,8 +81,8 @@ export interface User {
     username: string;
     email: string;
     picture: string | null;
-    notifiactions: NotificationI[];
-    invitations: InvitationI[];
-    contacts: ContactI[];
-    groups: GroupI[];
+    notifications: Notification[];
+    invitations: Invitation[];
+    contacts: Contact[];
+    groups: Group[];
 };

@@ -43,5 +43,9 @@ export interface RemoveMessage {
     roomType: RoomType
 }
 
-export type PushData = Contact | Group | Notification | Invite
+export type PushData = Contact | Contact[]
+    | Group | Group[]
+    | Notification | Notification[]
+    | Invite | Invite[];
+
 export type PushDataType = 'contacts' | 'groups' | 'notifications' | 'invitations'
