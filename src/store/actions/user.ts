@@ -59,6 +59,12 @@ export function removeData(dataType: PushDataType, whereId: string) {
     }
 }
 
+export function viewNotifications() {
+    return {
+        type: 'VIEW_NOTIFICATIONS'
+    }
+}
+
 export default {
     setUser,
     updateUser,
@@ -67,5 +73,6 @@ export default {
     pushMessage,
     removeMessage,
     pushData,
-    removeData
+    removeData,
+    viewNotifications
 }

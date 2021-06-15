@@ -6,10 +6,16 @@ export const Container = styled.div`
     display: flex;
     flex-direction: column;
 `
-export const Item = styled.div`
+
+interface ItemI {
+    viewed: boolean
+}
+
+export const Item = styled.div<ItemI>`
     display: flex;
     padding: .5rem;
     position: relative;
+    opacity: ${({ viewed }) => viewed ? '.8' : '1'};
 
     & + & {
         margin-top: .7rem;

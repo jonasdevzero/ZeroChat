@@ -11,15 +11,9 @@ export default function Sidebar() {
     const dispatch = useDispatch()
 
     useEffect(() => {
-        socket.on('update', action => {
-            dispatch(action)
-            notificationsService.get()
-                .then(notifications => dispatch(UserActions.pushData(notifications, 'notifications')))
-                .then(() => console.log('Getting more notifications'))
-        })
-
+        socket.on('update', action => dispatch(action))
+        socket.on('notifications', () => notificationsService.get().then(n => pushData(n, 'notifications')))
         socket.on('new-group', group => socket.emit("join-group", group.id, () => pushData(group, 'groups')))
-
         socket.on('invite-accepted', contactId => {
             socket.emit('new-contact', contactId, (_error, online: boolean) => {
                 contactService.show(contactId).then(contact => {

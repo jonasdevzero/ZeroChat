@@ -115,9 +115,10 @@ const reducers = {
         const items: any[] = state[dataType]
         if (!items) return state;
 
-        Array.isArray(data) ? data.forEach(d => items.unshift(d)) : items.unshift(data)
-        state[dataType] = items
+        Array.isArray(data) ? data.forEach(d => !items.find(i => i.id === d.id) ? items.unshift(d) : null)
+            : !items.find(i => i.id === data.id) ? items.unshift(data) : null
 
+        state[dataType] = items
         return state
     },
 
