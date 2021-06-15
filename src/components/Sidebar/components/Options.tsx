@@ -27,7 +27,7 @@ function Options({ setOptionSelected }) {
     const pending = useSelector(({ user }: { user: User }) => ({
         contacts: !!user.contacts.find(c => c.unread_messages > 0) || !!user.invitations.length,
         groups: !!user.groups.find(g => g.unread_messages > 0),
-        notifications: !!user.notifications.length,
+        notifications: !!user.notifications.find(n => !n.viewed),
     }))
 
     const router = useRouter()
