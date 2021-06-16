@@ -4,7 +4,7 @@ import GroupService from '../../types/services/groupService'
 interface CreateGroupI {
     name: string
     description: string
-    picture: File
+    picture: File | undefined
     members: string[]
 }
 
@@ -24,7 +24,7 @@ export default {
 
                 socket.emit('new-group', { group, members }, () => resolve(group))
             } catch (error) {
-                reject(error)
+                reject(error?.response?.data?.message)
             }
         })
     },

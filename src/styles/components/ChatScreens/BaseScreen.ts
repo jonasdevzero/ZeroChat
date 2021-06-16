@@ -23,13 +23,13 @@ export const Header = styled.header`
     }
 `
 
-export const Title = styled.h1`
+export const HeaderTitle = styled.h1`
     color: #fff;
     font-size: 3.6rem;
     font-weight: 400;
 `
 
-export const Button = styled.button`
+export const HeaderButton = styled.button`
     border: none;
     outline: none;
     background-color: transparent;
@@ -48,50 +48,7 @@ export const Button = styled.button`
     }
 `
 
-export const Inner = styled.div`
-    width: 60rem;
-    margin: 2.5rem auto;
-    padding: 3.5rem;
-    border-radius: .7rem;
-
-    background-color: #2c2c2c;
-`;
-
-export const Form: any = styled.form`
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-
-    margin-bottom: 3rem;
-    padding: 2rem;
-    padding-bottom: 1.5rem;
-
-    background-color: #2f2f2f;
-    border-radius: 1rem;
-`;
-
-Form.Wrapper = styled.div`
-    display: flex;
-    flex-direction: column;
-
-    width: 100%;
-    margin-left: 1rem;
-`;
-
-Form.Wrapper.Input = styled.div`
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-
-    margin-bottom: 2rem;
-
-    &.row {
-        flex-direction: row;
-        align-items: center;
-    };
-`;
-
-Form.Wrapper.Image = styled.div`
+export const Picture = styled.div`
     position: relative;
     min-width: 15rem;
     max-width: 15rem;
@@ -102,113 +59,9 @@ Form.Wrapper.Image = styled.div`
         width: 100%;
         height: 100%;
     };
-`;
+`
 
-Form.Wrapper.Button = styled.div`
-    display: flex;
-
-    &.right {
-        margin-right: auto;
-    };
-`;
-
-Form.Label = styled.label`
-    display: flex;
-    align-items: center;
-
-    color: lightgray;
-    font-size: 1.4rem;
-    margin-bottom: .5rem;
-
-    .MuiSvgIcon-root {
-        margin-left: .5rem;
-        cursor: pointer;
-    };
-`;
-
-Form.Input = styled.input`
-    height: 4rem;
-    width: 100%;
-
-    border: none;
-    border-radius: .7rem;
-    outline: none;
-
-    padding: 0 .7rem;
-
-    font-size: 1.6rem;
-    color: #fff;
-    background-color: #353535;
-`;
-
-Form.Button = styled.button`
-    height: 4rem;
-
-    color: #fff;
-    font-size: 1.4rem;
-    background-color: #222;
-
-    padding: .5rem 2rem;
-    border: none;
-    border-radius: .7rem;
-    outline: none;
-    cursor: pointer;
-
-    & + &, div + & {
-        margin-left: 1rem;
-    };
-    &.cancel {
-        background-color: #3b3b3b;
-    };
-    &.password {
-        margin: 0;
-    };
-    &.delete {
-        background-color: red;
-        font-weight: 700;
-    };
-
-    & > img {
-        width: 3rem;
-        height: 3rem;
-    };
-`;
-
-Form.Fieldset = styled.fieldset`
-    width: 100%;
-    border: none;
-
-    & + & {
-        margin-top: 3rem;
-    };
-`;
-
-Form.Legend = styled.legend`
-    width: 100%;
-    font-size: 1.8rem;
-
-    margin-bottom: 2rem;
-    padding: 0 0 1rem 1.5rem;
-    border-bottom: solid .1rem #777;
-`;
-
-Form.TextArea = styled.textarea`
-    background-color: #353535;
-    color: #fff;
-    font-size: 1.6rem;
-
-    min-height: 6rem;
-    max-height: 12rem;
-
-    padding: 1rem;
-    border: none;
-    outline: none;
-    resize: vertical;
-`;
-
-Form.Image = styled.div``;
-
-Form.Image.Label = styled.label`
+export const PictureLabel = styled.label`
     display: flex;
     align-items: center;
     justify-content: center;
@@ -225,13 +78,13 @@ Form.Image.Label = styled.label`
         font-size: 7rem;
         color: rgba(0, 0, 0, .2);
     };
-`;
+`
 
-Form.Image.Input = styled.input`
+export const PictureInput = styled.input`
     display: none;
-`;
+`
 
-Form.Image.Remove = styled.button`
+export const PictureRemove = styled.button`
     display: flex;
     align-items: center;
     justify-content: center;
@@ -252,21 +105,4 @@ Form.Image.Remove = styled.button`
     .MuiSvgIcon-root {
         color: #fff;
     };
-`;
-
-Form.Error = styled.div`
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    height: 4rem;
-    width: 100%;
-
-    background-color: red;
-    margin-bottom: 2rem;
-    border-radius: .7rem;
-`;
-
-Form.Error.Message = styled.strong`
-    font-size: 1.5rem;
-`;
+`

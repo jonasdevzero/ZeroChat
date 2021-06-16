@@ -7,7 +7,6 @@ import { AxiosError } from 'axios'
 import { Invite } from "../../../types/user"
 
 import {
-    Container,
     Content,
     Buttons,
     Invitations,
@@ -25,9 +24,10 @@ import {
     Initial,
 } from "../../../styles/components/ChatScreens/AddContact"
 import {
+    Container,
     Header,
-    Title,
-    Button,
+    HeaderTitle,
+    HeaderButton,
 } from '../../../styles/components/ChatScreens/BaseScreen'
 import { Avatar, ButtonBase } from "@material-ui/core"
 import {
@@ -38,8 +38,8 @@ import {
 } from "@material-ui/icons"
 
 export default function AddContact() {
-    const invitations = useSelector(({ user }: any) => user.invitations)
-    const [currentOption, setCurrentOption] = useState<'invites' | 'search'>(invitations.length > 0 ? 'invites' : 'search')
+    const invitations = useSelector((state: any) => state.user.invitations)
+    const [currentOption, setCurrentOption] = useState<'invites' | 'search'>(invitations.length ? 'invites' : 'search')
 
     const [username, setUsername] = useState("")
     const [users, setUsers] = useState([])
@@ -126,20 +126,20 @@ export default function AddContact() {
     return (
         <Container>
             <Header>
-                <Title>Add Contact</Title>
+                <HeaderTitle>Add Contact</HeaderTitle>
 
                 <Buttons>
-                    <Button onClick={() => setCurrentOption('search')}>
+                    <HeaderButton onClick={() => setCurrentOption('search')}>
                         Search
-                    </Button>
+                    </HeaderButton>
 
-                    <Button onClick={() => setCurrentOption('invites')}>
+                    <HeaderButton onClick={() => setCurrentOption('invites')}>
                         Invites
-                    </Button>
+                    </HeaderButton>
 
-                    <Button onClick={() => dispatch(Actions.screen.removeScreen())}>
+                    <HeaderButton onClick={() => dispatch(Actions.screen.removeScreen())}>
                         <CloseIcon />
-                    </Button>
+                    </HeaderButton>
                 </Buttons>
             </Header>
 
@@ -178,5 +178,5 @@ export default function AddContact() {
                 ) : null}
             </Content>
         </Container>
-    );
-};
+    )
+}

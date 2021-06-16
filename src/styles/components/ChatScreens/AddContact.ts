@@ -1,13 +1,5 @@
 import styled from "styled-components";
 
-export const Container = styled.div`
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    height: 100%;
-    justify-content: center;
-`
-
 export const Content = styled.main`
     width: 100%;
     display: flex;

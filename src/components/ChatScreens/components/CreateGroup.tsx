@@ -1,24 +1,40 @@
 import { useState, useEffect } from "react"
-import { User, Contact } from "../../../types/user"
 import Fuse from "fuse.js"
 import { groupService } from "../../../services"
 import { useDispatch, useSelector } from 'react-redux'
 import * as Actions from '../../../store/actions'
 import { useTheme } from '../../../hooks'
+import { Contact as ContactI } from "../../../types/user"
 
 import {
     Container,
-    Inner,
-    Form,
+    Header,
+    HeaderTitle,
+    HeaderButton,
+    Picture,
+    PictureLabel,
+    PictureInput,
+    PictureRemove
 } from "../../../styles/components/ChatScreens/BaseScreen"
 import {
-    InputContainer,
-    SearchOrCloseButton,
+    Content,
+    Form,
+    Error,
+    Fieldset,
+    Legend,
+    Label,
+    Input,
+    InputIcon,
+    TextArea,
     Wrapper,
-    SearchInput,
-    SearchInputWrapper,
-    FilteredContacts,
-    SelectedContacts,
+    Submit,
+    SearchContacts,
+    Contacts,
+    Contact,
+    Members,
+    Member,
+    RemoveMember,
+    WithoutMembers
 } from "../../../styles/components/ChatScreens/CreateGroup"
 import { Avatar } from "@material-ui/core"
 import {
@@ -28,184 +44,179 @@ import {
 } from "@material-ui/icons"
 
 export default function CreateGroup() {
-    const user: User = useSelector((state: any) => state.user)
+    const contacts: ContactI[] = useSelector((state: any) => state.user.contacts)
+
+    const [name, setName] = useState("")
+    const [picture, setPicture] = useState<File>(undefined)
+    const [description, setDescription] = useState("")
+    const [members, setMembers] = useState<string[]>([])
+    const [picturePreview, setPicturePreview] = useState("")
+
+    const [search, setSearch] = useState("")
+    const [searchResult, setSearchResult] = useState<ContactI[]>([])
+    const [selectedContacts, setSelectedContacts] = useState<ContactI[]>([])
+
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState(undefined)
+
     const [theme] = useTheme()
-
-    const [name, setName] = useState("");
-    const [image, setImage] = useState<File>(undefined);
-    const [description, setDescription] = useState("");
-    const [members, setMembers] = useState<string[]>([]);
-
-    const [search, setSearch] = useState("");
-    const [searchResult, setSearchResult] = useState<Contact[]>()
-    const [selectedContacts, setSelectedContacts] = useState<Contact[]>([])
-
-    const [imagePreview, setImagePreview] = useState("");
-
-    const [loading, setLoading] = useState(false);
-
     const dispatch = useDispatch()
 
-    async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    function onSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault()
-        setLoading(true)
 
-        groupService.create({ name, description, picture: image, members })
+        setLoading(true)
+        setError(undefined)
+        groupService.create({ name, description, picture: picture, members })
             .then(group => {
                 dispatch(Actions.user.pushData(group, 'groups'))
                 dispatch(Actions.room.setRoom(group, 'group'))
                 dispatch(Actions.screen.setScreen(undefined))
             })
+            .catch(error => setError(error))
             .then(() => setLoading(false))
     }
 
-    function handleSelectImage(e: React.ChangeEvent<HTMLInputElement>) {
+    function selectImage(e: React.ChangeEvent<HTMLInputElement>) {
         if (!e.target.files) return;
 
-        const selectedImage = Array.from(e.target.files)[0];
-        setImage(selectedImage);
+        const selectedImage = Array.from(e.target.files)[0]
+        setPicture(selectedImage)
+        setPicturePreview(URL.createObjectURL(selectedImage))
+    }
 
-        const imagePreview = URL.createObjectURL(selectedImage);
+    function removeImage() {
+        setPicturePreview("")
+        setPicture(undefined)
+    }
 
-        setImagePreview(imagePreview);
-    };
+    function selectContact(contact: ContactI) {
+        setMembers([...members, contact.id])
+        selectedContacts.push(contact)
 
-    function removeSelectedImage() {
-        setImagePreview("");
-        setImage(undefined);
-    };
+        setSearch("")
+    }
 
-    function selectContact(contact: Contact) {
-        setMembers([...members, contact.id]);
-        selectedContacts.push(contact);
-
-        setSearch("");
-    };
-
-    function removeSelectedContact(contact: Contact) {
-        setMembers(members.filter(member => member !== contact.id));
-        setSelectedContacts(selectedContacts.filter(selectedContact => selectedContact.id !== contact.id));
-    };
+    function removeContact(contact: ContactI) {
+        setMembers(members.filter(member => member !== contact.id))
+        setSelectedContacts(selectedContacts.filter(selectedContact => selectedContact.id !== contact.id))
+    }
 
     useEffect(() => {
-        const fuse = new Fuse(user.contacts, { keys: ["username"] });
-        let results: Contact[] = [];
+        const fuse = new Fuse(contacts, { keys: ["username"] })
+        let results: ContactI[] = []
         fuse.search(search).map(({ item }) => item).forEach(contact => {
             !(selectedContacts?.find(c => c.id === contact.id)) ? results.push(contact) : null
         })
 
-        setSearchResult(results);
-    }, [search, user?.contacts])
+        setSearchResult(results)
+    }, [search, contacts])
 
     return (
         <Container>
+            <Header>
+                <HeaderTitle>Create Group</HeaderTitle>
 
-            <Inner>
+                <HeaderButton onClick={() => dispatch(Actions.screen.removeScreen())}>
+                    <CloseIcon />
+                </HeaderButton>
+            </Header>
+
+            <Content>
                 <Form onSubmit={onSubmit}>
-                    <Form.Fieldset>
-                        <Form.Legend>Group Data</Form.Legend>
+                    {error && (<Error>{error}</Error>)}
 
-                        <Form.Wrapper.Input className="row">
-                            <Form.Wrapper.Image>
-                                {!image ? (
+                    <Fieldset>
+                        <Legend>Data</Legend>
+
+                        <Wrapper className="row">
+                            <Picture>
+                                {!picture ? (
                                     <>
-                                        <Form.Image.Label htmlFor="image">
+                                        <PictureLabel htmlFor="picture">
                                             <CloudUploadIcon fontSize="large" />
-                                        </Form.Image.Label>
+                                        </PictureLabel>
 
-                                        <Form.Image.Input id="image" type="file" onChange={handleSelectImage} />
+                                        <PictureInput id="picture" type="file" onChange={selectImage} />
                                     </>
                                 ) : (
-                                    <Form.Image.Remove type="button" onClick={() => removeSelectedImage()}>
+                                    <PictureRemove type="button" onClick={() => removeImage()}>
                                         <CloseIcon fontSize="large" />
-                                    </Form.Image.Remove>
+                                    </PictureRemove>
                                 )}
 
-                                <Avatar src={imagePreview} />
-                            </Form.Wrapper.Image>
+                                <Avatar src={picturePreview} />
+                            </Picture>
 
-                            <Wrapper>
-                                <Form.Label>
-                                    Name
-                                </Form.Label>
-
-                                <Form.Input type="text" required value={name} onChange={e => setName(e.target.value)} />
+                            <Wrapper className="m-left">
+                                <Label htmlFor="name">Name</Label>
+                                <Input id="name" type="text" required value={name} onChange={e => setName(e.target.value)} />
                             </Wrapper>
-                        </Form.Wrapper.Input>
+                        </Wrapper>
 
-                        <Form.Wrapper.Input>
-                            <Form.Label>
-                                description
-                            </Form.Label>
+                        <Wrapper>
+                            <Label htmlFor="description">Description</Label>
+                            <TextArea id="description" value={description} onChange={e => setDescription(e.target.value)} />
+                        </Wrapper>
+                    </Fieldset>
 
-                            <Form.TextArea value={description} onChange={e => setDescription(e.target.value)} />
-                        </Form.Wrapper.Input>
-                    </Form.Fieldset>
+                    <Fieldset>
+                        <Legend>Members</Legend>
 
-                    <Form.Fieldset>
-                        <Form.Legend>Group Members</Form.Legend>
-
-                        <SearchInputWrapper>
-
-                            <InputContainer>
-                                <SearchInput
+                        <SearchContacts>
+                            <Wrapper>
+                                <Input
                                     type="text"
                                     placeholder="Search contacts"
                                     value={search}
                                     onChange={e => setSearch(e.target.value)}
                                 />
 
-                                <SearchOrCloseButton type="button" onClick={() => search.length > 0 ? setSearch("") : null}>
-                                    {search.length > 0 ? (<CloseIcon />) : (<SearchIcon />)}
-                                </SearchOrCloseButton>
-                            </InputContainer>
+                                <InputIcon type="button" onClick={() => search.length ? setSearch("") : null}>
+                                    {search.length ? (<CloseIcon />) : (<SearchIcon />)}
+                                </InputIcon>
+                            </Wrapper>
 
-                            {searchResult?.length > 0 ? (
-                                <FilteredContacts>
+                            {searchResult.length ? (
+                                <Contacts>
                                     {searchResult.map((contact, i) => {
                                         return (
-                                            <FilteredContacts.Contact key={i} onClick={() => selectContact(contact)}>
+                                            <Contact key={i} onClick={() => selectContact(contact)}>
                                                 <Avatar src={contact.picture} />
-
                                                 <p>{contact.username}</p>
-                                            </FilteredContacts.Contact>
-                                        );
+                                            </Contact>
+                                        )
                                     })}
-                                </FilteredContacts>
+                                </Contacts>
                             ) : null}
+                        </SearchContacts>
 
-                        </SearchInputWrapper>
-
-                        <SelectedContacts>
-                            {selectedContacts.length > 0 ? (
+                        <Members>
+                            {selectedContacts.length ? (
                                 <>
                                     {selectedContacts.map((selectedContact, i) => {
                                         return (
-                                            <SelectedContacts.Contact key={i}>
+                                            <Member key={i}>
                                                 <Avatar src={selectedContact.username} />
 
                                                 <span>{selectedContact.username}</span>
 
-                                                <SelectedContacts.Contact.Remove type="button" onClick={() => removeSelectedContact(selectedContact)}>
+                                                <RemoveMember type="button" onClick={() => removeContact(selectedContact)}>
                                                     <CloseIcon />
-                                                </SelectedContacts.Contact.Remove>
-                                            </SelectedContacts.Contact>
-                                        );
+                                                </RemoveMember>
+                                            </Member>
+                                        )
                                     })}
                                 </>
-                            ) : (
-                                <SelectedContacts.WithoutContacts>
-                                    <strong>Select contacts to your group</strong>
-                                </SelectedContacts.WithoutContacts>
-                            )}
-                        </SelectedContacts>
-                    </Form.Fieldset>
+                            ) : (<WithoutMembers>Select contacts to your group</WithoutMembers>)}
+                        </Members>
+                    </Fieldset>
 
-                    <Form.Button type="submit">
+                    <Submit type="submit">
                         {loading ? (<img src={`/loading-${theme === "dark" ? "light" : "dark"}.svg`} alt="loading" />) : "Create"}
-                    </Form.Button>
+                    </Submit>
                 </Form>
-            </Inner>
+            </Content>
         </Container>
-    );
-};
+    )
+}

@@ -1,11 +1,85 @@
-import styled from "styled-components";
+import styled from "styled-components"
 
-export const InputContainer = styled.div`
+export const Content = styled.main`
+    width: 55rem;
+    margin: 2.5rem auto;
+    padding: 3.5rem;
+    border-radius: .7rem;
+`
+
+export const Form = styled.form`
     display: flex;
-    position: relative;
-`;
+    flex-direction: column;
+    align-items: center;
 
-export const SearchOrCloseButton = styled.button`
+    padding: 4rem;
+
+    background-color: #171717;
+    border-radius: 1rem;
+`
+
+export const Error = styled.strong`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    height: 4rem;
+    width: 100%;
+
+    font-size: 1.5rem;
+    background-color: red;
+    margin-bottom: 2rem;
+    border-radius: .7rem;
+`
+
+export const Fieldset = styled.fieldset`
+    width: 100%;
+    border: none;
+
+    & + & {
+        margin-top: 3rem;
+    };
+`
+
+export const Legend = styled.legend`
+    width: 100%;
+    font-size: 2.5rem;
+
+    margin-bottom: 2rem;
+    padding: 0 0 1rem 1.5rem;
+    border-bottom: solid .2rem #252525;
+`
+
+export const Label = styled.label`
+    display: flex;
+    align-items: center;
+
+    color: lightgray;
+    font-size: 1.4rem;
+    margin-bottom: .5rem;
+
+    .MuiSvgIcon-root {
+        margin-left: .5rem;
+        cursor: pointer;
+    };
+`
+
+export const Input = styled.input`
+    height: 4.5rem;
+    width: 100%;
+
+    border: none;
+    border-radius: .7rem;
+    outline: none;
+
+    padding: 0 .7rem;
+
+    font-size: 1.4rem;
+    color: lightgray;
+    background-color: #202020;
+`
+
+export const InputIcon = styled.button`
     position: absolute;
     right: 0;
     top: 50%;
@@ -19,40 +93,74 @@ export const SearchOrCloseButton = styled.button`
 
     .MuiSvgIcon-root {
         color: lightgray;
-        font-size: 2rem;
+        font-size: 2.3rem;
     };
-`;
+`
 
-export const Wrapper = styled.div`
-    display: flex;
-    flex-direction: column;
-
-    width: 100%;
-    margin-left: 1rem;
-`;
-
-export const SearchInput = styled.input`
-    width: 100%;
-    height: 4rem;
-
-    background-color: #353535;
+export const TextArea = styled.textarea`
+    background-color: #202020;
     color: lightgray;
+    font-size: 1.6rem;
+
+    min-height: 8rem;
+    max-height: 12rem;
 
     padding: 1rem;
     border: none;
     outline: none;
     border-radius: .7rem;
-`;
+    resize: vertical;
+`
 
-export const SearchInputWrapper = styled.div`
+export const Wrapper = styled.div`
+    display: flex;
+    flex-direction: column;
+    position: relative;
+
+    width: 100%;
+
+    &.row {
+        flex-direction: row;
+        align-items: center;
+    };
+
+    &.m-left {
+        margin-left: 1rem;
+    };
+
+    & + & {
+        margin-top: 1.5rem;
+    };
+`
+
+export const Submit = styled.button`
+    height: 4rem;
+
+    color: #fff;
+    font-size: 1.4rem;
+    background-color: #222;
+
+    padding: .5rem 2rem;
+    border: none;
+    border-radius: .7rem;
+    outline: none;
+    cursor: pointer;
+
+    & > img {
+        width: 3rem;
+        height: 3rem;
+    };
+`
+
+export const SearchContacts = styled.div`
     width: 100%;
     height: 4rem;
     position: relative;
 
     margin-bottom: 1rem;
-`;
+`
 
-export const FilteredContacts: any = styled.div`
+export const Contacts = styled.div`
     width: 100%;
     position: absolute;
 
@@ -62,9 +170,9 @@ export const FilteredContacts: any = styled.div`
     max-height: 20rem;
     overflow-y: scroll;
     z-index: 1;
-`;
+`
 
-FilteredContacts.Contact = styled.div`
+export const Contact = styled.div`
     display: flex;
     align-items: center;
 
@@ -89,9 +197,9 @@ FilteredContacts.Contact = styled.div`
     &:hover {
         background-color: rgba(0, 0, 0, .4);
     };
-`;
+`
 
-export const SelectedContacts: any = styled.div`
+export const Members = styled.div`
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
@@ -99,14 +207,14 @@ export const SelectedContacts: any = styled.div`
     min-height: 10rem;
     max-height: 30rem;
 
-    background-color: #353535;
+    background-color: #202020;
     padding: 1rem;
     margin-bottom: 3rem;
     border-radius: .7rem;
     overflow-y: scroll;
-`;
+`
 
-SelectedContacts.Contact = styled.div`
+export const Member = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -131,9 +239,9 @@ SelectedContacts.Contact = styled.div`
         width: 4.5rem;
         height: 4.5rem;
     };
-`;
+`
 
-SelectedContacts.Contact.Remove = styled.button`
+export const RemoveMember = styled.button`
     position: absolute;
     top: .2rem;
     right: .2rem;
@@ -147,15 +255,13 @@ SelectedContacts.Contact.Remove = styled.button`
         color: #fff;
         font-size: 1.7rem;
     };
-`;
+`
 
-SelectedContacts.WithoutContacts = styled.div`
+export const WithoutMembers = styled.span`
     display: flex;
     align-items: center;
     justify-content: center;
-
-    strong {
-        font-size: 1.7rem;
-        color: lightgray;
-    };
-`;
+    font-size: 1.6rem;
+    font-weight: 500;
+    color: lightgray;
+`
