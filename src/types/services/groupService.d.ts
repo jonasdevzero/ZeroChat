@@ -1,4 +1,4 @@
-import { Group } from "../user";
+import { Group, GroupUser } from "../user"
 
 interface CreateGroupI {
     name: string
@@ -18,12 +18,9 @@ interface UpdatePictureI {
     picture: File | undefined
 }
 
-interface GroupUserI {
-    groupId: string
-    memberId: string
-}
-
 export default interface GroupService {
+    show(groupId: string): Promise<Group>
+
     create(data: CreateGroupI): Promise<Group>
 
     update(data: UpdateGroupI): Promise<{ name: string, description: string }>
@@ -32,9 +29,11 @@ export default interface GroupService {
 
     delete(groupId: string): Promise<string>
 
-    addMember(data: GroupUserI): Promise<any>
+    getUsers(groupId: string): Promise<GroupUser[]>
 
-    updateMember(data: GroupUserI): Promise<any>
+    addMember(groupId: string, memberId: string): Promise<GroupUser>
 
-    removeMember(data: GroupUserI): Promise<any>
+    updateMember(groupId: string, memberId: string, role: 'user' | 'admim'): Promise<string>
+
+    removeMember(groupId: string, memberId: string): Promise<string>
 }

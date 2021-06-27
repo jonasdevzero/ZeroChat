@@ -72,6 +72,51 @@ const reducers = {
         return state
     },
 
+    'PUSH_GROUP_USER'(state: User, action: any) {
+        const { group_id, users } = action
+
+        const usersIsArray = Array.isArray(users)
+
+        state.groups.map(group => {
+            group.id === group_id ? (usersIsArray ? users.forEach(u => group.users.push(u)) : group.users.push(users)) : null
+            return group
+        })
+
+        return state
+    },
+
+    'UPDATE_GROUP_USER'(state: User, action: any) {
+        const { group_id, member_id, set } = action
+
+        const allowed = ['role']
+
+        const setKeys = Object.keys(set)
+        setKeys.filter(key => allowed.includes(key))
+
+        state.groups.map(group => {
+            group.id === group_id ? group.users.map(user => {
+                if (user.id === member_id) for (const key of setKeys) user[key] = set[key];
+                return user
+            }) : null
+            state.id === member_id && setKeys.includes('role') ? group.role = set['role'] : null
+
+            return group
+        })
+
+        return state
+    },
+
+    'REMOVE_GROUP_USER'(state: User, action: any) {
+        const { group_id, member_id } = action
+
+        state.groups.map(group => {
+            group.id === group_id ? group.users.filter(u => u.id !== member_id) : null
+            return group
+        })
+
+        return state
+    },
+
     'PUSH_MESSAGE'(state: User, action: any) {
         const { where, data, roomType } = action
         if (!where || !data || !roomType) return state;
