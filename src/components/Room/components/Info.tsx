@@ -1,5 +1,8 @@
+import { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import * as RoomActions from '../../../store/actions/room'
+import { groupService } from '../../../services'
+import * as Actions from '../../../store/actions'
+import { Contact, Group } from '../../../types/user'
 
 import {
     Container,
@@ -16,14 +19,19 @@ import {
 } from '@material-ui/icons';
 
 export default function Info() {
-    const userId = useSelector((state: any) => state.user.id)
     const { room, roomType } = useSelector(({ room }: any) => ({ room: room.current, roomType: room.type }))
     const dispatch = useDispatch()
+
+    useEffect(() => {
+        if (roomType === 'group' && !room?.users.length) {
+            groupService.getUsers(room.id).then(users => dispatch(Actions.user.pushGroupUser(room.id, users)))
+        }
+    }, [room])
 
     return (
         <Container>
             <Header>
-                <IconButton onClick={() => dispatch(RoomActions.toggleShowInfo())}>
+                <IconButton onClick={() => dispatch(Actions.room.toggleShowInfo())}>
                     <CloseIcon fontSize="large" />
                 </IconButton>
             </Header>
@@ -38,7 +46,7 @@ export default function Info() {
                     </>
                 ) : (
                     <>
-                        {room.users.find(u => u.user.id === userId).role === 'admim' ? (
+                        {room.role === 'admim' ? (
                             <EditGroupContainer>
                                 <IconButton>
                                     <EditIcon fontSize="large" />
