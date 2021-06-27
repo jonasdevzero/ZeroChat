@@ -1,5 +1,6 @@
 export { default as api } from './api'
 export { default as socket } from './socket'
+export { default as socketEmit } from './socket/socketEvents'
 export { default as userService } from './api/userService'
 export { default as contactService } from './api/contactService'
 export { default as groupService } from './api/groupService'

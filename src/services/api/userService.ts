@@ -1,4 +1,5 @@
-import { api, socket } from '..'
+import { api, socket, socketEmit } from '..'
+import { socketEvents } from '../socket/socketEvents'
 import Cookies from 'js-cookie'
 import UserService from '../../types/services/userService'
 import { User } from '../../types/user'
@@ -22,6 +23,8 @@ export default {
                     }
 
                     api.defaults.headers.common["Authorization"] = `Bearer ${jwt}`
+
+                    socketEvents()
                     resolve(user)
                 })
             } catch (error) {
@@ -66,7 +69,7 @@ export default {
                 const { name, username } = response.data
 
                 const id = store.getState().user.id
-                socket.emit('update', updateRoom({ where: id, set: { name, username }, roomType: 'contact' }), () => { resolve({ name, username }) })
+                socketEmit.update(updateRoom({ where: id, set: { name, username }, roomType: 'contact' }), () => { resolve({ name, username }) })
             } catch (error) {
                 reject(error)
             }
@@ -83,7 +86,7 @@ export default {
                 const { location } = response.data
 
                 const id = store.getState().user.id
-                socket.emit('update', updateRoom({ where: id, set: { picture: location }, roomType: 'contact' }), () => { resolve(response.data) })
+                socketEmit.update(updateRoom({ where: id, set: { picture: location }, roomType: 'contact' }), () => { resolve(response.data) })
             } catch (error) {
                 reject(error)
             }

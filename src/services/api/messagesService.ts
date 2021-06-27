@@ -1,4 +1,4 @@
-import { api, socket } from ".."
+import { api, socketEmit } from ".."
 import MessagesService from '../../types/services/messageService'
 import { pushMessage } from '../../store/actions/user'
 
@@ -32,7 +32,7 @@ export default {
 
                 const where = roomType === 'contact' ? [data.message.sender_id, data.to] : data.to
 
-                socket.emit('message', pushMessage({ where, data, roomType }), () => { resolve('ok') })
+                socketEmit.newMessage(pushMessage({ where, data, roomType }), () => { resolve('ok') })
             } catch (error) {
                 reject(error)
             }

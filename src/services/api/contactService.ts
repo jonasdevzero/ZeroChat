@@ -1,4 +1,4 @@
-import { api, socket } from ".."
+import { api, socketEmit } from ".."
 import ContactService from '../../types/services/contactService'
 import { pushData } from '../../store/actions/user'
 
@@ -35,7 +35,8 @@ export default {
             try {
                 const { data } = await api.post(`/contact/invite/${contact_id}`)
                 const { invite } = data
-                socket.emit('invite', pushData(invite, 'invitations'), () => { resolve('Invite sent') })
+
+                socketEmit.inviteUser(pushData(invite, 'invitations'), () => { resolve('Invite Sent') })
             } catch (error) {
                 reject(error)
             }
@@ -48,10 +49,7 @@ export default {
                 const { data } = await api.post(`/contact/invite/accept/${invitation_id}`)
                 const { contact } = data
 
-                socket.emit('invite-accepted', contact.id, (_error: any,  isOnline: boolean) => {
-                    contact.online = isOnline
-                    resolve(contact)
-                })
+                socketEmit.inviteAccepted(contact, () => { resolve(contact) })
             } catch (error) {
                 reject(error)
             }
